@@ -1,24 +1,170 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+/* Tailwind base styles */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Custom styles */
+/* ========================= */
+/* Global Variables (Easily Customizable) */
+/* ========================= */
+:root {
+  /* --primary-color: #337ab7;  */
+  /* --secondary-color: #222;  */
+  --primary-color: #EF5388FF;
+  --secondary-color: #090029FF;
+  --success-color: #8dc572;
+  --error-color: #be6464;
+  --warning-color: #f0ad4e;
+  --info-color: #337ab7;
+  --white-color: #fff;
+  --background-color: #f3f4f6; /* Light Gray */
+  --text-color: var(--secondary-color);
+  --border-color: #e5e7eb; /* Light Border */
+  --light-grey-color:#09002921;
+
+  --font-family: 'Inter', sans-serif;
+  --border-radius: 8px;
+  --opacity-level: 0.9;
+  --transition-speed: 0.15s;
+}
 body {
-  @apply bg-gray-100 text-gray-800 font-sans ;
+  @apply text-gray-800 bg-gray-100 font-inter;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-family: var(--font-family);
+}
+/* ========================= */
+/* Buttons */
+/* ========================= */
+.button {
+  @apply px-4 py-2 text-white transition rounded;
+  background-color: var(--primary-color);
+  border-radius: var(--border-radius);
+  opacity: var(--opacity-level);
+  transition: background-color var(--transition-speed);
 }
 
-button {
-  @apply bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition;
+.button:hover {
+  background-color: darken(var(--primary-color), 10%);
 }
 
-input {
-  @apply border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500;
+/* Success, Warning, Error, Info Buttons */
+.button-success {
+  background-color: var(--success-color);
 }
 
+.button-error {
+  background-color: var(--error-color);
+}
+
+.button-warning {
+  background-color: var(--warning-color);
+}
+
+.button-info {
+  background-color: var(--info-color);
+}
+
+/* ========================= */
+/* Form Elements */
+/* ========================= */
+input,
+textarea {
+  @apply px-4 py-2 border rounded focus:outline-none focus:ring-2;
+  border: 1px solid var(--border-color);
+}
+
+input:focus,
+textarea:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 5px rgba(51, 122, 183, 0.5); /* Adjusted to match primary color */
+}
+
+/* ========================= */
+/* Navigation Bar */
+/* ========================= */
 .navbar {
-  @apply bg-white shadow p-4 flex justify-between items-center;
+  @apply flex items-center justify-between p-4 bg-white shadow;
+  border-bottom: 1px solid var(--border-color);
 }
 
+/* ========================= */
+/* Cards */
+/* ========================= */
 .card {
-  @apply bg-white shadow rounded-lg p-6;
+  @apply p-6 bg-white shadow;
+  border-radius: var(--border-radius);
+}
+
+/* ========================= */
+/* Utility Classes */
+/* ========================= */
+.text-primary {
+  color: var(--primary-color);
+}
+
+.text-success {
+  color: var(--success-color);
+}
+
+.text-error {
+  color: var(--error-color);
+}
+
+.text-warning {
+  color: var(--warning-color);
+}
+
+.text-info {
+  color: var(--info-color);
+}
+
+.bg-primary {
+  background-color: var(--primary-color);
+}
+
+.bg-success {
+  background-color: var(--success-color);
+}
+.bg-secondary {
+  background-color: var(--secondary-color);
+}
+.bg-secondary-light {
+  background-color: var(--light-grey-color);
+}
+.bg-error {
+  background-color: var(--error-color);
+}
+
+.bg-warning {
+  background-color: var(--warning-color);
+}
+
+.bg-info {
+  background-color: var(--info-color);
+}
+
+.border-primary {
+  border-color: var(--primary-color);
+}
+
+.rounded {
+  border-radius: var(--border-radius);
+}
+
+.opacity-custom {
+  opacity: var(--opacity-level);
+}
+
+.box-shadow{
+  box-shadow: rgba(14, 30, 37, 0.12) 0px 2px 4px 0px,
+  rgba(14, 30, 37, 0.32) 0px 2px 16px 0px;
+}
+
+.bg-custom-gradient {
+  background: linear-gradient(0deg, rgba(9, 0, 41, 0.06), rgba(9, 0, 41, 0.06)), 
+              linear-gradient(180deg, hsla(0, 0%, 100%, 0.04), hsla(0, 0%, 100%, 0));
 }

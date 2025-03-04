@@ -1,12 +1,18 @@
+
 module.exports = {
   content: [
     './src/**/*.{js,jsx,ts,tsx}',
-    "./node_modules/flowbite/**/*.js" // Tailwind will scan these files
+    // "./node_modules/flowbite/**/*.js",// Tailwind will scan these files
+    "./**/*.html",
+
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        inter: ['Inter', 'sans-serif'],
+      }
+    }
   },
   plugins: [
-    require('flowbite/plugin')
-]
+  ]
 }

@@ -1,90 +1,132 @@
-import React, { useContext, useState } from "react";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-import { loginUser } from "../../utils/api";
-import { storeInSession } from "../../common/session"
-import { UserContext } from "../../App";
+import React, { ChangeEvent, useContext, useEffect, useState, useCallback } from "react";
+import { Link, Navigate, useNavigate } from "react-router-dom";
+import { loginUser } from "../../services/authService";
+import { storeInSession } from "../../common/session";
+import { UserContext } from "../../provider/UserProvider";
+import { UserLogin } from "../../types/user";
+import { emailRegex, passwordRegex } from "../../common/constant";
+import toast, { Toaster } from "react-hot-toast";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Login = () => {
-  
-  
+  const { userAuth, setUserAuth } = useContext(UserContext);
   const navigate = useNavigate();
 
-  const handleLogin = async (e: any) => {
+  const [user, setUser] = useState<UserLogin>({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (userAuth) {
+      navigate("/", { replace: true });
+    }
+  }, []); // Runs only once on mount
+
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setUser((prevUser) => ({ ...prevUser, [name]: value }));
+  };
+
+  const handleLogin = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
 
-    let formID: string = "formElement";
-    let form = document.getElementById(formID) as HTMLFormElement | null; // Ensure form is an HTMLFormElement
-
-    let formData: Record<string, string> = {}; // Explicitly type formData as an object with string keys and values
-
-    if (form) {
-      let formDataObject = new FormData(form); // Create FormData from the form element
-
-      // Convert FormData to a plain object
-      for (let [key, value] of Array.from(formDataObject.entries())) {
-        formData[key] = value as string; // Type assertion for value (since FormData stores values as string or File)
-      }
+    if (!emailRegex.test(user.email)) {
+      toast.error("Enter a valid Email Address.");
+      return;
     }
-    const user = await loginUser(formData.email, formData.password);
-    console.log(user);
-    storeInSession("user", JSON.stringify(user));
-    // navigate("/quizpage");
 
-  };
+    if (!passwordRegex.test(user.password)) {
+      toast.error(
+        "Password must be at least 8 characters long, include one uppercase, one lowercase, one number, and one special character."
+      );
+      return;
+    }
+
+    try {
+      const userResponse = await loginUser(user);
+      if (userResponse?.apiToken) {
+        storeInSession("user", userResponse);
+        setUserAuth(userResponse);
+        toast.success("Login Successful!");
+        navigate("/");
+      } else {
+        toast.error("Invalid login credentials. Please try again.");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error("An error occurred. Please try again.");
+    }
+  }, [user, setUserAuth, navigate]);
+
+  if (userAuth) {
+    return <Navigate to="/" />;
+  }
 
   return (
     <>
-      <div className="flex items-center justify-center min-h-screen p-4 bg-gray-100">
-        <div className="w-full p-6 bg-white border border-gray-200 rounded-lg shadow md:w-1/4 dark:bg-gray-800 dark:border-gray-700">
-          <div>
-            <h1 className="mb-4 text-3xl font-bold text-center">Student Login</h1>
-
-          </div>
-          <form id="formElement" className="space-y-4">
-            <div className="space-y-2">
-
-
-              <label htmlFor="email" className="text-sm font-medium text-gray-700">Email</label>
+      <Toaster />
+      {/* <div className="flex items-center justify-center min-h-screen p-4 bg-gray-100">
+        <div className="w-full p-6 bg-white border border-gray-200 rounded-lg shadow sm:w-2/4 md:w-1/3 "> */}
+          <h1 className="mb-4 text-3xl font-bold text-center">Student Login</h1>
+          <form className="space-y-4" onSubmit={handleLogin}>
+            <div>
+              <label htmlFor="email" className="text-sm font-medium text-gray-900">
+                Email
+              </label>
               <input
                 id="email"
                 name="email"
-                placeholder="Enter Email"
+                type="email"
+                placeholder="Email address"
                 required
-
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={user.email}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
-            <div className="space-y-2">
-
-
-
-              <label htmlFor="password" className="text-sm font-medium text-gray-700">Password</label>
+            <div className="relative">
+              <label htmlFor="password" className="text-sm font-medium text-gray-900">
+                Password
+              </label>
               <input
                 id="password"
                 name="password"
-                type="password"
-                placeholder="Enter Password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={user.password}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
               />
+              <button
+                type="button"
+                className="absolute text-gray-600 end-2.5 bottom-2.5 font-medium rounded-lg text-sm px-4 py-1 bg-transparent hover:bg-gray-100"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label="Toggle password visibility"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
-
 
             <button
               type="submit"
-              className="w-full py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              onClick={(e) => handleLogin(e)}
+              className="w-full py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
             >
               Login
             </button>
           </form>
-          <p className="mt-3">Don't have an account ?
-            <Link to="/registeration" className='px-3 py-1 ml-2 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800'> Register</Link>
-          </p>
-        </div>
-      </div>
+          {/* <p className="mt-3 text-center">
+            Don't have an account?{" "}
+            <Link
+              to="/registeration"
+              className="text-blue-700 hover:underline"
+            >
+              Register
+            </Link>
+          </p> */}
+        {/* </div>
+      </div> */}
     </>
   );
 };
