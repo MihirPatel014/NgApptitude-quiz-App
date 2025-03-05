@@ -8,7 +8,7 @@ import { MdQuiz } from "react-icons/md";
 import { FaUser } from "react-icons/fa";
 import { FaRegCalendar } from "react-icons/fa";
 import { IoMdSettings } from "react-icons/io";
-
+import Logo from "../assests/images/checklist.png"
 export const NavbarAndSidebar = () => {
 
     let { userAuth, setUserAuth } = useContext(UserContext);
@@ -36,7 +36,7 @@ export const NavbarAndSidebar = () => {
                                 </svg>
                             </button>
                             <a href="/" className="flex ms-2 md:me-24">
-                                <img width="50" height="50" src="https://img.icons8.com/bubbles/100/checklist.png" alt="NGAptitudeLogo" />
+                                <img width="50" height="50" src={Logo} alt="NGAptitudeLogo" />
                                 <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">NGAptitude</span>
                             </a>
                         </div>
