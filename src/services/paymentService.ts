@@ -6,7 +6,9 @@ import { PaymentModel, MerchantOrderDetails, TranscationDetail } from "../types/
 // api/User/Register
 const PROCESS_REQUEST_ORDER = 'process-request-order';
 const COMPLETE_REQUEST_ORDER = 'complete-order-process';
-const API_URL = "https://localhost:44389/";
+// const API_URL = "https://localhost:44389/";
+const API_URL = "https://apingapptitude-001-site1.anytempurl.com/";
+
 export const ProcessPayment = async (data: PaymentModel) => {
 
     try {
