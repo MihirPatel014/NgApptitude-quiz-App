@@ -10,14 +10,15 @@ import { QuestionSumitStatus } from "../../common/constant";
 import { UserPackageInfoModel, UserExamInfoModel } from "../../types/user";
 import { ExamWithSectionViewModel, ExamSections } from "../../types/exam";
 import { formatDate } from "../../utils/dateUtils";
+import { useLoader } from "../../provider/LoaderProvider";
 
 const QuizPage = () => {
   const [userPackages, setUserPackages] = useState<UserPackageInfoModel[]>([]);
   const [examSections, setExamSections] = useState<Map<number, ExamSections[]>>(new Map()); // Store sections per exam
-  const [loading, setLoading] = useState<boolean>(true);
+
   const [activeTab, setActiveTab] = useState<string>("available");
   const [expandedExamIds, setExpandedExamIds] = useState<Set<number>>(new Set()); // Track multiple expanded exams
-
+  const { setLoading } = useLoader();
   const navigate = useNavigate();
   let { userAuth } = useContext(UserContext);
   let UserId = userAuth?.userId || 0;
@@ -31,6 +32,7 @@ const QuizPage = () => {
   }, [UserId]);
 
   const fetchUserPackages = async () => {
+    setLoading(true);
     try {
       if (UserId > 0 && !isFetched.current) {
         isFetched.current = true; // Prevent duplicate calls
@@ -66,9 +68,11 @@ const QuizPage = () => {
 
         setExamSections(sectionsMap);
         setExpandedExamIds(newExpandedIds);
+        setLoading(false);
       }
     } catch (error) {
       console.log("Error fetching user packages:", error);
+      setLoading(false);
     } finally {
       setLoading(false);
     }
@@ -147,11 +151,7 @@ const QuizPage = () => {
     });
   };
 
-  if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">
-      <div className="text-lg font-medium">Loading Exams...</div>
-    </div>;
-  }
+
 
   return (
     <div className="flex items-center justify-center min-h-screen p-4">

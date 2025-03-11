@@ -1,13 +1,12 @@
 import axios from "axios";
 import { apiRequest } from "../common/requestwithdata";
 import { PaymentModel, MerchantOrderDetails, TranscationDetail } from "../types/payment";
-import { API_URL } from "../common/http-common";
 
 
 // api/User/Register
 const PROCESS_REQUEST_ORDER = 'process-request-order';
 const COMPLETE_REQUEST_ORDER = 'complete-order-process';
-// const API_URL = "https://localhost:44389/";
+const API_URL = "https://localhost:44389/";
 export const ProcessPayment = async (data: PaymentModel) => {
 
     try {

@@ -2,9 +2,9 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Registeration from "./components/auth/Registration";
 
-
+import Missing from "./pages/missing";
 // import Login from "./components/auth/Login";
-import Login from "./components/auth/login_registration";
+import AnimatedForm from "./components/auth/AnimatedForm";
 import QuizPage from "./components/quiz/QuizPage";
 
 
@@ -24,9 +24,11 @@ import EditProfile from "./components/user/editProfile";
 import { QuizWrapper } from "./components/quiz/QuizWrapper";
 import Home from "./pages/home";
 import Subscription from "./components/user/subscription";
-import Result1 from "./pages/result/Result1"
+import Result1 from "./pages/result/Result"
 import { ResultWrapper } from "./pages/result/ResultWrapper";
-import Missing from "./pages/Missing";
+import { LoaderProvider } from "./provider/LoaderProvider";
+import Loader from "./common/Loader";
+
 
 
 
@@ -35,12 +37,13 @@ function App() {
 
   return (
     <UserProvider>
+      <LoaderProvider>     
       <Router>
         <Routes>
           {/* Public Path */}
           {/* <Route path="/registeration" element={<Registeration />} /> */}
           {/* <Route path="/login" element={<Login />} /> */}
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<AnimatedForm />} />
           {/* <Route path="/login" element={<PhoneOtp />} /> */}
           <Route element={<ProtectedRoute />}>
             <Route element={<NavbarAndSidebar />}>
@@ -50,9 +53,11 @@ function App() {
               <Route path="/packages" element={<PackagesPage />} />
               <Route path="/edit-profile" element={<EditProfile />} />
 
-          <Route path='/result1' element={<ResultWrapper />} />
-          
-          
+
+              <Route path='/result' element={<ResultWrapper />} />
+              <Route path='/loader' element={<Loader />} />
+
+
             </Route>
           </Route>
 
@@ -64,6 +69,7 @@ function App() {
           <Route path="*" element={<Missing />} />
         </Routes>
       </Router>
+      </LoaderProvider>
     </UserProvider>
   );
 }

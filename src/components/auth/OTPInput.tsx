@@ -100,7 +100,7 @@ const OtpInput: React.FC<OtpInputProps> = ({ length = 4, mobile = "", onOtpSubmi
                             <input
                                 key={index}
                                 type="text"
-                                ref={(input) => (inputRefs.current[index] = input as HTMLInputElement)}
+                                // ref={(input) => (inputRefs.current[index] = input as HTMLInputElement ) }
                                 value={value}
                                 onChange={(e) => handleChange(index, e)}
                                 onClick={() => handleClick(index)}

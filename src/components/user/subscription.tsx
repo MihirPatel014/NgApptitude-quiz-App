@@ -5,15 +5,17 @@ import { UserPackageInfoModel, UserExamInfoModel } from "../../types/user";
 import { useNavigate } from "react-router-dom";
 import { FaCircle } from "react-icons/fa";
 import { formatDate } from "../../utils/dateUtils";
+import { useLoader } from "../../provider/LoaderProvider";
 
 export const Subscription = () => {
     const { userAuth } = useContext(UserContext);
     const navigate = useNavigate();
-
+    const { setLoading } = useLoader();
     const [userPackages, setUserPackages] = useState<UserPackageInfoModel[]>([]);
 
     useEffect(() => {
         const fetchUserDetails = async () => {
+            setLoading(true);
             try {
                 const response = await GetUserPackageInfoByUserId(userAuth?.userId || 0);
                 if (response) {
@@ -21,10 +23,13 @@ export const Subscription = () => {
                     const sortedPackages = response.sort((a: UserPackageInfoModel, b: UserPackageInfoModel) =>
                         new Date(b.startedDate || 0).getTime() - new Date(a.startedDate || 0).getTime()
                     );
+
                     setUserPackages(sortedPackages);
+                    setLoading(false);
                 }
             } catch (error) {
                 console.error("Error fetching user details:", error);
+                setLoading(false);
             }
         };
 
@@ -33,7 +38,7 @@ export const Subscription = () => {
 
     const handleResult = (packageId: number, exams: UserExamInfoModel[]) => {
         const examProgressIds = exams.filter(exam => exam.isCompleted).map(exam => exam.examProgressId);
-        navigate("/result1", { state: { examProgressIds } });
+        navigate("/result", { state: { examProgressIds } });
     };
 
     return (

@@ -3,9 +3,7 @@ import axios from "axios";
 import { lookInSession } from "./session";
 
 // const API_URL = "https://676d2bf00e299dd2ddfead4d.mockapi.io/api/"; // Replace with your actual MockAPI URL
-// const API_URL = "https://localhost:44389/"; // Replace with your actual MockAPI URL
-// const API_URL = "http://apingapptitude-001-site1.anytempurl.com/swagger/index.html/"; // Replace with your actual MockAPI URL
-export const API_URL = "https://apingapptitude-001-site1.anytempurl.com/"; // Replace with your actual MockAPI URL
+const API_URL = "https://localhost:44389/"; // Replace with your actual MockAPI URL
 
 
 

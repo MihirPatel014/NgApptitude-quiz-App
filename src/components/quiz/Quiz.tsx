@@ -466,8 +466,8 @@ const Quiz: React.FC<QuizProps> = ({
                   {/* Total Time - Only Show if Time Bound */}
                   {isTimeBound && (
                     <div className="flex flex-col items-center">
-                      <span className="font-medium text-gray-200">Total Time</span>
-                      <span className="font-medium text-gray-200">
+                      <span className="font-medium text-gray-600">Total Time</span>
+                      <span className="font-medium text-gray-600">
                         {timeLimit > 0 ? `${timeLimit} minutes` : "Unlimited"}
                       </span>
                     </div>
