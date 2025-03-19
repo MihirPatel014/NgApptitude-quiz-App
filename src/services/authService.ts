@@ -17,6 +17,7 @@ const REGISTER_URL = "/Register"
 const OTP_URL = "/sendOTP"
 const Verify_OTP_URL = "/VerifyOtp"
 const GET_USER_DETAILS = "/GetUserDetails"
+const Update_USER_DETAILS = "/UpdateUserDetails"
 const ADD_USER_TO_PACKAGE = "/AddUserToPackage"
 const GET_USER_FULL_INFO_BY_USERID = "/GetUserFullInfoByUserId"
 const GET_USER_PACKAGE_INFO_BY_USERID = "/GetUserPackageInfoByUserId"
@@ -111,7 +112,19 @@ export const getUserDetails = async () => {
     return null;
   }
 };
-
+export const UpdateUserDetails = async (data:UserProfileUpdate) => {
+  const result = await apiRequest<typeof data, UserProfileUpdate>(
+    `/${USERS_URL}${Update_USER_DETAILS}`,
+    "POST",
+    data
+  );
+  if (result.success) {
+    return result.data; // Return the package data
+  } else {
+    console.log("Error fetching examByID:", result.errors);
+    return null;
+  }
+};
 export const AddUserToPackage = async (data: AddUserToPackageApiModel) => {
   if (data) {
 

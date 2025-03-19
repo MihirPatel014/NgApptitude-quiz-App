@@ -1,10 +1,11 @@
 import axios from "axios";
 
 import { lookInSession } from "./session";
+import toast from "react-hot-toast";
 
 // const API_URL = "https://676d2bf00e299dd2ddfead4d.mockapi.io/api/"; // Replace with your actual MockAPI URL
 // const API_URL = "https://localhost:44389/"; // Replace with your actual MockAPI URL
-const API_URL = "https://apingapptitude-001-site1.anytempurl.com/"; // Replace with your actual MockAPI URL
+const API_URL = "http://ngapptitudeapi-001-site1.ltempurl.com/"; // Replace with your actual MockAPI URL
 
 
 
@@ -55,7 +56,7 @@ export const handleApiResponse = <T>(response: ApiResponse<T>): { success: boole
     return { success: true, data: response.data };
   } else {
     const errorMessages = response.errorDetails.map(error => `${error.errorCode}: ${error.errorMessage}`);
-    console.error("API Errors:", errorMessages); // Log errors for debugging
+    toast.error(errorMessages.toString()); // Log errors for debugging
     return { success: false, errors: errorMessages };
   }
 };

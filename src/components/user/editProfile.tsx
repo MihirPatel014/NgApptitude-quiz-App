@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { getUserDetails } from '../../services/authService'
+import { getUserDetails, UpdateUserDetails } from '../../services/authService'
 import { UserProfileUpdate } from '../../types/user';
 import { useLoader } from '../../provider/LoaderProvider';
 
@@ -10,28 +10,26 @@ const EditProfile = () => {
   const { setLoading } = useLoader();
 
   useEffect(() => {
-    const fetchUserDetails = async () => {
-      setLoading(true);
-      try {
-        const fetchedUserDetails = await getUserDetails();
-        console.log(fetchedUserDetails); // Log the fetched data
-        if (fetchedUserDetails) {
-
-          setUserDetails(fetchedUserDetails); // Save the fetched data
-          setFormData(fetchedUserDetails); // Prepopulate the form
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error("Error fetching user details", error);
-        setLoading(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchUserDetails();
   }, []);
+  const fetchUserDetails = async () => {
+    setLoading(true);
+    try {
+      const fetchedUserDetails = await getUserDetails();
+      console.log(fetchedUserDetails); // Log the fetched data
+      if (fetchedUserDetails) {
 
+        setUserDetails(fetchedUserDetails); // Save the fetched data
+        setFormData(fetchedUserDetails); // Prepopulate the form
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("Error fetching user details", error);
+      setLoading(false);
+    } finally {
+      setLoading(false);
+    }
+  };
   // Handle form field changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -43,10 +41,20 @@ const EditProfile = () => {
 
   // Handle form submission (update user profile)
   const handleSubmit = async (e: React.FormEvent) => {
+    setLoading(true);
     e.preventDefault();
     if (formData) {
       // You can add a function here to send the updated data to the server
       console.log("Form data to be updated:", formData);
+      const result =await UpdateUserDetails(formData);
+      if(result){
+        setLoading(false);
+        fetchUserDetails();
+      }
+      else{
+        setLoading(false);
+      }
+      
       // Example: await updateUserDetails(formData);
     }
   };

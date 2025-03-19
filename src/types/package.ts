@@ -35,8 +35,24 @@ export interface UserPackageDetailsViewModel {
   totalExamsPending: number,
   completionDate: Date,
   startedDate: Date,
-  packagePrice:number,
+  packagePrice: number,
   completionPercentage: number,
   status: string,
-  examProgressId:number
+  examProgressId: number
+}
+
+export enum GiftCodeValidationStatus {
+  Valid = 0,
+  NotFound = 1,
+  Expired = 2,
+  Inactive = 3,
+  Deleted = 4,
+  Invalid = 5
+}
+
+export interface GiftCodeResponseModel {
+  giftCodeId: number,
+  discountedValue: number,
+  giftCodeStatus: GiftCodeValidationStatus,
+  originalPrice: number,
 }

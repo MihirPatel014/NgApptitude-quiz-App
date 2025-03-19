@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   GetAllquestionsCategory,
@@ -18,6 +18,8 @@ const QuestionStatus = {
   Skipped: 1,
   Attended: 2,
 } as const;
+
+
 
 type QuestionStatusType = typeof QuestionStatus[keyof typeof QuestionStatus];
 
@@ -70,6 +72,11 @@ const Quiz: React.FC<QuizProps> = ({
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
   const [questionStatuses, setQuestionStatuses] = useState<QuestionStatusType[]>([]);
 
+
+    // Use refs to store the timers so that we can clear them when needed
+    const remainingTimeTimer = useRef<NodeJS.Timeout | null>(null);
+    const elapsedTimeTimer = useRef<NodeJS.Timeout | null>(null);
+    
   const [userExamResponse, setUserExamResponse] = useState<UserExamResponse>({
     id: 0,
     userExamProgressId: userExamProgressId,
@@ -80,9 +87,10 @@ const Quiz: React.FC<QuizProps> = ({
   });
 
   const handleQuizSubmit = async () => {
+    stopTimers();
     try {
       const finalScore = calculateScore();
-      console.log("ResponseData Before ExamSubmit", userExamResponse.responseData);
+      
       const submitExamData: SubmitExam = {
         id: Number(userExamProgressId),
         userId: Number(userId),
@@ -98,19 +106,21 @@ const Quiz: React.FC<QuizProps> = ({
       };
 
       const result = await SubmitUserExam(submitExamData);
+      console.log("This is the submit exam response",result)
       if (result) {
         // Set showResult to true regardless of the API result
         setShowResult(true);
       } else {
         // Still set showResult to true even if API fails, but show a message
         setShowResult(true);
-        toast.error('There was an issue submitting your exam, but your results are displayed.');
+        // toast.error('There was an issue submitting your exam, but your results are displayed.');
       }
     } catch (error) {
       console.log('Failed to submit exam:', error);
       toast.error('Failed to submit exam. Please try again.');
       setShowResult(true);
     }
+    
   };
 
   useEffect(() => {
@@ -153,7 +163,7 @@ const Quiz: React.FC<QuizProps> = ({
         if (!confirmExit) {
           window.history.pushState(null, '', window.location.pathname);
         } else {
-          navigate('/');
+          navigate('/quizpage');
         }
       }
     };
@@ -182,6 +192,7 @@ const Quiz: React.FC<QuizProps> = ({
           e.preventDefault();
           return false;
         }
+        
       }
     };
 
@@ -238,32 +249,52 @@ const Quiz: React.FC<QuizProps> = ({
     }
   };
 
-  // Timer for remaining time
-  useEffect(() => {
-    if (isTimeBound && remainingTime !== null) {
-      const timer = setInterval(() => {
-        setRemainingTime((prev) => {
-          if (prev !== null && prev > 0) {
-            return prev - 1;
-          } else {
-            clearInterval(timer);
-            setShowResult(true);
-            handleQuizSubmit();
-            return prev;
-          }
-        });
-      }, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [isTimeBound, remainingTime]);
-
-  // Timer for elapsed time
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setElapsedTime((prev) => prev + 1);
+ // Timer for remaining time
+ useEffect(() => {
+  if (isTimeBound && remainingTime !== null) {
+    remainingTimeTimer.current = setInterval(() => {
+      setRemainingTime((prev) => {
+        if (prev !== null && prev > 0) {
+          return prev - 1;
+        } else {
+          clearInterval(remainingTimeTimer.current!); // Clear the timer when time is up
+          setShowResult(true);
+          handleQuizSubmit(); // Assuming this is your submission handler
+          return prev;
+        }
+      });
     }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+
+    return () => {
+      if (remainingTimeTimer.current) {
+        clearInterval(remainingTimeTimer.current);
+      }
+    };
+  }
+}, [isTimeBound, remainingTime]);
+
+// Timer for elapsed time
+useEffect(() => {
+  elapsedTimeTimer.current = setInterval(() => {
+    setElapsedTime((prev) => prev + 1);
+  }, 1000);
+
+  return () => {
+    if (elapsedTimeTimer.current) {
+      clearInterval(elapsedTimeTimer.current);
+    }
+  };
+}, []);
+
+// Function to stop the timers on exam submission
+const stopTimers = () => {
+  if (remainingTimeTimer.current) {
+    clearInterval(remainingTimeTimer.current);
+  }
+  if (elapsedTimeTimer.current) {
+    clearInterval(elapsedTimeTimer.current);
+  }
+};
 
   const onAnswerSelected = async (studentAnswer: string, index: number) => {
     setSelectedAnswerIndex(index);
@@ -333,6 +364,8 @@ const Quiz: React.FC<QuizProps> = ({
     } catch (error) {
       console.log('Failed to save response:', error);
     }
+
+    
   };
 
   const onClickNext = () => {
@@ -375,6 +408,7 @@ const Quiz: React.FC<QuizProps> = ({
 
     // Reset the timer for the next question
     setQuestionStartTime(Date.now());
+    
   };
 
   const getSelectedAnswerForQuestion = (questionId: number) => {
@@ -535,7 +569,12 @@ const Quiz: React.FC<QuizProps> = ({
                 </button>
                 <button
                   onClick={onClickNext}
-                  className="px-4 py-2 text-sm font-medium text-white rounded-md md:px-6 md:text-base bg-secondary-light hover:bg-gray-400"
+                  className={`px-4 py-2 text-sm font-medium text-white rounded-md md:px-6 md:text-base   ${
+                    questionStatuses[activeQuestion] === QuestionStatus.Attended
+                      ? 'bg-green-500 hover:green-600'
+                      : ' bg-secondary-light hover:bg-gray-400'
+                  }`}
+                  
                 >
                   {activeQuestion === questions.length - 1 ? 'Finish' : 'Next'}
                 </button>
