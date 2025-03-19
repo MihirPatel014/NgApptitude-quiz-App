@@ -21,12 +21,14 @@ const API_URL = "http://ngapptitudeapi-001-site1.ltempurl.com/"; // Replace with
 export const http = axios.create({
   baseURL: API_URL,
   headers: {
-    "Content-type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization"
   },
 });
 http.interceptors.request.use(
   (config) => {
-    const user  = lookInSession("user");
+    const user = lookInSession("user");
     if (user) {
       // Parse the user object to extract the token
       const parsedUser = JSON.parse(user);
