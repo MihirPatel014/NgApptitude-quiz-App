@@ -11,7 +11,7 @@ const COMPLETE_REQUEST_ORDER = 'complete-order-process';
 const VALIDATE_GIFT_CODE = 'validate-gift-code';
 // const API_URL = "https://localhost:44389/";
 
-const API_URL = "http://ngapptitudeapi-001-site1.ltempurl.com/"; 
+const API_URL = "https://ngapptitudeapi-001-site1.ltempurl.com/"; 
 export const ProcessPayment = async (data: PaymentModel) => {
 
     try {
