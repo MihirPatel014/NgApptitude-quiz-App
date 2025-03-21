@@ -37,7 +37,10 @@ const AnimatedForm = () => {
             : 'opacity-0 z-[1] pointer-events-none translate-y-full md:translate-y-0 md:translate-x-full'}
           top-0 h-[calc(100%-5rem)] md:h-full overflow-y-auto pb-20 md:pb-3 sm:mb-5`}
       >
-          <Registration />
+          {/* <Registration  setIST/> */}
+          <Registration setIsRightPanelActive={setIsRightPanelActive} />
+
+
         </div>
 
         {/* Sign In / Login Container */}

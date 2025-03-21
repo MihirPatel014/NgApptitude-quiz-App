@@ -9,13 +9,20 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { UserRegistrationResults } from '../../common/constant';
 import toast, { Toaster } from "react-hot-toast";
+import { useLoader } from '../../provider/LoaderProvider';
 
-export const Registration = () => {
+interface RegistrationProps {
+  setIsRightPanelActive: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) => {
+  // Now you can use setIsRightPanelActive inside the component
+
 
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [pincode, setPincode] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const {setLoading} =useLoader();
   const [formValues, setFormValues] = useState<UserRegistration>({
     email: "",
     password: "",
@@ -108,11 +115,13 @@ export const Registration = () => {
 
 
   const handleSubmit = async (e: React.FormEvent) => {
+    setLoading(true);
     e.preventDefault();
-    const errors = validate(formValues)
-
-    // if (validate(formValues).length > 0) {
-    if (Object.keys(errors).length > 0) return;
+    const errors = validate(formValues);
+    if (Object.keys(errors).length > 0) {
+      setLoading(false); // Stop loading if validation fails
+      return;
+    }
     try {
 
       const result = await registerUser(formValues);
@@ -120,7 +129,7 @@ export const Registration = () => {
         switch (result) {
           case UserRegistrationResults.Successful:
             toast.success("Registration successful! Redirecting to login...");
-            setTimeout(() => navigate("/login"), 2000); // Redirect after a short delay
+            setTimeout(() => setIsRightPanelActive(false), 2000); // Redirect after a short delay
             break;
 
           case UserRegistrationResults.ContactNoAlreadyExists:
@@ -128,7 +137,7 @@ export const Registration = () => {
             toast.success(
               "Your contact number or email already exists. Redirecting to login..."
             );
-            setTimeout(() => navigate("/login"), 2000); // Redirect after a short delay
+            setTimeout(() => setIsRightPanelActive(false), 2000); // Redirect after a short delay
             break;
 
           case UserRegistrationResults.PasswordPolicyNotMet:
@@ -149,6 +158,7 @@ export const Registration = () => {
         toast.error("An error occurred during registration.");
       }
     } catch (err: any) {
+      setLoading(false);
       console.log(err.message);
       toast.error('unable to register');
     } finally {
