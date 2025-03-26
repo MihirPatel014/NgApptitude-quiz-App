@@ -4,7 +4,7 @@ import { loginUser } from "../../services/authService";
 import { storeInSession } from "../../common/session";
 import { UserContext } from "../../provider/UserProvider";
 import { UserLogin } from "../../types/user";
-import { emailRegex, passwordRegex } from "../../common/constant";
+import { emailRegex, passwordRegex, userLoginResults } from "../../common/constant";
 import toast, { Toaster } from "react-hot-toast";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useLoader } from "../../provider/LoaderProvider";
@@ -19,7 +19,7 @@ const Login = () => {
   const [user, setUser] = useState<UserLogin>({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
 
- 
+
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -46,13 +46,49 @@ const Login = () => {
 
     try {
       const userResponse = await loginUser(user);
-
-      if (userResponse?.apiToken) {
-        storeInSession("user", userResponse);
-        setUserAuth(userResponse);
-        toast.success("Login Successful!");
-
-
+console.log(userResponse);
+      if (userResponse) {      
+        switch (Number(userResponse.loginResult)) {
+          case userLoginResults.Successful:
+            storeInSession("user", userResponse);
+            setUserAuth(userResponse);
+            toast.success("Login Successful!");
+            break;
+        
+          case userLoginResults.UserNotExist:
+            toast.error("User does not exist. Please check your details.");
+            break;
+        
+          case userLoginResults.WrongPassword:
+            toast.error("Incorrect password. Please try again.");
+            break;
+        
+          case userLoginResults.NotActive:
+            toast.error("Your account is not active. Please contact support.");
+            break;
+        
+          case userLoginResults.Deleted:
+            toast.error("Your account has been deleted. Please contact support.");
+            break;
+        
+          case userLoginResults.VerifyContactNoPending:
+            toast.error("Contact number verification is pending. Please verify.");
+            break;
+        
+          case userLoginResults.VerifyEmailPending:
+            toast.error("Email verification is pending. Please verify.");
+            break;
+      
+        
+          case userLoginResults.AccountLockout:
+            toast.error("Your account has been locked due to an invalid password. Please try again later.");
+            break;
+        
+          default:
+            toast.error("An unexpected error occurred. Please try again later.");
+            break;
+        }
+        
         // Delay for 2 seconds before navigation
         const timer = setTimeout(() => {
           setLoading(false);
@@ -61,12 +97,12 @@ const Login = () => {
 
         return () => clearTimeout(timer);
       } else {
-        toast.error("Invalid login credentials. Please try again.");
-        setLoading(false);
+        toast.error("Invalid login credentials. Please check your email and password.");
+      setLoading(false);
       }
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("An error occurred. Please try again.");
+      toast.error("An error occurred while logging in. Please try again.");
       setLoading(false);
     }
   }, [user, setUserAuth, navigate]);

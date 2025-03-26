@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { pincodeApi, registerUser } from "../../services/authService"
 import { Link } from 'react-router-dom';
 import { UserRegistration } from "../../types/user"
@@ -18,11 +18,12 @@ interface RegistrationProps {
 const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) => {
   // Now you can use setIsRightPanelActive inside the component
 
+  const formRef = useRef<HTMLDivElement>(null);
 
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [pincode, setPincode] = useState(0);
-  const {setLoading} =useLoader();
+  const { setLoading } = useLoader();
   const [formValues, setFormValues] = useState<UserRegistration>({
     email: "",
     password: "",
@@ -133,9 +134,14 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
             break;
 
           case UserRegistrationResults.ContactNoAlreadyExists:
+            toast.error(
+              "Your contact numberalready exists. Redirecting to login..."
+            );
+            setTimeout(() => setIsRightPanelActive(false), 2000); // Redirect after a short delay
+            break;
           case UserRegistrationResults.EmailAlreadyExists:
-            toast.success(
-              "Your contact number or email already exists. Redirecting to login..."
+            toast.error(
+              "Your  email already exists. Redirecting to login..."
             );
             setTimeout(() => setIsRightPanelActive(false), 2000); // Redirect after a short delay
             break;
@@ -163,6 +169,9 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
       toast.error('unable to register');
     } finally {
       setLoading(false);
+      if (formRef.current) {
+        formRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     }
 
   };
@@ -241,7 +250,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
       <Toaster />
       {/* <div className="flex items-center justify-center min-h-screen p-4 bg-gray-100">
         <div className="w-full p-6 bg-white border border-gray-200 rounded-lg shadow md:w-3/6 dark:bg-gray-800 dark:border-gray-700"> */}
-      <div>
+      <div ref={formRef}>
         <h1 className="mt-10 mb-4 text-3xl font-bold text-center">Student Register</h1>
         {/* <p className="mb-6 text-center">Please fill in your details to register</p> */}
       </div>
@@ -320,6 +329,8 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
               id="dateOfBirth"
               name="dateOfBirth"
               type="date"
+              min="1995-01-01"
+              max={new Date().toISOString().split("T")[0]}
               required
               onChange={(e) => handleChange(e)}
               // value={formValues.dateOfBirth.toDateString()}

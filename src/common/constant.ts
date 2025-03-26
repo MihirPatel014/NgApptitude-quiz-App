@@ -4,8 +4,9 @@ export enum userLoginResults {
     WrongPassword = 3,
     NotActive = 4,
     Deleted = 5,
-    VerifyContactNoPending = 5,
-    VerifyEmailPending = 5,
+    VerifyContactNoPending = 7,
+    VerifyEmailPending = 8,
+    AccountLockout = 6,
 };
 
 export enum UserRegistrationResults {

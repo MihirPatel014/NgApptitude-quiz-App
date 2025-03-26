@@ -18,7 +18,7 @@ const AnimatedForm = () => {
       <div
         className={`bg-white rounded-lg shadow-lg relative overflow-hidden w-full
           max-w-[1024px] 
-          h-[600px] sm:h-[700px] md:h-[550px] lg:h-[550px] xl:h-[550px] 2xl:h-[800px]
+          h-[600px] sm:h-[700px] md:h-[550px] lg:h-[550px] xl:h-[550px] 2xl:h-[650px]
           max-h-full`}
       >
         {/* Mobile Overlay (Only visible on small screens) */}
@@ -31,7 +31,7 @@ const AnimatedForm = () => {
         {/* Sign Up / Registration Container */}
         <div
          className={`absolute flex flex-col px-10 items-center justify-start md:justify-center transition-all duration-1
-           0 ease-in-out w-full md:w-1/2 md:pt-56 lg:pt-52 xl:pt-52 2xl:pt-10
+           0 ease-in-out w-full md:w-1/2 md:pt-56 lg:pt-52 xl:pt-46 2xl:pt-30
           ${isRightPanelActive 
             ? 'opacity-100 z-[5] translate-y-20 md:translate-y-0 md:translate-x-full' 
             : 'opacity-0 z-[1] pointer-events-none translate-y-full md:translate-y-0 md:translate-x-full'}
