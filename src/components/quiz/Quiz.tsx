@@ -12,14 +12,13 @@ import { AddUpdateUserExam, SubmitUserExam } from '../../services/examService';
 import { QuestionSumitStatus } from '../../common/constant';
 import toast, { Toaster } from 'react-hot-toast';
 import QuizResult from './QuizResutlPage';
+import { useLoader } from '../../provider/LoaderProvider';
 
 const QuestionStatus = {
   NotAttended: 0,
   Skipped: 1,
   Attended: 2,
 } as const;
-
-
 
 type QuestionStatusType = typeof QuestionStatus[keyof typeof QuestionStatus];
 
@@ -71,11 +70,13 @@ const Quiz: React.FC<QuizProps> = ({
   const [allCategories, setAllCategories] = useState<QuestionCategory[]>([]);
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
   const [questionStatuses, setQuestionStatuses] = useState<QuestionStatusType[]>([]);
+const { setLoading } = useLoader();
+  // New state for confirmation modal
+  const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
 
-
-    // Use refs to store the timers so that we can clear them when needed
-    const remainingTimeTimer = useRef<NodeJS.Timeout | null>(null);
-    const elapsedTimeTimer = useRef<NodeJS.Timeout | null>(null);
+  // Use refs to store the timers so that we can clear them when needed
+  const remainingTimeTimer = useRef<NodeJS.Timeout | null>(null);
+  const elapsedTimeTimer = useRef<NodeJS.Timeout | null>(null);
     
   const [userExamResponse, setUserExamResponse] = useState<UserExamResponse>({
     id: 0,
@@ -88,6 +89,7 @@ const Quiz: React.FC<QuizProps> = ({
 
   const handleQuizSubmit = async () => {
     stopTimers();
+    setLoading(true); // Show loader
     try {
       const finalScore = calculateScore();
       
@@ -106,21 +108,15 @@ const Quiz: React.FC<QuizProps> = ({
       };
 
       const result = await SubmitUserExam(submitExamData);
-      console.log("This is the submit exam response",result)
-      if (result) {
-        // Set showResult to true regardless of the API result
-        setShowResult(true);
-      } else {
-        // Still set showResult to true even if API fails, but show a message
-        setShowResult(true);
-        // toast.error('There was an issue submitting your exam, but your results are displayed.');
-      }
+      console.log("This is the submit exam response", result);
+      setShowResult(true);
     } catch (error) {
       console.log('Failed to submit exam:', error);
       toast.error('Failed to submit exam. Please try again.');
       setShowResult(true);
+    } finally {
+      setLoading(false); // Hide loader
     }
-    
   };
 
   useEffect(() => {
@@ -192,7 +188,6 @@ const Quiz: React.FC<QuizProps> = ({
           e.preventDefault();
           return false;
         }
-        
       }
     };
 
@@ -239,7 +234,6 @@ const Quiz: React.FC<QuizProps> = ({
           const fetchAllCategories = await GetAllquestionsCategory();
           if (fetchAllCategories) {
             setAllCategories(fetchAllCategories);
-            console.log("THis is all the categories", fetchAllCategories)
           }
         }
       }
@@ -249,52 +243,52 @@ const Quiz: React.FC<QuizProps> = ({
     }
   };
 
- // Timer for remaining time
- useEffect(() => {
-  if (isTimeBound && remainingTime !== null) {
-    remainingTimeTimer.current = setInterval(() => {
-      setRemainingTime((prev) => {
-        if (prev !== null && prev > 0) {
-          return prev - 1;
-        } else {
-          clearInterval(remainingTimeTimer.current!); // Clear the timer when time is up
-          setShowResult(true);
-          handleQuizSubmit(); // Assuming this is your submission handler
-          return prev;
+  // Timer for remaining time
+  useEffect(() => {
+    if (isTimeBound && remainingTime !== null) {
+      remainingTimeTimer.current = setInterval(() => {
+        setRemainingTime((prev) => {
+          if (prev !== null && prev > 0) {
+            return prev - 1;
+          } else {
+            clearInterval(remainingTimeTimer.current!); // Clear the timer when time is up
+            setShowResult(true);
+            handleQuizSubmit(); // Assuming this is your submission handler
+            return prev;
+          }
+        });
+      }, 1000);
+
+      return () => {
+        if (remainingTimeTimer.current) {
+          clearInterval(remainingTimeTimer.current);
         }
-      });
+      };
+    }
+  }, [isTimeBound, remainingTime]);
+
+  // Timer for elapsed time
+  useEffect(() => {
+    elapsedTimeTimer.current = setInterval(() => {
+      setElapsedTime((prev) => prev + 1);
     }, 1000);
 
     return () => {
-      if (remainingTimeTimer.current) {
-        clearInterval(remainingTimeTimer.current);
+      if (elapsedTimeTimer.current) {
+        clearInterval(elapsedTimeTimer.current);
       }
     };
-  }
-}, [isTimeBound, remainingTime]);
+  }, []);
 
-// Timer for elapsed time
-useEffect(() => {
-  elapsedTimeTimer.current = setInterval(() => {
-    setElapsedTime((prev) => prev + 1);
-  }, 1000);
-
-  return () => {
+  // Function to stop the timers on exam submission
+  const stopTimers = () => {
+    if (remainingTimeTimer.current) {
+      clearInterval(remainingTimeTimer.current);
+    }
     if (elapsedTimeTimer.current) {
       clearInterval(elapsedTimeTimer.current);
     }
   };
-}, []);
-
-// Function to stop the timers on exam submission
-const stopTimers = () => {
-  if (remainingTimeTimer.current) {
-    clearInterval(remainingTimeTimer.current);
-  }
-  if (elapsedTimeTimer.current) {
-    clearInterval(elapsedTimeTimer.current);
-  }
-};
 
   const onAnswerSelected = async (studentAnswer: string, index: number) => {
     setSelectedAnswerIndex(index);
@@ -359,13 +353,10 @@ const stopTimers = () => {
           ...result,
           responseData: JSON.stringify(updatedResponseData)
         });
-        console.log(`After Everyquestion ResponseData `, updatedResponse.responseData)
       }
     } catch (error) {
       console.log('Failed to save response:', error);
     }
-
-    
   };
 
   const onClickNext = () => {
@@ -386,8 +377,8 @@ const stopTimers = () => {
         updateImage(questions, nextQuestionIndex, setCurrentImage);
         setSelectedAnswerIndex(null);
       } else {
-        setShowResult(true);
-        handleQuizSubmit();
+        // If we're on the last question and it's answered, show confirmation modal
+        setShowConfirmModal(true);
       }
     } else {
       setQuestionStatuses(prevStatuses => {
@@ -408,7 +399,27 @@ const stopTimers = () => {
 
     // Reset the timer for the next question
     setQuestionStartTime(Date.now());
-    
+  };
+
+  // Function to check if all questions are answered
+  const areAllQuestionsAnswered = () => {
+    return !questionStatuses.includes(QuestionStatus.NotAttended) && 
+           !questionStatuses.includes(QuestionStatus.Skipped);
+  };
+
+  // Function to handle end quiz button click
+  const handleEndQuizClick = () => {
+    // If time-bound quiz, show confirmation modal
+    if (isTimeBound) {
+      setShowConfirmModal(true);
+    } else {
+      // If not time-bound, check if all questions are answered
+      if (areAllQuestionsAnswered()) {
+        setShowConfirmModal(true);
+      } else {
+        toast.error('Please answer all questions before submitting the quiz');
+      }
+    }
   };
 
   const getSelectedAnswerForQuestion = (questionId: number) => {
@@ -461,11 +472,43 @@ const stopTimers = () => {
 
   const { questionText, optionA, optionB, optionC, optionD, questionType } = questions[activeQuestion] || {};
 
+  // Get stats for confirmation modal
+  const answeredCount = questionStatuses.filter(status => status === QuestionStatus.Attended).length;
+  const skippedCount = questionStatuses.filter(status => status === QuestionStatus.Skipped).length;
+  const notAnsweredCount = questionStatuses.filter(status => status === QuestionStatus.NotAttended).length;
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-2 mx-auto bg-gray-100 md:p-4 max-w-7xl">
       <Toaster />
       {!showResult ? (
         <div>
+          {/* Confirmation Modal  */}
+                {showConfirmModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                  <div className="w-11/12 p-6 bg-white rounded-lg shadow-lg md:w-1/2 lg:w-1/3">
+                  <h2 className="mb-4 text-xl font-bold">Confirm Submission</h2>
+                  <p className="mb-4">Are you sure you want to end the quiz?</p>
+                  <div className="flex justify-end space-x-4">
+                    <button
+                    onClick={() => setShowConfirmModal(false)}
+                    className="px-4 py-2 text-gray-800 bg-gray-200 rounded-md hover:bg-gray-300"
+                    >
+                    Cancel
+                    </button>
+                    <button
+                    onClick={() => {
+                      setShowConfirmModal(false);
+                      handleQuizSubmit();
+                    }}
+                    className="px-4 py-2 text-white bg-red-500 rounded-md hover:bg-red-600"
+                    >
+                    End Quiz
+                    </button>
+                  </div>
+                  </div>
+                </div>
+                )}
+
           <div className="flex flex-col gap-4 lg:flex-row">
             {/* Main Quiz Container */}
             <div className="flex flex-col items-center p-3 bg-white border border-gray-200 rounded-lg shadow md:p-6 bg-custom-gradient lg:w-4/5">
@@ -508,8 +551,6 @@ const stopTimers = () => {
                   )}
                 </div>
               </div>
-
-
 
               {/* Question Section - Centered */}
               <div className='flex flex-col items-center px-5 '>
@@ -563,24 +604,22 @@ const stopTimers = () => {
                   onClick={onClickPrevious}
                   disabled={activeQuestion === 0}
                   className={`px-4 py-2 text-sm font-medium text-white rounded-md md:px-6 md:text-base 
-        ${activeQuestion === 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-secondary-light hover:bg-gray-400'}`}
+                  ${activeQuestion === 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-yellow-400 hover:bg-gray-400'}`}
                 >
                   Previous
                 </button>
                 <button
                   onClick={onClickNext}
-                  className={`px-4 py-2 text-sm font-medium text-white rounded-md md:px-6 md:text-base   ${
+                  className={`px-4 py-2 text-sm font-medium text-white rounded-md md:px-6 md:text-base ${
                     questionStatuses[activeQuestion] === QuestionStatus.Attended
                       ? 'bg-green-500 hover:green-600'
-                      : ' bg-secondary-light hover:bg-gray-400'
+                      : 'bg-secondary-light hover:bg-gray-400'
                   }`}
-                  
                 >
                   {activeQuestion === questions.length - 1 ? 'Finish' : 'Next'}
                 </button>
               </div>
             </div>
-
 
             {/* Question Navigator */}
             <div className="w-full p-3 mt-4 bg-white border border-gray-200 rounded-lg shadow lg:w-1/5 md:p-4 lg:mt-0">
@@ -623,13 +662,8 @@ const stopTimers = () => {
               </div>
 
               {/* End Quiz Button */}
-
               <button
-                onClick={() => {
-                  handleQuizSubmit();
-                  // Force showResult to true after a short delay, even if the API call is still processing
-                  setTimeout(() => setShowResult(true), 500);
-                }}
+                onClick={handleEndQuizClick}
                 className="w-full px-4 py-2 mt-4 text-white bg-red-500 rounded-md hover:bg-red-600"
               >
                 End Quiz
@@ -646,13 +680,10 @@ const stopTimers = () => {
           totalQuestions={questions.length}
           timeTaken={elapsedTime}
           onReturnToQuizPage={() => navigate('/quizPage')}
-          hasNextExam={false} // Set this based on your logic to determine if there's a next exam
-        // onNextExam={() => handleNextExam()} // Implement this function if needed
+          hasNextExam={false}
         />
-
-      )
-      }
-    </div >
+      )}
+    </div>
   );
 };
 
