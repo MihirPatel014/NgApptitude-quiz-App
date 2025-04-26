@@ -5,7 +5,8 @@ import toast from "react-hot-toast";
 
 // const API_URL = "https://676d2bf00e299dd2ddfead4d.mockapi.io/api/"; // Replace with your actual MockAPI URL
 // const API_URL = "https://localhost:44389/"; // Replace with your actual MockAPI URL
-const API_URL = "https://ngapptitudeapi-001-site1.ltempurl.com/"; // Replace with your actual MockAPI URL
+// const API_URL = "https://ngapptitudeapi-001-site1.ltempurl.com/"; // Replace with your actual MockAPI URL
+const API_URL = "http://adminng-001-site1.mtempurl.com/"; // Replace with your actual MockAPI URL
 
 
 
