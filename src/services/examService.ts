@@ -122,6 +122,7 @@ export const SubmitUserExam = async (data: SubmitExam) => {
   );
   if (result.success) {
     return result.data; // Return the package data
+    console.log(result);
   } else {
     console.log("Error fetching examByID:", result.errors);
     return null;

@@ -36,9 +36,9 @@ export const Subscription = () => {
         fetchUserDetails();
     }, [userAuth?.userId]);
 
-    const handleResult = (packageId: number, exams: UserExamInfoModel[]) => {
-        const examProgressIds = exams.filter(exam => exam.isCompleted).map(exam => exam.examProgressId);
-        navigate("/result", { state: { examProgressIds } });
+    const handleResult = (examId: number) => {
+        navigate("/resultnew", { state: { examId } });
+        // navigate("/result", { state: { examId } });
     };
 
     return (
@@ -87,7 +87,7 @@ export const Subscription = () => {
                                         <div className="flex justify-end">
 
                                             <button
-                                                onClick={() => handleResult(pkg.packageId, pkg.exams)}
+                                                onClick={() => handleResult(pkg.id)}
                                                 className="px-4 py-2 text-sm text-blue-500 border border-blue-500 rounded hover:bg-blue-500 hover:text-white"
                                             >
                                                 View Result

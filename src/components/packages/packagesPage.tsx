@@ -126,7 +126,7 @@ const PackagesPage = () => {
             setAppliedCoupons((prev) => ({ ...prev, [selectedPackageId]: couponCode }));
             toast.success(`Gift Code applied! New amount: ₹${discountedAmount.toFixed(2)}`);
         } else {
-            toast.error("Invalid Gift Code.");
+            toast.error("Invalid Or Gift Code Is expired.");
         }
 
         setIsCouponDialogOpen(false);

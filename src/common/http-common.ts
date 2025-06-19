@@ -4,12 +4,10 @@ import { lookInSession } from "./session";
 import toast from "react-hot-toast";
 
 // const API_URL = "https://676d2bf00e299dd2ddfead4d.mockapi.io/api/"; // Replace with your actual MockAPI URL
-// const API_URL = "https://localhost:44389/"; // Replace with your actual MockAPI URL
-// const API_URL = "https://ngapptitudeapi-001-site1.ltempurl.com/"; // Replace with your actual MockAPI URL
+//  const API_URL = "https://localhost:44389/"; // Replace with your actual MockAPI URL
+// const API_URL = "http://ngapptitudeapipanel/"; 
 
-const API_URL = "https://aping.runasp.net/"; // Replace with your actual MockAPI URL
-
-
+const API_URL = "http://ngapptitudeapipanel/"; 
 // export default axios.create({
 //   baseURL: API_URL,
 //   headers: {
@@ -22,14 +20,12 @@ const API_URL = "https://aping.runasp.net/"; // Replace with your actual MockAPI
 export const http = axios.create({
   baseURL: API_URL,
   headers: {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization"
+    "Content-type": "application/json",
   },
 });
 http.interceptors.request.use(
   (config) => {
-    const user = lookInSession("user");
+    const user  = lookInSession("user");
     if (user) {
       // Parse the user object to extract the token
       const parsedUser = JSON.parse(user);

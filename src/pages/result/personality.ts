@@ -6,9 +6,31 @@ export interface Personality {
     guidingValues: string[];
 }
 
+export interface PersonalityApiModel {
+    name: string;
+    contactNo: string;
+    email: string;
+    age: number;
+    birthdate: string | null;
+    education: string | null;
+    topAptitude1: string;
+    topAptitude2: string;
+    topPersonality1: string;
+    topPersonality2: string;
+    resultSummaries: {
+        personalityTypes: string;
+        aptitudeType: string;
+        interestAreas: string;
+        stream: string;
+        potentialCareerFields: string;
+    }[];
+    aptitudeScores: Record<string, number>;
+    personalityScores: Record<string, number>;
+}
+
 // Personality Data Object
 export const personalityDataList: Record<string, Personality> = {
-    realistic: {
+    "Realistic": {
         title: "Realistic Personality",
         description: [
             "Realistic individuals are hands-on learners who thrive in the physical world. You are someone who is action-oriented, you appreciate tasks that lead to tangible results. You excel in practical environments where you can work with tools, machinery, and the outdoors, preferring physical activities over theoretical discussions.",
@@ -29,7 +51,7 @@ export const personalityDataList: Record<string, Personality> = {
         ],
         guidingValues: ["Tradition", "Practicality", "Common sense", "Reliability", "Stability", "Efficiency"],
     },
-    investigative: {
+    "Investigative": {
         title: "Investigative Personality",
         description: [
             "You have an investigative personality, which means you’re naturally analytical and curious. You thrive on studying and solving complex problems, often using scientific or analytical methods. You prefer to work independently and value accuracy and detail in everything you do.",
@@ -52,7 +74,7 @@ export const personalityDataList: Record<string, Personality> = {
         ],
         guidingValues: ["Independence", "Curiosity", "Learning", "Analysis", "Insight", "Logic", "Exploration"]
     },
-    artistic: {
+    "Artistic": {
         title: "Artistic Personality",
         description: [
             "You are someone who prioritizes creativity and self-expression. You thrive in environments that foster innovation and allow you to express yourself personally. Unstructured tasks that encourage imagination and originality are where you feel most at home.",
@@ -74,7 +96,7 @@ export const personalityDataList: Record<string, Personality> = {
         ],
         guidingValues: ["Creativity", "Expression", "Innovation", "Originality", "Independence", "Imagination", "Originality"]
     },
-    social: {
+    "Social": {
         title: "Social Personality",
         description: [
             "Social individuals are naturally drawn to helping others and thrive in collaborative environments. You likely find fulfilment in supporting and nurturing relationships, and your motivation comes from a genuine desire to make a positive impact on the lives of those around you.",
@@ -98,7 +120,7 @@ export const personalityDataList: Record<string, Personality> = {
         ],
         guidingValues: ["Empathy", "Support", "Kindness", "Service to others", "Cooperation", "Communication", "Collaboration"]
     },
-    enterprising: {
+    "Enterprising": {
         title: "Enterprising Personality",
         description: [
             "You are an enterprising individual, driven by ambition and leadership. You thrive on influencing others and often excel in competitive environments. Your ambition pushes you to take on leadership roles, and you’re naturally drawn to opportunities where you can make an impact and drive results.",
@@ -121,7 +143,7 @@ export const personalityDataList: Record<string, Personality> = {
         ],
         guidingValues: ["Risk taking", "Competition", "Influence", "Leadership", "Ambition", "Persuasion", "Initiative"]
     },
-    conventional: {
+    "Conventional": {
         title: "Conventional Personality",
         description: [
             "Conventional individuals thrive in structured environments. You likely enjoy working with data, details, and established procedures. This preference for organization allows you to focus effectively on tasks and processes.",
