@@ -9,10 +9,8 @@ import { GiftCodeResponseModel } from "../types/package";
 const PROCESS_REQUEST_ORDER = 'process-request-order';
 const COMPLETE_REQUEST_ORDER = 'complete-order-process';
 const VALIDATE_GIFT_CODE = 'validate-gift-code';
-// const API_URL = "https://localhost:44389/";
-// const API_URL = "https://apingapptitude-001-site1.anytempurl.com/"; 
-// const API_URL = "http://ngapptitudeapipanel/"; 
-const API_URL = "http://ngapptitudeapipanel/"; 
+ 
+const API_URL = process.env.REACT_APP_API_URL;
 export const ProcessPayment = async (data: PaymentModel) => {
 
     try {

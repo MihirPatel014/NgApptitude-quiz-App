@@ -2,13 +2,12 @@ import axios from "axios";
 import { apiRequest } from "../common/requestwithdata";
 import { PaymentModel, MerchantOrderDetails } from "../types/payment";
 import { ExamResultApiModel, FinalResultViewModel } from "../types/result";
+const API_URL = process.env.REACT_APP_API_URL;
 
 
 // api/User/Register
 const PROCESS_REQUEST_ORDER = 'process-request-order';
 const COMPLETE_REQUEST_ORDER = 'complete-order-process';
-// const API_URL = "https://localhost:44389/";
-const API_URL = "http://ngapptitudeapipanel/"; 
 
 const RESULT_ROUTE = "api/ExamResult";
 const STUDENT_RESULT_BY_EXAM_PROGRESS_ID = '/GetExamResultByExamProgressId';
