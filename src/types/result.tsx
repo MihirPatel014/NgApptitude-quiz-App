@@ -39,3 +39,32 @@ export interface ExamResultApiModel {
     createdAtUtc: string;
     updatedAtUtc: string;
 }
+
+export interface FinalResultViewModel {
+    name: string;
+    contactNo: string;
+    email: string;
+    age: number;
+    birthdate: string; // ISO string format recommended (e.g., '2025-06-16')
+    education: string;
+  
+    topAptitude1: string;
+    topAptitude2: string;
+  
+    topPersonality1: string;
+    topPersonality2: string;
+  
+    resultSummaries: ResultSummary[];
+  
+    aptitudeScores: { [key: string]: number };
+    personalityScores: { [key: string]: number };
+  }
+  
+  export interface ResultSummary {
+    personalityTypes: string;
+    aptitudeType: string;
+    interestAreas: string;
+    stream: string;
+    potentialCareerFields: string;
+  }
+  

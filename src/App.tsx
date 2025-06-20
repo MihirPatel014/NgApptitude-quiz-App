@@ -2,7 +2,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Registeration from "./components/auth/Registration";
 
-import Missing from "./pages/Missing";
+import Missing from "./pages/missing";
 // import Login from "./components/auth/Login";
 import AnimatedForm from "./components/auth/AnimatedForm";
 import QuizPage from "./components/quiz/QuizPage";
@@ -25,9 +25,10 @@ import { QuizWrapper } from "./components/quiz/QuizWrapper";
 import Home from "./pages/home";
 import Subscription from "./components/user/subscription";
 import Result1 from "./pages/result/Result"
-import { ResultWrapper } from "./pages/result/ResultWrapper";
+// Removed: import { ResultWrapper } from "./pages/result/ResultWrapper";
 import { LoaderProvider } from "./provider/LoaderProvider";
 import Loader from "./common/Loader";
+import ResultNew from "./pages/result/Resultnew";
 
 
 
@@ -54,7 +55,8 @@ function App() {
               <Route path="/edit-profile" element={<EditProfile />} />
 
 
-              <Route path='/result' element={<ResultWrapper />} />
+              <Route path='/result' element={<Result1 />} />
+              <Route path='/resultnew' element={<ResultNew />} />
               <Route path='/loader' element={<Loader />} />
 
 

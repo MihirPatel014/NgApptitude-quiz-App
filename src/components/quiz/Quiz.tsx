@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {  useNavigate } from 'react-router-dom';
 import {
   GetAllquestionsCategory,
   getQuestionbyExamAndSectionId,
@@ -565,7 +565,7 @@ const { setLoading } = useLoader();
                 {/* Question Image */}
                 {currentImage && (
                   <img
-                    src={currentImage}
+                    src={currentImage || ""}
                     alt="Question Visual"
                     className="w-full mb-4 mr-2 rounded-lg md:w-2/5"
                   />

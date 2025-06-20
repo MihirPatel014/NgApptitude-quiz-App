@@ -5,10 +5,32 @@ export interface Aptitude {
     importanceInCareer: string[];
 }
 
+export interface AptitudeResultSummary {
+    personalityTypes: string;
+    aptitudeType: string;
+    interestAreas: string;
+    stream: string;
+    potentialCareerFields: string;
+}
 
+export interface AptitudeApiModel {
+    name: string;
+    contactNo: string;
+    email: string;
+    age: number;
+    birthdate: string | null;
+    education: string | null;
+    topAptitude1: string;
+    topAptitude2: string;
+    topPersonality1: string;
+    topPersonality2: string;
+    resultSummaries: AptitudeResultSummary[];
+    aptitudeScores: Record<string, number>;
+    personalityScores: Record<string, number>;
+}
 
 export const aptitudeDataList: Record<string, Aptitude> = {
-    spatialReasoning: {
+    "Spatial reasoning": {
         title: "Spatial Reasoning",
         description: [
             "Spatial reasoning refers to the ability to visualize and manipulate objects in a three-dimensional space. It involves understanding how objects relate to one another in terms of space, orientation, and movement."
@@ -22,7 +44,7 @@ export const aptitudeDataList: Record<string, Aptitude> = {
             "Spatial reasoning is crucial in fields where visualizing complex structures and relationships is essential. Strong spatial reasoning skills can enhance problem-solving abilities and creativity in these disciplines."
         ]
     },
-    verbalReasoning: {
+    "Verbal Ability": {
         title: "Verbal Reasoning",
         description: [
             "Verbal reasoning is the ability to understand, analyse, and interpret written information. It involves comprehension of language and the ability to think logically using words."
@@ -36,7 +58,7 @@ export const aptitudeDataList: Record<string, Aptitude> = {
             "Verbal reasoning is vital in careers that require strong communication skills. Professionals in these fields must be able to articulate ideas clearly, understand complex texts, and engage in persuasive communication."
         ]
     },
-    numericalReasoning: {
+    "Numerical Aptitude": {
         title: "Numerical Reasoning",
         description: [
             "Numerical reasoning is the ability to understand, interpret, and analyse numerical data. It involves working with numbers, performing calculations, and interpreting quantitative information."
@@ -50,7 +72,7 @@ export const aptitudeDataList: Record<string, Aptitude> = {
             "Numerical reasoning is essential in fields where quantitative data plays a significant role. Strong numerical skills enable professionals to make informed decisions based on data analysis and statistical inference."
         ]
     },
-    formPerception: {
+    "Form Perception": {
         title: "Form Perception",
         description: [
             "Form perception refers to the ability to recognize and identify shapes, patterns, and designs. It involves visual discrimination and the ability to perceive objects as they relate to one another in terms of shape and size."
@@ -64,7 +86,7 @@ export const aptitudeDataList: Record<string, Aptitude> = {
             "Form perception is important in artistic fields. Professionals in these areas often need to create, analyse, or modify shapes and forms, making strong form perception skills critical."
         ]
     },
-    clericalPerception: {
+    "Clerical Perception": {
         title: "Clerical Perception",
         description: [
             "Clerical perception refers to the ability to quickly and accurately identify details, patterns, and discrepancies in written data. It involves meticulous attention to detail and the ability to process information efficiently."
@@ -79,3 +101,61 @@ export const aptitudeDataList: Record<string, Aptitude> = {
         ]
     }
 };
+
+export interface PersonalityResultSummary {
+    personalityTypes: string;
+    aptitudeType: string;
+    interestAreas: string;
+    stream: string;
+    potentialCareerFields: string;
+}
+
+export interface AptitudeResult {
+    title: string;
+    description: string[];
+    keyComponents: string[];
+    importanceInCareer: string[];
+    score: number;
+}
+
+export interface PersonalityResult {
+    title: string;
+    description: string[];
+    keyComponents: string[];
+    importanceInCareer: string[];
+    score: number;
+}
+
+export interface DetailedResults {
+    aptitudeResults: AptitudeResult[];
+    personalityResults: PersonalityResult[];
+    summary: PersonalityResultSummary;
+}export interface PersonalityResultSummary {
+    personalityTypes: string;
+    aptitudeType: string;
+    interestAreas: string;
+    stream: string;
+    potentialCareerFields: string;
+}
+
+export interface AptitudeResult {
+    title: string;
+    description: string[];
+    keyComponents: string[];
+    importanceInCareer: string[];
+    score: number;
+}
+
+export interface PersonalityResult {
+    title: string;
+    description: string[];
+    keyComponents: string[];
+    importanceInCareer: string[];
+    score: number;
+}
+
+export interface DetailedResults {
+    aptitudeResults: AptitudeResult[];
+    personalityResults: PersonalityResult[];
+    summary: PersonalityResultSummary;
+}
