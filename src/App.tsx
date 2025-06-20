@@ -2,7 +2,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Registeration from "./components/auth/Registration";
 
-import Missing from "./pages/missing";
+import Missing from "./pages/Missing";
 // import Login from "./components/auth/Login";
 import AnimatedForm from "./components/auth/AnimatedForm";
 import QuizPage from "./components/quiz/QuizPage";
