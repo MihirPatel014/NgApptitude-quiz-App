@@ -32,7 +32,13 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "start:prod": "npm run build && serve -s build",
+    "start:local": "react-scripts start"
+
+  },
+  "devDependencies": {
+    "serve": "^14.2.3"
   },
   "eslintConfig": {
     "extends": [

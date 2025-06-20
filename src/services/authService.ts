@@ -48,6 +48,14 @@ export const removeAll = () => {
 
 export const loginUser = async (data: UserLogin) => {
 
+// console.log("Environment:", process.env.REACT_APP_API_URL);
+// console.log("API URL:", process.env.REACT_APP_API_URL);
+// console.log("Test Var:", process.env.REACT_APP_TEST);
+
+// const fullUrl = `${USERS_URL}${LOGIN_URL}`;
+// console.log("➡️ Full API Request URL:", fullUrl);
+// console.log("📦 Request Data:", data);
+
   const response = await http.post<ApiResponse<User>>(`${USERS_URL}${LOGIN_URL}`, data);
   const result = handleApiResponse(response.data);
 
