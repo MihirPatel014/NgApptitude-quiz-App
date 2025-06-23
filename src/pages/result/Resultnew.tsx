@@ -245,7 +245,7 @@ const ResultNew: React.FC = () => {
               <div className="mb-12 text-center" >
                 <div className="flex items-center justify-center gap-12 mb-6">
                   <div>
-                    <img src={ngLogo1} alt="Sahivana" className="h-20" />
+                    <img src={ngLogo1} alt="Sahivana" className="h-24 w-36" />
                   </div>
 
                   <div>
@@ -334,8 +334,7 @@ const ResultNew: React.FC = () => {
                         <p className="mt-2 font-bold text-indigo-700">
                           Santvana Psychological Well-Being Centre<br />
                           National Group, India
-                          2024
-                        </p>
+                         </p>
                       </div>
                     </div>
                   </div>
@@ -355,7 +354,7 @@ const ResultNew: React.FC = () => {
                         <TrendingUp className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <h2 className="text-2xl font-bold text-white">Aptitude Assessment 11</h2>
+                        <h2 className="text-2xl font-bold text-white">Aptitude Assessment </h2>
                         <p className="text-green-100">Your natural abilities and potential</p>
                       </div>
                     </div>
