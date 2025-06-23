@@ -45,3 +45,6 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 $ npm install --legacy-peer-deps
 
 $ npm start
+
+
+set REACT_APP_ENV=production && set REACT_APP_API_URL=https://aping.runasp.net/ && npm run build
