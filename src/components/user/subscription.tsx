@@ -42,7 +42,7 @@ export const Subscription = () => {
     };
 
     return (
-        <div className="flex flex-col min-h-0 p-6 mx-auto mt-20 mb-5 bg-white rounded-lg shadow-md max-w-7xl">
+        <div className="flex flex-col min-h-0 p-6 mx-auto mt-4 mb-5 bg-white rounded-lg shadow-md max-w-7xl">
             {userPackages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10">
                     <p className="mb-4 text-lg font-semibold text-gray-600">You have no active subscriptions.</p>
@@ -84,7 +84,7 @@ export const Subscription = () => {
                             return (
                                 <div key={pkg.userPackageId && (pkg.completionDate?.toString() || "")} className="p-5 border rounded-lg shadow-sm">
                                     {allExamsCompleted && (
-                                        <div className="flex justify-end">
+                                        <div className="flex justify-end my-2">
 
                                             <button
                                                 onClick={() => handleResult(pkg.id)}
@@ -95,9 +95,11 @@ export const Subscription = () => {
                                         </div>
                                     )}
 
-                                    <div className="flex items-start justify-between mb-4">
+                                    <div
+                                        className="grid items-start grid-cols-1 gap-6 mb-4 md:grid-cols-2"
+                                    >
                                         {/* Left Side: Package Info */}
-                                        <div className="w-1/2">
+                                        <div>
                                             <h4 className="text-xl font-semibold">
                                                 {pkg.packageName}
                                                 <span className={`px-3 ml-1 py-2 text-xs rounded-full text-white ${pkg.isCompleted ? "bg-red-500" : "bg-green-500"}`}>
@@ -106,18 +108,17 @@ export const Subscription = () => {
                                             </h4>
                                             <p className="mt-1 text-sm text-gray-500">
                                                 <span className="mt-1 text-sm text-gray-500">
-
                                                     Billing On: {formatDate(pkg.startedDate || "")}
                                                 </span>
                                             </p>
                                             <p className="text-sm text-gray-500">Price: {pkg.packagePrice || "N/A"}</p>
                                             {/* <p className="text-sm text-gray-500">
-                                            Status: {pkg.status} ({pkg.completionPercentage}% completed)
-                                        </p> */}
+            Status: {pkg.status} ({pkg.completionPercentage}% completed)
+        </p> */}
                                         </div>
 
                                         {/* Right Side: Related Exams */}
-                                        <div className="w-1/2">
+                                        <div>
                                             <h5 className="mb-2 text-lg font-semibold">Exams Included:</h5>
                                             <ul className="space-y-2">
                                                 {pkg.exams.map((exam) => (

@@ -180,7 +180,7 @@ export const NavbarAndSidebar = () => {
             </aside>
 
             {/* Main content area with responsive padding */}
-            <div className="p-4 transition-all duration-300 sm:ml-64 mt-14">
+            <div className="p-1 transition-all duration-300 sm:ml-64 mt-14">
                 <Outlet />
             </div>
         </>

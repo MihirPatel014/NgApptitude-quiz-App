@@ -154,8 +154,8 @@ const QuizPage = () => {
 
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4">
-      <div className="w-full max-w-4xl p-6 rounded-lg min-h-svh">
+    <div className="flex items-center justify-center min-h-screen pt-4">
+      <div className="w-full max-w-4xl p-1 rounded-lg min-h-svh">
 
         {/* Mobile Dropdown for Tabs */}
         <div className="sm:hidden">
@@ -207,7 +207,7 @@ const QuizPage = () => {
                 : packageInfo.exams.some(exam => exam.isCompleted)  // Show only if it has completed exams
             )
             .map((packageInfo) => (
-              <div key={packageInfo.id} className="p-6 bg-white rounded-lg shadow-md">
+              <div key={packageInfo.id} className="p-3 bg-white rounded-lg shadow-md">
 
                 {/* Show package name only in the "Completed" tab */}
                 {activeTab === "completed" && (
@@ -245,7 +245,7 @@ const QuizPage = () => {
                         {/* Collapsible Sections */}
                         {expandedExamIds.has(exam.examId) && (
                           <div className="mt-4">
-                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div className="grid grid-cols-2 gap-3 md:grid-cols-2 sm:grid-cols-2">
                               {examSections.get(exam.examId)
                                 ?.filter(section => section.noOfQuestion > 0 || (section.questions && section.questions.length > 0))
                                 .map((section) => (
