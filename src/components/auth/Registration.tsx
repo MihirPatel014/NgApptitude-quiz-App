@@ -10,7 +10,8 @@ import { useNavigate } from "react-router-dom";
 import { UserRegistrationResults } from '../../common/constant';
 import toast, { Toaster } from "react-hot-toast";
 import { useLoader } from '../../provider/LoaderProvider';
-
+import Datepicker from "tailwind-datepicker-react"
+import CommonDatePicker from '../datepicker';
 interface RegistrationProps {
   setIsRightPanelActive: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -106,7 +107,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
 
     setFormValues({
       ...formValues,
-      [name]: name === 'dateOfBirth' ? new Date(value).toISOString().split('T')[0] : value, // Special handling for 'dob' field
+      [name]: name === 'dateOfBirth' ? new Date(value) : value, // Special handling for 'dob' field
     });
     setFormErrors((prevErrors) => ({
       ...prevErrors,
@@ -325,23 +326,28 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
 
           <div className="space-y-2">
             <label htmlFor="dateOfBirth" className="text-sm font-medium text-gray-700">Date of Birth</label>
-            <input
-              id="dateOfBirth"
-              name="dateOfBirth"
-              type="date"
-              min="1995-01-01"
-              max={new Date().toISOString().split("T")[0]}
-              required
-              onChange={(e) => handleChange(e)}
-              // value={formValues.dateOfBirth.toDateString()}
-              // value={formValues.dateOfBirth.toISOString().split("T")[0]}
-              // defaultValue={formValues.dateOfBirth.toDateString()}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {formErrors.dateOfBirth && new Date(formErrors.dateOfBirth).toDateString() !== new Date().toDateString() && (
-              <span className="text-xs text-red-500">{new Date(formErrors.dateOfBirth).toDateString()}</span>
+            <CommonDatePicker
+      id="dateOfBirth"
+      name="dateOfBirth"
+      value={formValues.dateOfBirth}
+      onChange={(date: Date) =>
+        handleChange({
+          target: {
+            name: "dateOfBirth",
+            value: date.toISOString().split("T")[0],
+          },
+        } as React.ChangeEvent<HTMLInputElement>)
+      }
+      min="1995-01-01"
+      max={new Date().toISOString().split("T")[0]}
+    />
+    {formErrors.dateOfBirth && (
+              <span className="text-xs text-red-500">
+                {typeof formErrors.dateOfBirth === "string"
+                  ? formErrors.dateOfBirth
+                  : ""}
+              </span>
             )}
-
           </div>
           <div className="space-y-2">
             <label htmlFor="class" className="text-sm font-medium text-gray-700">Grade/Class</label>
