@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {  useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   GetAllquestionsCategory,
   getQuestionbyExamAndSectionId,
@@ -70,14 +70,14 @@ const Quiz: React.FC<QuizProps> = ({
   const [allCategories, setAllCategories] = useState<QuestionCategory[]>([]);
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
   const [questionStatuses, setQuestionStatuses] = useState<QuestionStatusType[]>([]);
-const { setLoading } = useLoader();
+  const { setLoading } = useLoader();
   // New state for confirmation modal
   const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
 
   // Use refs to store the timers so that we can clear them when needed
   const remainingTimeTimer = useRef<NodeJS.Timeout | null>(null);
   const elapsedTimeTimer = useRef<NodeJS.Timeout | null>(null);
-    
+
   const [userExamResponse, setUserExamResponse] = useState<UserExamResponse>({
     id: 0,
     userExamProgressId: userExamProgressId,
@@ -92,7 +92,7 @@ const { setLoading } = useLoader();
     setLoading(true); // Show loader
     try {
       const finalScore = calculateScore();
-      
+
       const submitExamData: SubmitExam = {
         id: Number(userExamProgressId),
         userId: Number(userId),
@@ -403,8 +403,8 @@ const { setLoading } = useLoader();
 
   // Function to check if all questions are answered
   const areAllQuestionsAnswered = () => {
-    return !questionStatuses.includes(QuestionStatus.NotAttended) && 
-           !questionStatuses.includes(QuestionStatus.Skipped);
+    return !questionStatuses.includes(QuestionStatus.NotAttended) &&
+      !questionStatuses.includes(QuestionStatus.Skipped);
   };
 
   // Function to handle end quiz button click
@@ -469,7 +469,7 @@ const { setLoading } = useLoader();
     const seconds = time % 60;
     return `${addLeadingZero(minutes)}:${addLeadingZero(seconds)}`;
   };
-const [showMobileNav, setShowMobileNav] = useState(false);
+  const [showMobileNav, setShowMobileNav] = useState(false);
   const { questionText, optionA, optionB, optionC, optionD, questionType } = questions[activeQuestion] || {};
 
   // Get stats for confirmation modal
@@ -479,315 +479,314 @@ const [showMobileNav, setShowMobileNav] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50">
-  <Toaster />
-  {!showResult ? (
-    <div>
-      {/* Confirmation Modal */}
-      {showConfirmModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="w-11/12 p-6 bg-white rounded-lg shadow-lg md:w-1/2 lg:w-1/3">
-            <h2 className="mb-4 text-xl font-bold">Confirm Submission</h2>
-            <p className="mb-4">Are you sure you want to end the quiz?</p>
-            <div className="flex justify-end space-x-4">
-              <button
-                onClick={() => setShowConfirmModal(false)}
-                className="px-4 py-2 text-gray-800 bg-gray-200 rounded-md hover:bg-gray-300"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setShowConfirmModal(false);
-                  handleQuizSubmit();
-                }}
-                className="px-4 py-2 text-white bg-red-500 rounded-md hover:bg-red-600"
-              >
-                End Quiz
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white border-b shadow-sm">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-2xl font-semibold text-gray-800">{examName}</h1>
-          {allCategories && (
-            <span className="px-3 py-1 text-sm text-gray-600 bg-gray-100 rounded-full">
-              Section: {
-                allCategories.find(
-                  (category) =>
-                    category.id === questions[activeQuestion]?.questionCategoryId
-                )?.categoryName || ""
-              }
-            </span>
-          )}
-        </div>
-        <div className="flex items-center space-x-4">
-          <div className="flex flex-col text-right">
-            <div className="items-center">
-              <span className="font-medium text-gray-600">Elapsed Time: </span>
-              <span className="font-mono font-medium text-gray-600">
-                {formatTime(elapsedTime)}
-              </span>
-            </div>
-            {isTimeBound && (
-              <div className="items-center">
-                <span className="font-medium text-gray-600">Total Time: </span>
-                <span className="font-medium text-gray-600">
-                  {timeLimit > 0 ? `${timeLimit} minutes` : "Unlimited"}
-                </span>
+      <Toaster />
+      {!showResult ? (
+        <div>
+          {/* Confirmation Modal */}
+          {showConfirmModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+              <div className="w-11/12 p-6 bg-white rounded-lg shadow-lg md:w-1/2 lg:w-1/3">
+                <h2 className="mb-4 text-xl font-bold">Confirm Submission</h2>
+                <p className="mb-4">Are you sure you want to end the quiz?</p>
+                <div className="flex justify-end space-x-4">
+                  <button
+                    onClick={() => setShowConfirmModal(false)}
+                    className="px-4 py-2 text-gray-800 bg-gray-200 rounded-md hover:bg-gray-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowConfirmModal(false);
+                      handleQuizSubmit();
+                    }}
+                    className="px-4 py-2 text-white bg-red-500 rounded-md hover:bg-red-600"
+                  >
+                    End Quiz
+                  </button>
+                </div>
               </div>
-            )}
-          </div>
-          <button
-            onClick={() => setShowMobileNav(true)}
-            className="p-2 bg-gray-100 rounded-md lg:hidden hover:bg-gray-200"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-        </div>
-      </div>
+            </div>
+          )}
 
-      <div className="flex h-[calc(100vh-80px)]">
-        {/* Main Quiz Container */}
-        <div className="flex flex-col flex-1">
-          <div className="flex-1 p-6 lg:p-8">
-            <div className="max-w-2xl mx-auto">
-              {/* Question Header */}
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-lg font-semibold text-gray-700">
-                    Q No: {activeQuestion + 1}/{questions.length}
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 bg-white border-b shadow-sm">
+            <div className="flex items-center space-x-4">
+              <h1 className="text-2xl font-semibold text-gray-800">{examName}</h1>
+              {allCategories && (
+                <span className="px-3 py-1 text-sm text-gray-600 bg-gray-100 rounded-full">
+                  Section: {
+                    allCategories.find(
+                      (category) =>
+                        category.id === questions[activeQuestion]?.questionCategoryId
+                    )?.categoryName || ""
+                  }
+                </span>
+              )}
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="flex flex-col text-right">
+                <div className="items-center">
+                  <span className="font-medium text-gray-600">Elapsed Time: </span>
+                  <span className="font-mono font-medium text-gray-600">
+                    {formatTime(elapsedTime)}
                   </span>
-                  <div className="w-full h-2 max-w-xs ml-4 bg-gray-200 rounded-full">
-                    <div 
-                      className="h-2 transition-all duration-300 bg-indigo-600 rounded-full"
-                      style={{ width: `${((activeQuestion + 1) / questions.length) * 100}%` }}
-                    ></div>
+                </div>
+                {isTimeBound && (
+                  <div className="items-center">
+                    <span className="font-medium text-gray-600">Total Time: </span>
+                    <span className="font-medium text-gray-600">
+                      {timeLimit > 0 ? `${timeLimit} minutes` : "Unlimited"}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => setShowMobileNav(true)}
+                className="p-2 bg-gray-100 rounded-md lg:hidden hover:bg-gray-200"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div className="flex h-[calc(100vh-80px)]">
+            {/* Main Quiz Container */}
+            <div className="flex flex-col flex-1">
+              <div className="flex-1 p-6 lg:p-8">
+                <div className="max-w-2xl mx-auto">
+                  {/* Question Header */}
+                  <div className="mb-8">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-lg font-semibold text-gray-700">
+                        Q No: {activeQuestion + 1}/{questions.length}
+                      </span>
+                      <div className="w-full h-2 max-w-xs ml-4 bg-gray-200 rounded-full">
+                        <div
+                          className="h-2 transition-all duration-300 bg-indigo-600 rounded-full"
+                          style={{ width: `${((activeQuestion + 1) / questions.length) * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Question */}
+                  <div className="p-8 mb-8 bg-white shadow-lg rounded-xl">
+                    <h2 className="mb-8 text-xl font-medium leading-relaxed text-gray-800">
+                      {questionText}
+                    </h2>
+
+                    {/* Answer Options */}
+                    <div className="space-y-4">
+                      {questions && questions.length > 0 ? (
+                        [optionA, optionB, optionC, optionD]
+                          .slice(0, questionType === 1 ? 2 : 4)
+                          .map((option, index) => {
+                            const optionLetter = String.fromCharCode(65 + index);
+                            const isSelected = selectedAnswerIndex === index ||
+                              getSelectedAnswerForQuestion(questions[activeQuestion].id) === optionLetter;
+
+                            return (
+                              <button
+                                key={index}
+                                onClick={() => onAnswerSelected(optionLetter, index)}
+                                className={`w-full p-4 rounded-lg border-2 text-left font-medium transition-all duration-200 ${isSelected
+                                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                  }`}
+                              >
+                                <span className="inline-block w-8 h-8 mr-3 text-sm font-bold leading-8 text-center text-indigo-600 bg-indigo-100 rounded-full">
+                                  {optionLetter}
+                                </span>
+                                {option}
+                              </button>
+                            );
+                          })
+                      ) : (
+                        <p>No questions available</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Question */}
-              <div className="p-8 mb-8 bg-white shadow-lg rounded-xl">
-                <h2 className="mb-8 text-xl font-medium leading-relaxed text-gray-800">
-                  {questionText}
-                </h2>
-
-                {/* Answer Options */}
-                <div className="space-y-4">
-                  {questions && questions.length > 0 ? (
-                    [optionA, optionB, optionC, optionD]
-                      .slice(0, questionType === 1 ? 2 : 4)
-                      .map((option, index) => {
-                        const optionLetter = String.fromCharCode(65 + index);
-                        const isSelected = selectedAnswerIndex === index ||
-                          getSelectedAnswerForQuestion(questions[activeQuestion].id) === optionLetter;
-
-                        return (
-                          <button
-                            key={index}
-                            onClick={() => onAnswerSelected(optionLetter, index)}
-                            className={`w-full p-4 rounded-lg border-2 text-left font-medium transition-all duration-200 ${
-                              isSelected
-                                ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                            }`}
-                          >
-                            <span className="inline-block w-8 h-8 mr-3 text-sm font-bold leading-8 text-center text-indigo-600 bg-indigo-100 rounded-full">
-                              {optionLetter}
-                            </span>
-                            {option}
-                          </button>
-                        );
-                      })
-                  ) : (
-                    <p>No questions available</p>
-                  )}
+              {/* Navigation Controls */}
+              <div className="p-6 bg-white border-t">
+                <div className="flex justify-between max-w-2xl mx-auto">
+                  <button
+                    onClick={onClickPrevious}
+                    disabled={activeQuestion === 0}
+                    className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${activeQuestion === 0 ? 'bg-gray-100 text-gray-400' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                      }`}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    <span>Previous</span>
+                  </button>
+                  <button
+                    onClick={onClickNext}
+                    className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${questionStatuses[activeQuestion] === QuestionStatus.Attended
+                        ? 'bg-green-500 hover:bg-green-600 text-white'
+                        : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                      }`}
+                  >
+                    <span>{activeQuestion === questions.length - 1 ? 'Finish' : 'Next'}</span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Navigation Controls */}
-          <div className="p-6 bg-white border-t">
-            <div className="flex justify-between max-w-2xl mx-auto">
-              <button
-                onClick={onClickPrevious}
-                disabled={activeQuestion === 0}
-                className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-                  activeQuestion === 0 ? 'bg-gray-100 text-gray-400' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                }`}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                <span>Previous</span>
-              </button>
-              <button
-                onClick={onClickNext}
-                className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
-                  questionStatuses[activeQuestion] === QuestionStatus.Attended
-                    ? 'bg-green-500 hover:bg-green-600 text-white'
-                    : 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                }`}
-              >
-                <span>{activeQuestion === questions.length - 1 ? 'Finish' : 'Next'}</span>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
+            {/* Question Navigator - Desktop */}
+            <div className="hidden bg-white border-l shadow-sm lg:block w-80">
+              <div className="p-6">
+                <h3 className="mb-4 text-lg font-semibold text-gray-800">Question Navigator</h3>
 
-        {/* Question Navigator - Desktop */}
-        <div className="hidden bg-white border-l shadow-sm lg:block w-80">
-          <div className="p-6">
-            <h3 className="mb-4 text-lg font-semibold text-gray-800">Question Navigator</h3>
-            
-            {/* Question Grid */}
-            <div className="grid grid-cols-5 gap-2 mb-6" style={{ overflowY: 'auto', maxHeight: '400px' }}>
-              {questions.map((_, index) => {
-                let bgColorClass = 'bg-gray-200 text-gray-700 hover:bg-gray-300';
-                if (questionStatuses[index] === QuestionStatus.Skipped) {
-                  bgColorClass = 'bg-yellow-500 text-white';
-                } else if (questionStatuses[index] === QuestionStatus.Attended) {
-                  bgColorClass = 'bg-green-500 text-white';
-                }
-                if (index === activeQuestion) {
-                  bgColorClass = 'bg-blue-500 text-white';
-                }
+                {/* Question Grid */}
+                <div className="grid grid-cols-5 gap-2 mb-6" style={{ overflowY: 'auto', maxHeight: '400px' }}>
+                  {questions.map((_, index) => {
+                    let bgColorClass = 'bg-gray-200 text-gray-700 hover:bg-gray-300';
+                    if (questionStatuses[index] === QuestionStatus.Skipped) {
+                      bgColorClass = 'bg-yellow-500 text-white';
+                    } else if (questionStatuses[index] === QuestionStatus.Attended) {
+                      bgColorClass = 'bg-green-500 text-white';
+                    }
+                    if (index === activeQuestion) {
+                      bgColorClass = 'bg-blue-500 text-white';
+                    }
 
-                return (
-                  <button
-                    key={index}
-                    onClick={() => jumpToQuestion(index)}
-                    className={`w-10 h-10 rounded-lg text-sm font-medium transition-all duration-200 ${bgColorClass}`}
-                  >
-                    {index + 1}
-                  </button>
-                );
-              })}
-            </div>
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => jumpToQuestion(index)}
+                        className={`w-10 h-10 rounded-lg text-sm font-medium transition-all duration-200 ${bgColorClass}`}
+                      >
+                        {index + 1}
+                      </button>
+                    );
+                  })}
+                </div>
 
-            {/* Legend */}
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center space-x-3">
-                <FaCircle className="text-green-500" />
-                <span className="text-gray-600">Answered</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <FaCircle className="text-yellow-500" />
-                <span className="text-gray-600">Skipped</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <FaCircle className="text-gray-300" />
-                <span className="text-gray-600">Not Attended</span>
-              </div>
-            </div>
+                {/* Legend */}
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-center space-x-3">
+                    <FaCircle className="text-green-500" />
+                    <span className="text-gray-600">Answered</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <FaCircle className="text-yellow-500" />
+                    <span className="text-gray-600">Skipped</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <FaCircle className="text-gray-300" />
+                    <span className="text-gray-600">Not Attended</span>
+                  </div>
+                </div>
 
-            {/* End Quiz Button */}
-            <button
-              onClick={handleEndQuizClick}
-              className="w-full px-4 py-3 mt-8 font-medium text-white transition-colors duration-200 bg-red-500 rounded-lg hover:bg-red-600"
-            >
-              End Quiz
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Navigation Modal */}
-      {showMobileNav && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 lg:hidden">
-          <div className="absolute top-0 right-0 h-full bg-white shadow-xl w-80">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-800">Question Navigator</h3>
+                {/* End Quiz Button */}
                 <button
-                  onClick={() => setShowMobileNav(false)}
-                  className="p-2 rounded-md hover:bg-gray-100"
+                  onClick={handleEndQuizClick}
+                  className="w-full px-4 py-3 mt-8 font-medium text-white transition-colors duration-200 bg-red-500 rounded-lg hover:bg-red-600"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  End Quiz
                 </button>
               </div>
-              
-              {/* Question Grid */}
-              <div className="grid grid-cols-5 gap-2 mb-6" style={{ overflowY: 'auto', maxHeight: '300px' }}>
-                {questions.map((_, index) => {
-                  let bgColorClass = 'bg-gray-200 text-gray-700 hover:bg-gray-300';
-                  if (questionStatuses[index] === QuestionStatus.Skipped) {
-                    bgColorClass = 'bg-yellow-500 text-white';
-                  } else if (questionStatuses[index] === QuestionStatus.Attended) {
-                    bgColorClass = 'bg-green-500 text-white';
-                  }
-                  if (index === activeQuestion) {
-                    bgColorClass = 'bg-blue-500 text-white';
-                  }
-
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        jumpToQuestion(index);
-                        setShowMobileNav(false);
-                      }}
-                      className={`w-10 h-10 rounded-lg text-sm font-medium transition-all duration-200 ${bgColorClass}`}
-                    >
-                      {index + 1}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Legend */}
-              <div className="mb-8 space-y-3 text-sm">
-                <div className="flex items-center space-x-3">
-                  <FaCircle className="text-green-500" />
-                  <span className="text-gray-600">Answered</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <FaCircle className="text-yellow-500" />
-                  <span className="text-gray-600">Skipped</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <FaCircle className="text-gray-300" />
-                  <span className="text-gray-600">Not Attended</span>
-                </div>
-              </div>
-
-              {/* End Quiz Button */}
-              <button
-                onClick={handleEndQuizClick}
-                className="w-full px-4 py-3 font-medium text-white transition-colors duration-200 bg-red-500 rounded-lg hover:bg-red-600"
-              >
-                End Quiz
-              </button>
             </div>
           </div>
+
+          {/* Mobile Navigation Modal */}
+          {showMobileNav && (
+            <div className="fixed inset-0 z-50 bg-black bg-opacity-50 lg:hidden">
+              <div className="absolute top-0 right-0 h-full bg-white shadow-xl w-80">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold text-gray-800">Question Navigator</h3>
+                    <button
+                      onClick={() => setShowMobileNav(false)}
+                      className="p-2 rounded-md hover:bg-gray-100"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Question Grid */}
+                  <div className="grid grid-cols-5 gap-2 mb-6" style={{ overflowY: 'auto', maxHeight: '300px' }}>
+                    {questions.map((_, index) => {
+                      let bgColorClass = 'bg-gray-200 text-gray-700 hover:bg-gray-300';
+                      if (questionStatuses[index] === QuestionStatus.Skipped) {
+                        bgColorClass = 'bg-yellow-500 text-white';
+                      } else if (questionStatuses[index] === QuestionStatus.Attended) {
+                        bgColorClass = 'bg-green-500 text-white';
+                      }
+                      if (index === activeQuestion) {
+                        bgColorClass = 'bg-blue-500 text-white';
+                      }
+
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => {
+                            jumpToQuestion(index);
+                            setShowMobileNav(false);
+                          }}
+                          className={`w-10 h-10 rounded-lg text-sm font-medium transition-all duration-200 ${bgColorClass}`}
+                        >
+                          {index + 1}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Legend */}
+                  <div className="mb-8 space-y-3 text-sm">
+                    <div className="flex items-center space-x-3">
+                      <FaCircle className="text-green-500" />
+                      <span className="text-gray-600">Answered</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <FaCircle className="text-yellow-500" />
+                      <span className="text-gray-600">Skipped</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <FaCircle className="text-gray-300" />
+                      <span className="text-gray-600">Not Attended</span>
+                    </div>
+                  </div>
+
+                  {/* End Quiz Button */}
+                  <button
+                    onClick={handleEndQuizClick}
+                    className="w-full px-4 py-3 font-medium text-white transition-colors duration-200 bg-red-500 rounded-lg hover:bg-red-600"
+                  >
+                    End Quiz
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
+      ) : (
+        <QuizResult
+          examId={examId}
+          userId={userId}
+          examName={examName}
+          answered={questionStatuses.filter(status => status === QuestionStatus.Attended).length}
+          notAnswered={questionStatuses.filter(status => status === QuestionStatus.NotAttended).length}
+          skipped={questionStatuses.filter(status => status === QuestionStatus.Skipped).length}
+          totalQuestions={questions.length}
+          timeTaken={elapsedTime}
+          onReturnToQuizPage={() => navigate('/quizPage')}
+
+        />
       )}
     </div>
-  ) : (
-    <QuizResult
-      examName={examName}         
-      answered={questionStatuses.filter(status => status === QuestionStatus.Attended).length}
-      notAnswered={questionStatuses.filter(status => status === QuestionStatus.NotAttended).length}
-      skipped={questionStatuses.filter(status => status === QuestionStatus.Skipped).length}
-      totalQuestions={questions.length}
-      timeTaken={elapsedTime}
-      onReturnToQuizPage={() => navigate('/quizPage')}
-      hasNextExam={false}
-    />
-  )}
-</div>
   );
 };
 

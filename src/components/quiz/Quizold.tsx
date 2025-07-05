@@ -684,7 +684,7 @@ const { setLoading } = useLoader();
           totalQuestions={questions.length}
           timeTaken={elapsedTime}
           onReturnToQuizPage={() => navigate('/quizPage')}
-          hasNextExam={false}
+          
         />
       )}
     </div>

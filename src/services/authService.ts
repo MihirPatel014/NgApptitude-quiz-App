@@ -4,6 +4,7 @@ import { ApiResponse, handleApiResponse } from "../common/http-common";
 import http from "../common/http-common"
 import { apiRequest } from "../common/requestwithdata";
 import { AddUserToPackageApiModel, User, userDetails, UserInfoModel, UserLogin, UserPackage, UserPackageInfoModel, UserProfileUpdate, UserRegistration } from "../types/user"
+import { Grade } from "../types/grade";
 
 //Backend api Url
 const SECRET_KEY = 'your-secret-key';
@@ -21,7 +22,9 @@ const Update_USER_DETAILS = "/UpdateUserDetails"
 const ADD_USER_TO_PACKAGE = "/AddUserToPackage"
 const GET_USER_FULL_INFO_BY_USERID = "/GetUserFullInfoByUserId"
 const GET_USER_PACKAGE_INFO_BY_USERID = "/GetUserPackageInfoByUserId"
-
+ 
+const API_URL = process.env.REACT_APP_API_URL;
+const GRADE_URL = "api/Grade/GetAllGrades";
 const getAll = () => {
   return http.get<Array<userDetails>>(`/${USERS_URL}`);
 };
@@ -192,5 +195,19 @@ export const GetUserPackageInfoByUserId = async (userId: number) => {
       console.log("Error fetching examByID:", result.errors);
       return null;
     }
+  }
+};
+
+export const getAllGrades = async (): Promise<Grade[] | null> => {
+  try {
+    const response = await axios.get<Grade[]>(`${API_URL}${GRADE_URL}`);
+    // post(`${API_URL}${PROCESS_REQUEST_ORDER}
+    if (response.status === 200 && Array.isArray(response.data)) {
+      return response.data;
+    }
+    return null;
+  } catch (error) {
+    console.log("Error fetching grades:", error);
+    return null;
   }
 };

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { pincodeApi, registerUser } from "../../services/authService"
+import { getAllGrades, pincodeApi, registerUser } from "../../services/authService"
 import { Link } from 'react-router-dom';
 import { UserRegistration } from "../../types/user"
 import { emailRegex, phoneRegex, passwordRegex } from "../../common/constant";
@@ -12,6 +12,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { useLoader } from '../../provider/LoaderProvider';
 import Datepicker from "tailwind-datepicker-react"
 import CommonDatePicker from '../datepicker';
+import { Grade } from '../../types/grade';
 interface RegistrationProps {
   setIsRightPanelActive: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -22,6 +23,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
   const formRef = useRef<HTMLDivElement>(null);
 
   const navigate = useNavigate();
+  const [grades, setGrades] = useState<Grade[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [pincode, setPincode] = useState(0);
   const { setLoading } = useLoader();
@@ -68,7 +70,13 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
       fetchCityAndState(Number(value));
     }
   };
-
+  useEffect(() => {
+    const fetchGrades = async () => {
+      const data = await getAllGrades();
+      if (data) setGrades(data);
+    };
+    fetchGrades();
+  }, []);
   const fetchCityAndState = async (pincode: number) => {
     try {
       const response = await pincodeApi(pincode)
@@ -189,12 +197,9 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
     if (!values.password) {
       errors.password = 'Password is required';
 
-    } else if (values.password.length < 6) {
+    } else if (values.password.length < 5) {
       errors.password = 'Password must be at least 6 characters';
-    } else if (!passwordRegex.test(values.password)) {
-      errors.password = "Password must be at least 8 characters long, include at least one uppercase letter, one lowercase letter, one number, and one special character."
-
-    }
+    } 
 
     if (!values.name) {
       errors.name = ' name is required';
@@ -327,21 +332,21 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
           <div className="space-y-2">
             <label htmlFor="dateOfBirth" className="text-sm font-medium text-gray-700">Date of Birth</label>
             <CommonDatePicker
-      id="dateOfBirth"
-      name="dateOfBirth"
-      value={formValues.dateOfBirth}
-      onChange={(date: Date) =>
-        handleChange({
-          target: {
-            name: "dateOfBirth",
-            value: date.toISOString().split("T")[0],
-          },
-        } as React.ChangeEvent<HTMLInputElement>)
-      }
-      min="1995-01-01"
-      max={new Date().toISOString().split("T")[0]}
-    />
-    {formErrors.dateOfBirth && (
+              id="dateOfBirth"
+              name="dateOfBirth"
+              value={formValues.dateOfBirth}
+              onChange={(date: Date) =>
+                handleChange({
+                  target: {
+                    name: "dateOfBirth",
+                    value: date.toISOString().split("T")[0],
+                  },
+                } as React.ChangeEvent<HTMLInputElement>)
+              }
+              min="1995-01-01"
+              max={new Date().toISOString().split("T")[0]}
+            />
+            {formErrors.dateOfBirth && (
               <span className="text-xs text-red-500">
                 {typeof formErrors.dateOfBirth === "string"
                   ? formErrors.dateOfBirth
@@ -359,10 +364,16 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="" disabled>Choose Grade</option>
+              {/* <option value="" disabled>Choose Grade</option>
               <option value="Grade 1">Grade 1</option>
               <option value="Grade 2">Grade 2</option>
-              <option value="Grade 3">Grade 3</option>
+              <option value="Grade 3">Grade 3</option> */}
+              <option value="" disabled>Choose Grade</option>
+              {grades.map((grade) => (
+                <option key={grade.id} value={grade.name}>
+                  {grade.name}
+                </option>
+              ))}
             </select>
             {formErrors.class && <span className="text-xs text-red-500">{formErrors.class}</span>}
           </div>

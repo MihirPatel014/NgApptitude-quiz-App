@@ -118,6 +118,7 @@ const QuizPage = () => {
         const fetchedExam = await getExamInfoByExamId(examId);
         examQuestions = fetchedExam?.sections?.flatMap(section => section.questions) || [];
       }
+// In QuizPage.tsx or wherever you render <Quiz />
 
       // Navigate to the quiz page
       navigate('/quiz', {
