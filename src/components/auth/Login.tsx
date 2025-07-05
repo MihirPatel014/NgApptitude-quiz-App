@@ -36,13 +36,7 @@ const Login = () => {
       return;
     }
 
-    if (!passwordRegex.test(user.password)) {
-      toast.error(
-        "Password must be at least 8 characters long, include one uppercase, one lowercase, one number, and one special character."
-      );
-      setLoading(false);
-      return;
-    }
+ 
 
     try {
       const userResponse = await loginUser(user);
