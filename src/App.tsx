@@ -48,8 +48,8 @@ function App() {
           {/* <Route path="/login" element={<PhoneOtp />} /> */}
           <Route element={<ProtectedRoute />}>
             <Route element={<NavbarAndSidebar />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/subscription" element={<Subscription />} />
+              {/* <Route path="/" element={<Home />} /> */}
+              <Route path="/" element={<Subscription />} />
               <Route path="/quizpage" element={<QuizPage />} />
               <Route path="/packages" element={<PackagesPage />} />
               <Route path="/edit-profile" element={<EditProfile />} />

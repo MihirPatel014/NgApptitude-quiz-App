@@ -18,7 +18,7 @@ const AnimatedForm = () => {
       <div
         className={`bg-white rounded-lg shadow-lg relative overflow-hidden w-full
           max-w-[1024px] 
-          h-[600px] sm:h-[700px] md:h-[550px] lg:h-[550px] xl:h-[550px] 2xl:h-[650px]
+          h-[600px] sm:h-[700px] md:h-[550px] lg:h-[550px]  2xl:h-[650px]
           max-h-full`}
       >
         {/* Mobile Overlay (Only visible on small screens) */}
