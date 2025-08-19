@@ -9,7 +9,7 @@ export const QuizWrapper: React.FC = () => {
     // If no state is provided or it's missing required properties, redirect to QuizPage
     if (!quizProps || !quizProps.examId || !quizProps.userId) {
         console.log("Invalid quiz access attempt. Missing required quiz parameters.");
-        return <Navigate to="/quizpage" replace />;
+        return <Navigate to="/" />;
     }
 
     return <Quiz {...quizProps} />;

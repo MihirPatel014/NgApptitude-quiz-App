@@ -62,8 +62,8 @@ export const NavbarAndSidebar = () => {
             {/* Navbar */}
             <nav className="fixed top-0 z-50 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
                 <div className="px-3 py-3 lg:px-5 lg:pl-3">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center justify-start rtl:justify-end">
+                    <div className="flex justify-between items-center">
+                        <div className="flex justify-start items-center rtl:justify-end">
                             <button 
                                 onClick={toggleSidebar}
                                 type="button" 
@@ -76,7 +76,7 @@ export const NavbarAndSidebar = () => {
                             </button>
                             <a href="/" className="flex ms-2 md:me-24">
                                 <img width="50" height="50" src="https://img.icons8.com/bubbles/100/checklist.png" alt="NGAptitudeLogo" className="w-auto h-8" />
-                                <span className="self-center ml-2 text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">NGAptitude</span>
+                                <span className="self-center ml-2 text-xl font-semibold whitespace-nowrap sm:text-2xl dark:text-white">NGAptitude</span>
                             </a>
                         </div>
 
@@ -95,7 +95,7 @@ export const NavbarAndSidebar = () => {
                             {isDropdownOpen && (
                                 <div
                                     id="dropdownAvatar"
-                                    className="absolute z-10 mt-2 bg-white divide-y divide-gray-100 rounded-lg shadow-md right-2 top-12 w-44 dark:bg-gray-700 dark:divide-gray-600"
+                                    className="absolute right-2 top-12 z-10 mt-2 w-44 bg-white rounded-lg divide-y divide-gray-100 shadow-md dark:bg-gray-700 dark:divide-gray-600"
                                 >
                                     <div className="px-4 py-3 text-sm text-gray-900 dark:text-white">
                                         <div>{userAuth ? userAuth.email.split("@")[0] : ""}</div>
@@ -140,13 +140,13 @@ export const NavbarAndSidebar = () => {
                 {screenWidth < 640 && (
                     <button 
                         onClick={toggleSidebar}
-                        className="absolute text-gray-500 top-3 right-3 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                        className="absolute top-3 right-3 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                     >
                         <IoClose size={24} />
                     </button>
                 )}
                 
-                <div className="h-full px-3 pb-4 overflow-y-auto bg-white dark:bg-gray-800">
+                <div className="overflow-y-auto px-3 pb-4 h-full bg-white dark:bg-gray-800">
                     <ul className="space-y-2 font-medium">
                         {/* <li>
                             <a href="/" onClick={() => setSidebarOpen(false)} className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
@@ -158,21 +158,16 @@ export const NavbarAndSidebar = () => {
                             </a>
                         </li> */}
                         <li>
-                            <a href="/subscription" onClick={() => setSidebarOpen(false)} className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                            <a href="/" onClick={() => setSidebarOpen(false)} className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                                 <FaRegCalendar size={20} className='w-5 h-5 text-gray-500 transition duration-75 shrink-0 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white' />
-                                <span className="flex-1 ms-3 whitespace-nowrap">Dashboard</span>
+                                <span className="flex-1 whitespace-nowrap ms-3">Dashboard</span>
                             </a>
                         </li>
-                        <li>
-                            <a href="/quizpage" onClick={() => setSidebarOpen(false)} className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                                <MdQuiz size={20} className='w-5 h-5 text-gray-500 transition duration-75 shrink-0 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white' />
-                                <span className="flex-1 ms-3 whitespace-nowrap">Exams</span>
-                            </a>
-                        </li>
+                     
                         <li>
                             <a href="/edit-profile" onClick={() => setSidebarOpen(false)} className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                                 <FaUser size={20} className='w-5 h-5 text-gray-500 transition duration-75 shrink-0 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white' />
-                                <span className="flex-1 ms-3 whitespace-nowrap">Edit Profile</span>
+                                <span className="flex-1 whitespace-nowrap ms-3">Edit Profile</span>
                             </a>
                         </li>
                     </ul>
@@ -180,7 +175,7 @@ export const NavbarAndSidebar = () => {
             </aside>
 
             {/* Main content area with responsive padding */}
-            <div className="p-1 transition-all duration-300 sm:ml-64 mt-14">
+            <div className="p-1 mt-14 transition-all duration-300 sm:ml-64">
                 <Outlet />
             </div>
         </>

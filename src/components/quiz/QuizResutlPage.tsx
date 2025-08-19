@@ -3,9 +3,11 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { GetUserPackageInfoByUserId } from '../../services/authService';
 import { getExamInfoByExamId } from '../../services/examService';
 import { useLoader } from '../../provider/LoaderProvider';
-interface QuizResultProps {
+
+export interface QuizResultProps {
   examId?: number;
   userId?: number;
+  userPackageId?: number;
   examName: string;
   totalQuestions: number;
   answered: number;
@@ -19,6 +21,7 @@ interface QuizResultProps {
 const QuizResult: React.FC<QuizResultProps> = ({
   examId,
   userId,
+   userPackageId: userPackageId,
   examName,
   totalQuestions,
   answered,
@@ -33,6 +36,7 @@ const QuizResult: React.FC<QuizResultProps> = ({
   const currentExamId = examId ?? location.state?.examId;
   const currentUserId = userId ?? location.state?.userId;
   const [nextExam, setNextExam] = useState<any>(null);
+  const [currentPackageId, setCurrentPackageId] = useState<number | null>(null);
   const { setLoading } = useLoader();
   // Convert seconds to minutes and seconds format
   const formatTimeTaken = (seconds: number): string => {
@@ -41,17 +45,24 @@ const QuizResult: React.FC<QuizResultProps> = ({
     return `${minutes}m ${remainingSeconds}s`;
   };
 
-   useEffect(() => {
+  useEffect(() => {
     const fetchNextExam = async () => {
       setLoading(true);
       try {
         if (!currentUserId || !currentExamId) return;
         const packages = await GetUserPackageInfoByUserId(currentUserId);
-        if(!packages || packages.length === 0) {return}
+        if (!packages || packages.length === 0) { return }
         // Find the package containing the current exam
         const currentPackage = packages.find(pkg =>
           pkg.exams.some(exam => exam.examId === currentExamId)
         );
+        if (!currentPackage) {
+          setCurrentPackageId(null);
+          return;
+        }
+        setCurrentPackageId(currentPackage.id);
+        
+        console.log("This is the current package",currentPackage);
         if (!currentPackage) return;
         // Find any other available exam in the same package
         const availableExams = currentPackage.exams.filter(
@@ -105,14 +116,14 @@ const QuizResult: React.FC<QuizResultProps> = ({
     }
   };
 
-   return (
-    <div className="flex items-center justify-center min-h-screen p-4 bg-gray-100">
-      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
+  return (
+    <div className="flex justify-center items-center p-4 min-h-screen bg-gray-100">
+      <div className="p-6 w-full max-w-md bg-white rounded-lg shadow-lg">
         <div className="text-center">
           <h2 className="mb-2 text-2xl font-semibold text-gray-800">🎉 Exam Completed!</h2>
           <h3 className="mb-4 text-xl font-medium text-gray-700">{examName}</h3>
 
-          <div className="p-4 mb-4 rounded-lg bg-gray-50">
+          <div className="p-4 mb-4 bg-gray-50 rounded-lg">
             <div className="flex justify-between mb-2">
               <span className="text-gray-600">Answered:</span>
               <span className="font-semibold">{answered} / {totalQuestions}</span>
@@ -132,34 +143,33 @@ const QuizResult: React.FC<QuizResultProps> = ({
           </div>
 
           <div className="grid grid-cols-2 gap-3 mt-6">
-            <button
+            {/* <button
               onClick={onReturnToQuizPage}
               className="px-4 py-2 text-sm font-medium text-white bg-gray-500 rounded-md hover:bg-gray-600"
             >
-              Back to Exams
-            </button>
+              Home
+            </button> */}
 
             <Link to="/">
-              <button className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600">
+              <button className="px-4 py-2 w-full text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600">
                 Home
               </button>
             </Link>
-          </div>
+            {nextExam && (
+              <button onClick={handleNextExam} className="px-4 py-2 w-full text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600">
+                Next Exam
+              </button>
+            )}
+            {!nextExam && currentPackageId && (
+              <Link
+                to={`/resultnew`} state={{ packageId: currentPackageId }}
 
-          {/* Show Next Exam Button Only if there's another exam */}
-          {/* {hasNextExam && onNextExam && (
-            <button
-              onClick={onNextExam}
-              className="w-full px-4 py-2 mt-3 text-sm font-medium text-white bg-green-500 rounded-md hover:bg-green-600"
-            >
-              Start Next Exam
-            </button>
-          )} */}
-          {nextExam && (
-            <button onClick={handleNextExam} className="btn btn-primary">
-              Next Exam
-            </button>
-          )}
+                className="px-4 py-2 w-full text-sm text-center text-blue-500 rounded border border-blue-500 hover:bg-blue-500 hover:text-white"
+              >
+                View Result
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </div>

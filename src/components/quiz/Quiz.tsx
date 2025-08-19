@@ -11,7 +11,7 @@ import { QuizAnswerModel, SubmitExam, UserExamResponse } from '../../types/exam'
 import { AddUpdateUserExam, SubmitUserExam } from '../../services/examService';
 import { QuestionSumitStatus } from '../../common/constant';
 import toast, { Toaster } from 'react-hot-toast';
-import QuizResult from './QuizResutlPage';
+
 import { useLoader } from '../../provider/LoaderProvider';
 
 const QuestionStatus = {
@@ -59,7 +59,7 @@ const Quiz: React.FC<QuizProps> = ({
   const navigate = useNavigate();
   const [activeQuestion, setActiveQuestion] = useState<number>(0);
   const [selectedAnswer, setSelectedAnswer] = useState<QuizAnswerModel[]>([]);
-  const [showResult, setShowResult] = useState<boolean>(false);
+
   const [selectedAnswerIndex, setSelectedAnswerIndex] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -109,11 +109,11 @@ const Quiz: React.FC<QuizProps> = ({
 
       const result = await SubmitUserExam(submitExamData);
       console.log("This is the submit exam response", result);
-      setShowResult(true);
+      showQuizResult();
     } catch (error) {
       console.log('Failed to submit exam:', error);
       toast.error('Failed to submit exam. Please try again.');
-      setShowResult(true);
+
     } finally {
       setLoading(false); // Hide loader
     }
@@ -142,7 +142,7 @@ const Quiz: React.FC<QuizProps> = ({
   // Prevent navigation/refresh when quiz is in progress
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (!showResult) {
+      if (true) {
         e.preventDefault();
         e.returnValue = '';
         return '';
@@ -150,7 +150,7 @@ const Quiz: React.FC<QuizProps> = ({
     };
 
     const handlePopState = (e: PopStateEvent) => {
-      if (!showResult) {
+      if (true) {
         e.preventDefault();
         window.history.pushState(null, '', window.location.pathname);
         const confirmExit = window.confirm(
@@ -172,28 +172,28 @@ const Quiz: React.FC<QuizProps> = ({
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [showResult, navigate]);
+  }, [navigate]);
 
   // Prevent refresh shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!showResult) {
-        // Prevent F5 key
-        if (e.key === 'F5') {
-          e.preventDefault();
-          return false;
-        }
-        // Prevent Ctrl+R
-        if (e.key === 'r' && (e.ctrlKey || e.metaKey)) {
-          e.preventDefault();
-          return false;
-        }
+
+      // Prevent F5 key
+      if (e.key === 'F5') {
+        e.preventDefault();
+        return false;
       }
+      // Prevent Ctrl+R
+      if (e.key === 'r' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        return false;
+      }
+
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showResult]);
+  }, []);
 
   // Fetch exam questions
   useEffect(() => {
@@ -252,8 +252,9 @@ const Quiz: React.FC<QuizProps> = ({
             return prev - 1;
           } else {
             clearInterval(remainingTimeTimer.current!); // Clear the timer when time is up
-            setShowResult(true);
-            handleQuizSubmit(); // Assuming this is your submission handler
+
+            handleQuizSubmit();
+
             return prev;
           }
         });
@@ -477,15 +478,31 @@ const Quiz: React.FC<QuizProps> = ({
   const skippedCount = questionStatuses.filter(status => status === QuestionStatus.Skipped).length;
   const notAnsweredCount = questionStatuses.filter(status => status === QuestionStatus.NotAttended).length;
 
+  const showQuizResult = () => {
+    navigate('/quizresult', {
+      state: {
+        examId: examId,
+        userId: userId,
+        userExamProgressId: userExamProgressId,
+        userPackageId:userPackageId,
+        examName: examName,
+        answered: questionStatuses.filter(status => status === QuestionStatus.Attended).length,
+        notAnswered: questionStatuses.filter(status => status === QuestionStatus.NotAttended).length,
+        skipped: questionStatuses.filter(status => status === QuestionStatus.Skipped).length,
+        totalQuestions: questions.length,
+        timeTaken: elapsedTime,
+      },
+    });
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50">
       <Toaster />
-      {!showResult ? (
+      {
         <div>
           {/* Confirmation Modal */}
           {showConfirmModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-              <div className="w-11/12 p-6 bg-white rounded-lg shadow-lg md:w-1/2 lg:w-1/3">
+            <div className="flex fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50">
+              <div className="p-6 w-11/12 bg-white rounded-lg shadow-lg md:w-1/2 lg:w-1/3">
                 <h2 className="mb-4 text-xl font-bold">Confirm Submission</h2>
                 <p className="mb-4">Are you sure you want to end the quiz?</p>
                 <div className="flex justify-end space-x-4">
@@ -509,8 +526,9 @@ const Quiz: React.FC<QuizProps> = ({
             </div>
           )}
 
+
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 bg-white border-b shadow-sm">
+          <div className="flex justify-between items-center px-4 py-3 bg-white border-b shadow-sm">
             <div className="flex items-center space-x-4">
               <h1 className="text-2xl font-semibold text-gray-800">{examName}</h1>
               {allCategories && (
@@ -556,16 +574,16 @@ const Quiz: React.FC<QuizProps> = ({
             {/* Main Quiz Container */}
             <div className="flex flex-col flex-1">
               <div className="flex-1 p-6 lg:p-8">
-                <div className="max-w-2xl mx-auto">
+                <div className="mx-auto max-w-2xl">
                   {/* Question Header */}
                   <div className="mb-8">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex justify-between items-center mb-4">
                       <span className="text-lg font-semibold text-gray-700">
                         Q No: {activeQuestion + 1}/{questions.length}
                       </span>
-                      <div className="w-full h-2 max-w-xs ml-4 bg-gray-200 rounded-full">
+                      <div className="ml-4 w-full max-w-xs h-2 bg-gray-200 rounded-full">
                         <div
-                          className="h-2 transition-all duration-300 bg-indigo-600 rounded-full"
+                          className="h-2 bg-indigo-600 rounded-full transition-all duration-300"
                           style={{ width: `${((activeQuestion + 1) / questions.length) * 100}%` }}
                         ></div>
                       </div>
@@ -573,7 +591,7 @@ const Quiz: React.FC<QuizProps> = ({
                   </div>
 
                   {/* Question */}
-                  <div className="p-8 mb-8 bg-white shadow-lg rounded-xl">
+                  <div className="p-8 mb-8 bg-white rounded-xl shadow-lg">
                     <h2 className="mb-8 text-xl font-medium leading-relaxed text-gray-800">
                       {questionText}
                     </h2>
@@ -593,11 +611,11 @@ const Quiz: React.FC<QuizProps> = ({
                                 key={index}
                                 onClick={() => onAnswerSelected(optionLetter, index)}
                                 className={`w-full p-4 rounded-lg border-2 text-left font-medium transition-all duration-200 ${isSelected
-                                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                  ? 'text-indigo-700 bg-indigo-50 border-indigo-500'
+                                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                                   }`}
                               >
-                                <span className="inline-block w-8 h-8 mr-3 text-sm font-bold leading-8 text-center text-indigo-600 bg-indigo-100 rounded-full">
+                                <span className="inline-block mr-3 w-8 h-8 text-sm font-bold leading-8 text-center text-indigo-600 bg-indigo-100 rounded-full">
                                   {optionLetter}
                                 </span>
                                 {option}
@@ -614,7 +632,7 @@ const Quiz: React.FC<QuizProps> = ({
 
               {/* Navigation Controls */}
               <div className="p-6 bg-white border-t">
-                <div className="flex justify-between max-w-2xl mx-auto">
+                <div className="flex justify-between mx-auto max-w-2xl">
                   <button
                     onClick={onClickPrevious}
                     disabled={activeQuestion === 0}
@@ -629,8 +647,8 @@ const Quiz: React.FC<QuizProps> = ({
                   <button
                     onClick={onClickNext}
                     className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${questionStatuses[activeQuestion] === QuestionStatus.Attended
-                        ? 'bg-green-500 hover:bg-green-600 text-white'
-                        : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                      ? 'bg-green-500 hover:bg-green-600 text-white'
+                      : 'bg-indigo-600 hover:bg-indigo-700 text-white'
                       }`}
                   >
                     <span>{activeQuestion === questions.length - 1 ? 'Finish' : 'Next'}</span>
@@ -643,7 +661,7 @@ const Quiz: React.FC<QuizProps> = ({
             </div>
 
             {/* Question Navigator - Desktop */}
-            <div className="hidden bg-white border-l shadow-sm lg:block w-80">
+            <div className="hidden w-80 bg-white border-l shadow-sm lg:block">
               <div className="p-6">
                 <h3 className="mb-4 text-lg font-semibold text-gray-800">Question Navigator</h3>
 
@@ -664,7 +682,7 @@ const Quiz: React.FC<QuizProps> = ({
                       <button
                         key={index}
                         onClick={() => jumpToQuestion(index)}
-                        className={`w-10 h-10 rounded-lg text-sm font-medium transition-all duration-200 ${bgColorClass}`}
+                        className={`w-10 h-10 text-sm font-medium rounded-lg transition-all duration-200 ${bgColorClass}`}
                       >
                         {index + 1}
                       </button>
@@ -691,7 +709,7 @@ const Quiz: React.FC<QuizProps> = ({
                 {/* End Quiz Button */}
                 <button
                   onClick={handleEndQuizClick}
-                  className="w-full px-4 py-3 mt-8 font-medium text-white transition-colors duration-200 bg-red-500 rounded-lg hover:bg-red-600"
+                  className="px-4 py-3 mt-8 w-full font-medium text-white bg-red-500 rounded-lg transition-colors duration-200 hover:bg-red-600"
                 >
                   End Quiz
                 </button>
@@ -702,9 +720,9 @@ const Quiz: React.FC<QuizProps> = ({
           {/* Mobile Navigation Modal */}
           {showMobileNav && (
             <div className="fixed inset-0 z-50 bg-black bg-opacity-50 lg:hidden">
-              <div className="absolute top-0 right-0 h-full bg-white shadow-xl w-80">
+              <div className="absolute top-0 right-0 w-80 h-full bg-white shadow-xl">
                 <div className="p-6">
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="flex justify-between items-center mb-6">
                     <h3 className="text-lg font-semibold text-gray-800">Question Navigator</h3>
                     <button
                       onClick={() => setShowMobileNav(false)}
@@ -736,7 +754,7 @@ const Quiz: React.FC<QuizProps> = ({
                             jumpToQuestion(index);
                             setShowMobileNav(false);
                           }}
-                          className={`w-10 h-10 rounded-lg text-sm font-medium transition-all duration-200 ${bgColorClass}`}
+                          className={`w-10 h-10 text-sm font-medium rounded-lg transition-all duration-200 ${bgColorClass}`}
                         >
                           {index + 1}
                         </button>
@@ -763,7 +781,7 @@ const Quiz: React.FC<QuizProps> = ({
                   {/* End Quiz Button */}
                   <button
                     onClick={handleEndQuizClick}
-                    className="w-full px-4 py-3 font-medium text-white transition-colors duration-200 bg-red-500 rounded-lg hover:bg-red-600"
+                    className="px-4 py-3 w-full font-medium text-white bg-red-500 rounded-lg transition-colors duration-200 hover:bg-red-600"
                   >
                     End Quiz
                   </button>
@@ -772,20 +790,7 @@ const Quiz: React.FC<QuizProps> = ({
             </div>
           )}
         </div>
-      ) : (
-        <QuizResult
-          examId={examId}
-          userId={userId}
-          examName={examName}
-          answered={questionStatuses.filter(status => status === QuestionStatus.Attended).length}
-          notAnswered={questionStatuses.filter(status => status === QuestionStatus.NotAttended).length}
-          skipped={questionStatuses.filter(status => status === QuestionStatus.Skipped).length}
-          totalQuestions={questions.length}
-          timeTaken={elapsedTime}
-          onReturnToQuizPage={() => navigate('/quizPage')}
-
-        />
-      )}
+      }
     </div>
   );
 };

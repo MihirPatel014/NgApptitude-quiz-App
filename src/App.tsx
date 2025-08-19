@@ -29,6 +29,8 @@ import Result1 from "./pages/result/Result"
 import { LoaderProvider } from "./provider/LoaderProvider";
 import Loader from "./common/Loader";
 import ResultNew from "./pages/result/Resultnew";
+import QuizResultWrapper from "./components/quiz/QuizResultProp";
+
 
 
 
@@ -50,11 +52,12 @@ function App() {
             <Route element={<NavbarAndSidebar />}>
               {/* <Route path="/" element={<Home />} /> */}
               <Route path="/" element={<Subscription />} />
-              <Route path="/quizpage" element={<QuizPage />} />
+              
               <Route path="/packages" element={<PackagesPage />} />
               <Route path="/edit-profile" element={<EditProfile />} />
 
 
+              
               <Route path='/result' element={<Result1 />} />
               <Route path='/resultnew' element={<ResultNew />} />
               <Route path='/loader' element={<Loader />} />
@@ -62,6 +65,7 @@ function App() {
 
             </Route>
           </Route>
+          <Route path='/quizresult' element={<QuizResultWrapper />} />
 
           <Route path='/quiz' element={<QuizWrapper />} />
           {/* <Route path='/quiz' element={<Quiz value={QuizProps} />} /> */}
