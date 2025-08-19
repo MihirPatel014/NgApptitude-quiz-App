@@ -237,9 +237,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
     if (!values.hobbies) {
       errors.hobbies = 'hobbies is required';
     }
-    if (!values.dreamCareerOptions) {
-      errors.dreamCareerOptions = 'dream Career Options is required';
-    }
+
     if (!values.expectationFromThisTest) {
       errors.expectationFromThisTest = 'expectation From This Test is required';
     }
@@ -254,13 +252,13 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
   return (
     <>
       <Toaster />
-      {/* <div className="flex items-center justify-center min-h-screen p-4 bg-gray-100">
-        <div className="w-full p-6 bg-white border border-gray-200 rounded-lg shadow md:w-3/6 dark:bg-gray-800 dark:border-gray-700"> */}
+      {/* <div className="flex justify-center items-center p-4 min-h-screen bg-gray-100">
+        <div className="p-6 w-full bg-white rounded-lg border border-gray-200 shadow md:w-3/6 dark:bg-gray-800 dark:border-gray-700"> */}
       <div ref={formRef}>
         <h1 className="mt-10 mb-4 text-3xl font-bold text-center">Student Register</h1>
         {/* <p className="mb-6 text-center">Please fill in your details to register</p> */}
       </div>
-      <form id='formElement' className="pb-6 space-y-4 " >
+      <form id='formElement' className="pb-6 space-y-4" >
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 
           <div className="space-y-2">
@@ -273,7 +271,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
               required
               onChange={(e) => handleChange(e)}
               defaultValue={formValues.contactNo}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {formErrors.contactNo && <span className="text-xs text-red-500">{formErrors.contactNo}</span>}
           </div>
@@ -286,7 +284,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
               required
               onChange={(e) => handleChange(e)}
               defaultValue={formValues.name}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {formErrors.name && <span className="text-xs text-red-500">{formErrors.name}</span>}
           </div>
@@ -297,7 +295,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
               name="email"
               placeholder="Enter Email"
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
               size={20}
               defaultValue={formValues.email}
               onChange={(e) => handleChange(e)}
@@ -306,7 +304,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
           </div>
           <div className="space-y-2">
             <label htmlFor="password" className="text-sm font-medium text-gray-700">Password</label>
-            <div className='relative '>
+            <div className='relative'>
               <input
                 id="password"
                 name="password"
@@ -314,7 +312,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
                 // placeholder="Enter Password"
                 required
                 onChange={(e) => handleChange(e)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 defaultValue={formValues.password}
               />
               <button
@@ -362,7 +360,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
               defaultValue={formValues.class}
               onChange={(e) => handleChange(e)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {/* <option value="" disabled>Choose Grade</option>
               <option value="Grade 1">Grade 1</option>
@@ -385,7 +383,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
               value={formValues.medium}
               onChange={(e) => handleChange(e)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="" disabled>Choose Language</option>
               <option value="Hindi">Hindi</option>
@@ -403,7 +401,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
               required
               onChange={(e) => handleChange(e)}
               defaultValue={formValues.institute}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {formErrors.institute && <span className="text-xs text-red-500">{formErrors.institute}</span>}
           </div>
@@ -415,7 +413,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
               name="pincode"
               type="number"
               onChange={(e) => handlePincodeChange(e)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
           </div>
@@ -428,7 +426,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
               required
               onChange={(e) => handleChange(e)}
               defaultValue={formValues.city}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {formErrors.city && <span className="text-xs text-red-500">{formErrors.city}</span>}
           </div>
@@ -441,7 +439,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
               required
               onChange={(e) => handleChange(e)}
               defaultValue={formValues.state}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {formErrors.state && <span className="text-xs text-red-500">{formErrors.state}</span>}
           </div>
@@ -454,7 +452,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
               required
               onChange={(e) => handleChange(e)}
               defaultValue={formValues.hobbies}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {formErrors.hobbies && <span className="text-xs text-red-500">{formErrors.hobbies}</span>}
           </div>
@@ -467,7 +465,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
               required
               onChange={(e) => handleChange(e)}
               defaultValue={formValues.expectationFromThisTest}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {formErrors.expectationFromThisTest && <span className="text-xs text-red-500">{formErrors.expectationFromThisTest}</span>}
           </div>
@@ -480,14 +478,14 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
               required
               onChange={(e) => handleChange(e)}
               defaultValue={formValues.dreamCareerOptions}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            {formErrors.dreamCareerOptions && <span className="text-xs text-red-500">{formErrors.dreamCareerOptions}</span>}
+            
           </div>
         </div>
         <button
           type="submit"
-          className="w-full py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="py-2 w-full text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           onClick={(e) => handleSubmit(e)}
         >
           Register
