@@ -262,77 +262,78 @@ export const Subscription = () => {
         </div>
 
         {/* Current Package - Enhanced Design */}
-        <div className="mb-12">
-          <h2 className="flex items-center mb-6 text-2xl font-semibold text-gray-900">
-            <Zap className="mr-2 w-6 h-6 text-blue-600" />
-            Active Package
-          </h2>
+        {currentPackage && (
+          <div className="mb-12">
+            <h2 className="flex items-center mb-6 text-2xl font-semibold text-gray-900">
+              <Zap className="mr-2 w-6 h-6 text-blue-600" />
+              Active Package
+            </h2>
 
-          <div className="overflow-hidden bg-white rounded-2xl border border-gray-200 shadow-lg">
-            <div className="relative p-8 text-white bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700">
-              <div className="absolute inset-0 opacity-10">
-                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br to-transparent from-white/20"></div>
+            <div className="overflow-hidden bg-white rounded-2xl border border-gray-200 shadow-lg">
+              <div className="relative p-8 text-white bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700">
+                <div className="absolute inset-0 opacity-10">
+                  <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br to-transparent from-white/20"></div>
+                </div>
+
+                <div className="relative z-10">
+                  <div className="flex justify-between items-start mb-6">
+                    <div>
+                      <h3 className="mb-3 text-3xl font-bold">{currentPackage?.packageName}</h3>
+                      {/* <p className="max-w-2xl text-lg leading-relaxed text-blue-100">{currentPackage?.}</p> */}
+                    </div>
+                    <div className="text-right">
+                      <div className="mb-1 text-4xl font-bold">₹{currentPackage?.packagePrice}/-</div>
+                      {/* <div className="text-blue-200">Active since {currentPackage?.startedDate ? new Date(currentPackage.startedDate).toLocaleDateString() : 'N/A'}</div> */}
+                      <div className="text-blue-200">Active since {formatDate(currentPackage?.startedDate || "")}</div>
+
+
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="relative z-10">
-                <div className="flex justify-between items-start mb-6">
+              <div className="p-8">
+                <div className="grid grid-cols-1 gap-8">
+                  {/* Exams Section */}
                   <div>
-                    <h3 className="mb-3 text-3xl font-bold">{currentPackage?.packageName}</h3>
-                    {/* <p className="max-w-2xl text-lg leading-relaxed text-blue-100">{currentPackage?.}</p> */}
-                  </div>
-                  <div className="text-right">
-                    <div className="mb-1 text-4xl font-bold">₹{currentPackage?.packagePrice}/-</div>
-                    {/* <div className="text-blue-200">Active since {currentPackage?.startedDate ? new Date(currentPackage.startedDate).toLocaleDateString() : 'N/A'}</div> */}
-                    <div className="text-blue-200">Active since {formatDate(currentPackage?.startedDate || "")}</div>
+                    <div className="flex justify-between items-center mb-6">
+                      <h4 className="flex items-center text-xl font-semibold text-gray-900">
+                        <Users className="mr-2 w-5 h-5" />
+                        Your Exams
+                      </h4>
+                      {currentPackage && currentPackage.exams.length > 0 && currentPackage.exams.every(exam => exam.isCompleted) && (
+                        <button
+                          onClick={() => handleResult(currentPackage.id)}
+                          className="px-4 py-2 text-sm text-blue-500 rounded border border-blue-500 hover:bg-blue-500 hover:text-white"
+                        >
+                          View Result
+                        </button>
+                      )}
+                    </div>
+                    <div className="space-y-4">
+                      {currentPackage?.exams?.map((exam) => (
 
-                  
+                        <ExamStatus
+                          key={exam.examId}
+                          exam={{
+                            id: exam.examId,
+                            name: exam.examName,
+                            timeLimit: exam.timeLimit,
+                            isCompleted: exam.isCompleted,
+                          }}
+                          onStartExam={handleQuizClick}
+
+                        />
+                      ))}
+                    </div>
                   </div>
+
+
                 </div>
-              </div>
-            </div>
-
-            <div className="p-8">
-              <div className="grid grid-cols-1 gap-8">
-                {/* Exams Section */}
-                <div>
-                  <div className="flex justify-between items-center mb-6">
-                    <h4 className="flex items-center text-xl font-semibold text-gray-900">
-                      <Users className="mr-2 w-5 h-5" />
-                      Your Exams
-                    </h4>
-                    {currentPackage && currentPackage.exams.length > 0 && currentPackage.exams.every(exam => exam.isCompleted) && (
-                      <button
-                        onClick={() => handleResult(currentPackage.id)}
-                        className="px-4 py-2 text-sm text-blue-500 rounded border border-blue-500 hover:bg-blue-500 hover:text-white"
-                      >
-                        View Result
-                      </button>
-                    )}
-                  </div>
-                  <div className="space-y-4">
-                    {currentPackage?.exams?.map((exam) => (
-
-                      <ExamStatus
-                        key={exam.examId}
-                        exam={{
-                          id: exam.examId,
-                          name: exam.examName,
-                          timeLimit: exam.timeLimit,
-                          isCompleted: exam.isCompleted,
-                        }}
-                        onStartExam={handleQuizClick}
-
-                      />
-                    ))}
-                  </div>
-                </div>
-
-
               </div>
             </div>
           </div>
-        </div>
-
+        )}
         {/* Available Packages - Grid Layout */}
         <div>
           <div className="mb-10 text-center">
