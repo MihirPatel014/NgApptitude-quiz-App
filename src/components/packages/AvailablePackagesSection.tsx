@@ -136,7 +136,7 @@ const AvailablePackagesSection = () => {
                     }
                     setLoading(true);
                     toast.success('Package activated successfully!');
-                    navigate("/quizpage");
+                    navigate("/");
                 } else {
                     toast.success('Failed to activate package. Please contact support.');
                 }
@@ -225,7 +225,7 @@ const AvailablePackagesSection = () => {
                                     }
                                     const adduserToPackage = await AddUserToPackage(userPackageApiModel);
                                 }
-                                navigate("/quizpage");
+                                navigate("/");
                             } else {
                                 toast.success('Payment verification failed. Please contact support.');
                             }

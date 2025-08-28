@@ -23,7 +23,8 @@ const ADD_USER_TO_PACKAGE = "/AddUserToPackage"
 const GET_USER_FULL_INFO_BY_USERID = "/GetUserFullInfoByUserId"
 const GET_USER_PACKAGE_INFO_BY_USERID = "/GetUserPackageInfoByUserId"
  
-const API_URL = process.env.REACT_APP_API_URL;
+ const API_URL = process.env.REACT_APP_API_URL;
+
 const GRADE_URL = "api/Grade/GetAllGrades";
 const getAll = () => {
   return http.get<Array<userDetails>>(`/${USERS_URL}`);
@@ -199,6 +200,7 @@ export const GetUserPackageInfoByUserId = async (userId: number) => {
 };
 
 export const getAllGrades = async (): Promise<Grade[] | null> => {
+  debugger
   try {
     const response = await axios.get<Grade[]>(`${API_URL}${GRADE_URL}`);
     // post(`${API_URL}${PROCESS_REQUEST_ORDER}

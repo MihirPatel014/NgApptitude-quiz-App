@@ -52,10 +52,10 @@ const QuizResult: React.FC<QuizResultProps> = ({
         if (!currentUserId || !currentExamId) return;
         const packages = await GetUserPackageInfoByUserId(currentUserId);
         if (!packages || packages.length === 0) { return }
-        // Find the package containing the current exam
-        const currentPackage = packages.find(pkg =>
-          pkg.exams.some(exam => exam.examId === currentExamId)
-        );
+        // Determine the current package. Prefer the one explicitly in progress if status is available,
+        // otherwise fall back to the package that contains the current exam.
+        const currentPackage = packages.find(pkg => pkg.status === "In Progress (0% completed)") ||
+          packages.find(pkg => pkg.exams?.some((exam: any) => exam.examId === currentExamId));
         if (!currentPackage) {
           setCurrentPackageId(null);
           return;

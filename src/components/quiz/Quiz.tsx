@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   GetAllquestionsCategory,
@@ -21,17 +21,6 @@ const QuestionStatus = {
 } as const;
 
 type QuestionStatusType = typeof QuestionStatus[keyof typeof QuestionStatus];
-
-const updateImage = (questions: Question[], index: number, setCurrentImage: React.Dispatch<React.SetStateAction<string | null>>) => {
-  setCurrentImage('');
-  let currentImage = questions[index]?.image || null;
-  let newImage =
-    currentImage === 'https://images.pexels.com/photos/443446/pexels-photo-443446.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
-      ? 'https://random-image-pepebigotes.vercel.app/api/random-image'
-      : 'https://images.pexels.com/photos/443446/pexels-photo-443446.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1';
-
-  setCurrentImage(newImage);
-};
 
 export interface QuizProps {
   userId: number;
@@ -59,24 +48,26 @@ const Quiz: React.FC<QuizProps> = ({
   const navigate = useNavigate();
   const [activeQuestion, setActiveQuestion] = useState<number>(0);
   const [selectedAnswer, setSelectedAnswer] = useState<QuizAnswerModel[]>([]);
-
   const [selectedAnswerIndex, setSelectedAnswerIndex] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isTimeBound, setIsTimeBound] = useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number | null>(null);
-  const [currentImage, setCurrentImage] = useState<string | null>(null);
-  const [startTime] = useState<string>(new Date().toISOString());
+
   const [allCategories, setAllCategories] = useState<QuestionCategory[]>([]);
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
   const [questionStatuses, setQuestionStatuses] = useState<QuestionStatusType[]>([]);
-  const { setLoading } = useLoader();
-  // New state for confirmation modal
   const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
+  const [showMobileNav, setShowMobileNav] = useState(false);
 
-  // Use refs to store the timers so that we can clear them when needed
+  // Memoized values
+  const startTime = useMemo(() => new Date().toISOString(), []);
+  const { setLoading } = useLoader();
+
+  // Use refs to store the timers and prevent re-renders
   const remainingTimeTimer = useRef<NodeJS.Timeout | null>(null);
   const elapsedTimeTimer = useRef<NodeJS.Timeout | null>(null);
+  const isQuizActiveRef = useRef<boolean>(true);
 
   const [userExamResponse, setUserExamResponse] = useState<UserExamResponse>({
     id: 0,
@@ -87,9 +78,59 @@ const Quiz: React.FC<QuizProps> = ({
     responseData: ''
   });
 
-  const handleQuizSubmit = async () => {
+  // Memoized calculations
+  const currentQuestion = useMemo(() => questions[activeQuestion], [questions, activeQuestion]);
+
+  const answeredCount = useMemo(() =>
+    questionStatuses.filter(status => status === QuestionStatus.Attended).length,
+    [questionStatuses]
+  );
+
+  const skippedCount = useMemo(() =>
+    questionStatuses.filter(status => status === QuestionStatus.Skipped).length,
+    [questionStatuses]
+  );
+
+  const notAnsweredCount = useMemo(() =>
+    questionStatuses.filter(status => status === QuestionStatus.NotAttended).length,
+    [questionStatuses]
+  );
+
+  // Callback functions to prevent re-renders
+  const calculateScore = useCallback((): number => {
+    const answersData: QuizAnswerModel[] = userExamResponse.responseData
+      ? JSON.parse(userExamResponse.responseData)
+      : [];
+
+    let correctAnswers = 0;
+
+    answersData.forEach(answer => {
+      const question = questions.find(q => q.id === answer.questionId);
+      if (question && question.answer === answer.SelectedOption) {
+        correctAnswers++;
+      }
+    });
+    return correctAnswers;
+  }, [userExamResponse.responseData, questions]);
+
+  const stopTimers = useCallback(() => {
+    if (remainingTimeTimer.current) {
+      clearInterval(remainingTimeTimer.current);
+      remainingTimeTimer.current = null;
+    }
+    if (elapsedTimeTimer.current) {
+      clearInterval(elapsedTimeTimer.current);
+      elapsedTimeTimer.current = null;
+    }
+  }, []);
+
+  const handleQuizSubmit = useCallback(async () => {
+    if (!isQuizActiveRef.current) return;
+
+    isQuizActiveRef.current = false;
     stopTimers();
-    setLoading(true); // Show loader
+    setLoading(true);
+
     try {
       const finalScore = calculateScore();
 
@@ -113,36 +154,115 @@ const Quiz: React.FC<QuizProps> = ({
     } catch (error) {
       console.log('Failed to submit exam:', error);
       toast.error('Failed to submit exam. Please try again.');
-
+      isQuizActiveRef.current = true;
     } finally {
-      setLoading(false); // Hide loader
+      setLoading(false);
     }
-  };
+  }, [calculateScore, userExamProgressId, userId, packageId, userPackageId, examId, startTime, userExamResponse.responseData, stopTimers, setLoading]);
 
+  const showQuizResult = useCallback(() => {
+    navigate('/quizresult', {
+      state: {
+        examId: examId,
+        userId: userId,
+        userExamProgressId: userExamProgressId,
+        userPackageId: userPackageId,
+        examName: examName,
+        answered: questionStatuses.filter(status => status === QuestionStatus.Attended).length,
+        notAnswered: questionStatuses.filter(status => status === QuestionStatus.NotAttended).length,
+        skipped: questionStatuses.filter(status => status === QuestionStatus.Skipped).length,
+        totalQuestions: questions.length,
+        timeTaken: elapsedTime,
+      },
+    });
+  }, [navigate, examId, userId, userExamProgressId, userPackageId, examName, questionStatuses, questions.length, elapsedTime]);
+
+  // Initialize timers once
   useEffect(() => {
-    setQuestionStartTime(Date.now()); // Reset time when question changes
+    // Elapsed time timer
+    elapsedTimeTimer.current = setInterval(() => {
+      setElapsedTime(prev => prev + 1);
+    }, 1000);
+
+    return () => {
+      if (elapsedTimeTimer.current) {
+        clearInterval(elapsedTimeTimer.current);
+      }
+    };
+  }, []); // Empty dependency array - only run once
+
+  // Initialize remaining time timer
+  useEffect(() => {
+    if (isTimeBound && remainingTime !== null && remainingTime > 0) {
+      remainingTimeTimer.current = setInterval(() => {
+        setRemainingTime((prev) => {
+          if (prev !== null && prev > 0) {
+            return prev - 1;
+          } else {
+            handleQuizSubmit();
+            return prev;
+          }
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (remainingTimeTimer.current) {
+        clearInterval(remainingTimeTimer.current);
+        remainingTimeTimer.current = null;
+      }
+    };
+  }, [isTimeBound, remainingTime, handleQuizSubmit]); // Only re-run when these specific values change
+
+  // Update question start time only when active question changes
+  useEffect(() => {
+    setQuestionStartTime(Date.now());
   }, [activeQuestion]);
 
-  const calculateScore = (): number => {
-    const answersData: QuizAnswerModel[] = userExamResponse.responseData
-      ? JSON.parse(userExamResponse.responseData)
-      : [];
+  // Initialize quiz data once
+  useEffect(() => {
+    const fetchExamQuestions = async () => {
+      try {
+        if (examQuestions && examQuestions.length > 0) {
+          setQuestions(examQuestions);
 
-    let correctAnswers = 0;
+          setQuestionStatuses(Array(examQuestions.length).fill(QuestionStatus.NotAttended));
 
-    answersData.forEach(answer => {
-      const question = questions.find(q => q.id === answer.questionId);
-      if (question && question.answer === answer.SelectedOption) {
-        correctAnswers++;
+          if (timeLimit > 0) {
+            setIsTimeBound(true);
+            setRemainingTime(timeLimit * 60);
+          }
+        } else {
+          const response = await getQuestionbyExamAndSectionId(examId, 0);
+          if (response) {
+            setQuestions(response);
+
+            setQuestionStatuses(Array(response.length).fill(QuestionStatus.NotAttended));
+
+            if (timeLimit > 0) {
+              setIsTimeBound(true);
+              setRemainingTime(timeLimit * 60);
+            }
+          }
+        }
+
+        const fetchAllCategories = await GetAllquestionsCategory();
+        if (fetchAllCategories) {
+          setAllCategories(fetchAllCategories);
+        }
+      } catch (err) {
+        console.log("Failed to load questions:", err);
+        toast.error("Failed to load questions. Please try again.");
       }
-    });
-    return correctAnswers;
-  };
+    };
 
-  // Prevent navigation/refresh when quiz is in progress
+    fetchExamQuestions();
+  }, [examId, examQuestions, timeLimit]); // Only re-run when these props change
+
+  // Browser navigation prevention
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (true) {
+      if (isQuizActiveRef.current) {
         e.preventDefault();
         e.returnValue = '';
         return '';
@@ -150,7 +270,7 @@ const Quiz: React.FC<QuizProps> = ({
     };
 
     const handlePopState = (e: PopStateEvent) => {
-      if (true) {
+      if (isQuizActiveRef.current) {
         e.preventDefault();
         window.history.pushState(null, '', window.location.pathname);
         const confirmExit = window.confirm(
@@ -164,141 +284,30 @@ const Quiz: React.FC<QuizProps> = ({
       }
     };
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'F5' || (e.key === 'r' && (e.ctrlKey || e.metaKey))) {
+        e.preventDefault();
+        return false;
+      }
+    };
+
     window.history.pushState(null, '', window.location.pathname);
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('popstate', handlePopState);
+    window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, [navigate]);
 
-  // Prevent refresh shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-
-      // Prevent F5 key
-      if (e.key === 'F5') {
-        e.preventDefault();
-        return false;
-      }
-      // Prevent Ctrl+R
-      if (e.key === 'r' && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();
-        return false;
-      }
-
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  // Fetch exam questions
-  useEffect(() => {
-    fetchExamQuestions();
-  }, [examId]);
-
-  const fetchExamQuestions = async () => {
-    try {
-      if (examQuestions && examQuestions.length > 0) {
-        setQuestions(examQuestions);
-        updateImage(examQuestions, 0, setCurrentImage);
-
-        // Initialize questionStatuses
-        setQuestionStatuses(Array(examQuestions.length).fill(QuestionStatus.NotAttended));
-
-        if (timeLimit > 0) {
-          setIsTimeBound(true);
-          setRemainingTime(timeLimit * 60);
-        }
-
-        const fetchAllCategories = await GetAllquestionsCategory();
-        if (fetchAllCategories) {
-          setAllCategories(fetchAllCategories);
-        }
-      } else {
-        // Fallback to API call if no questions provided
-        const response = await getQuestionbyExamAndSectionId(examId, 0);
-        if (response) {
-          setQuestions(response);
-          updateImage(response, 0, setCurrentImage);
-          setQuestionStatuses(Array(response.length).fill(QuestionStatus.NotAttended));
-
-          if (timeLimit > 0) {
-            setIsTimeBound(true);
-            setRemainingTime(timeLimit * 60);
-          }
-
-          const fetchAllCategories = await GetAllquestionsCategory();
-          if (fetchAllCategories) {
-            setAllCategories(fetchAllCategories);
-          }
-        }
-      }
-    } catch (err) {
-      console.log("Failed to load questions:", err);
-      toast.error("Failed to load questions. Please try again.");
-    }
-  };
-
-  // Timer for remaining time
-  useEffect(() => {
-    if (isTimeBound && remainingTime !== null) {
-      remainingTimeTimer.current = setInterval(() => {
-        setRemainingTime((prev) => {
-          if (prev !== null && prev > 0) {
-            return prev - 1;
-          } else {
-            clearInterval(remainingTimeTimer.current!); // Clear the timer when time is up
-
-            handleQuizSubmit();
-
-            return prev;
-          }
-        });
-      }, 1000);
-
-      return () => {
-        if (remainingTimeTimer.current) {
-          clearInterval(remainingTimeTimer.current);
-        }
-      };
-    }
-  }, [isTimeBound, remainingTime]);
-
-  // Timer for elapsed time
-  useEffect(() => {
-    elapsedTimeTimer.current = setInterval(() => {
-      setElapsedTime((prev) => prev + 1);
-    }, 1000);
-
-    return () => {
-      if (elapsedTimeTimer.current) {
-        clearInterval(elapsedTimeTimer.current);
-      }
-    };
-  }, []);
-
-  // Function to stop the timers on exam submission
-  const stopTimers = () => {
-    if (remainingTimeTimer.current) {
-      clearInterval(remainingTimeTimer.current);
-    }
-    if (elapsedTimeTimer.current) {
-      clearInterval(elapsedTimeTimer.current);
-    }
-  };
-
-  const onAnswerSelected = async (studentAnswer: string, index: number) => {
+  const onAnswerSelected = useCallback(async (studentAnswer: string, index: number) => {
     setSelectedAnswerIndex(index);
 
-    // Calculate time taken for this question
     const timeTakenInSeconds = Math.floor((Date.now() - questionStartTime) / 1000);
 
-    // Create new answer model with time taken
-    const currentQuestion = questions[activeQuestion];
     const newAnswer: QuizAnswerModel = {
       questionId: currentQuestion.id,
       SelectedOption: studentAnswer,
@@ -311,17 +320,14 @@ const Quiz: React.FC<QuizProps> = ({
       );
 
       if (existingAnswerIndex !== -1) {
-        // Update existing answer
         const updatedAnswers = [...prevAnswers];
         updatedAnswers[existingAnswerIndex] = newAnswer;
         return updatedAnswers;
       } else {
-        // Add new answer
         return [...prevAnswers, newAnswer];
       }
     });
 
-    // Update question status to attended
     setQuestionStatuses(prevStatuses => {
       const newStatuses = [...prevStatuses];
       newStatuses[activeQuestion] = QuestionStatus.Attended;
@@ -347,7 +353,6 @@ const Quiz: React.FC<QuizProps> = ({
     };
 
     try {
-      // Call API to add/update response
       const result = await AddUpdateUserExam(updatedResponse);
       if (result) {
         setUserExamResponse({
@@ -358,9 +363,9 @@ const Quiz: React.FC<QuizProps> = ({
     } catch (error) {
       console.log('Failed to save response:', error);
     }
-  };
+  }, [questionStartTime, currentQuestion, activeQuestion, userExamResponse]);
 
-  const onClickNext = () => {
+  const onClickNext = useCallback(() => {
     const currentQuestionAnswer = selectedAnswer.find(
       answer => answer.questionId === questions[activeQuestion].id
     );
@@ -375,10 +380,9 @@ const Quiz: React.FC<QuizProps> = ({
       if (activeQuestion < questions.length - 1) {
         const nextQuestionIndex = activeQuestion + 1;
         setActiveQuestion(nextQuestionIndex);
-        updateImage(questions, nextQuestionIndex, setCurrentImage);
+
         setSelectedAnswerIndex(null);
       } else {
-        // If we're on the last question and it's answered, show confirmation modal
         setShowConfirmModal(true);
       }
     } else {
@@ -391,55 +395,47 @@ const Quiz: React.FC<QuizProps> = ({
       if (activeQuestion < questions.length - 1) {
         const nextQuestionIndex = activeQuestion + 1;
         setActiveQuestion(nextQuestionIndex);
-        updateImage(questions, nextQuestionIndex, setCurrentImage);
+
         setSelectedAnswerIndex(null);
       } else {
         toast('Please select an answer before proceeding');
       }
     }
 
-    // Reset the timer for the next question
     setQuestionStartTime(Date.now());
-  };
+  }, [selectedAnswer, questions, activeQuestion]);
 
-  // Function to check if all questions are answered
-  const areAllQuestionsAnswered = () => {
+  const areAllQuestionsAnswered = useCallback(() => {
     return !questionStatuses.includes(QuestionStatus.NotAttended) &&
       !questionStatuses.includes(QuestionStatus.Skipped);
-  };
+  }, [questionStatuses]);
 
-  // Function to handle end quiz button click
-  const handleEndQuizClick = () => {
-    // If time-bound quiz, show confirmation modal
+  const handleEndQuizClick = useCallback(() => {
     if (isTimeBound) {
       setShowConfirmModal(true);
     } else {
-      // If not time-bound, check if all questions are answered
       if (areAllQuestionsAnswered()) {
         setShowConfirmModal(true);
       } else {
         toast.error('Please answer all questions before submitting the quiz');
       }
     }
-  };
+  }, [isTimeBound, areAllQuestionsAnswered]);
 
-  const getSelectedAnswerForQuestion = (questionId: number) => {
-    // Check local state first
+  const getSelectedAnswerForQuestion = useCallback((questionId: number) => {
     const localAnswer = selectedAnswer.find(
       answer => answer.questionId === questionId
     );
     if (localAnswer) return localAnswer.SelectedOption;
 
-    // Fall back to API response data
     const responseData: QuizAnswerModel[] = userExamResponse.responseData
       ? JSON.parse(userExamResponse.responseData)
       : [];
     const apiAnswer = responseData.find(response => response.questionId === questionId);
     return apiAnswer ? apiAnswer.SelectedOption : null;
-  };
+  }, [selectedAnswer, userExamResponse.responseData]);
 
-  const jumpToQuestion = (index: number) => {
-    // Mark the current question as skipped if it hasn't been attended
+  const jumpToQuestion = useCallback((index: number) => {
     setQuestionStatuses(prevStatuses => {
       const newStatuses = [...prevStatuses];
       if (prevStatuses[activeQuestion] === QuestionStatus.NotAttended) {
@@ -449,51 +445,31 @@ const Quiz: React.FC<QuizProps> = ({
     });
 
     setActiveQuestion(index);
-    updateImage(questions, index, setCurrentImage);
-    setSelectedAnswerIndex(null);
-  };
 
-  const onClickPrevious = () => {
+    setSelectedAnswerIndex(null);
+  }, [activeQuestion, questions]);
+
+  const onClickPrevious = useCallback(() => {
     if (activeQuestion > 0) {
       const previousQuestionIndex = activeQuestion - 1;
       setActiveQuestion(previousQuestionIndex);
-      updateImage(questions, previousQuestionIndex, setCurrentImage);
+
       setSelectedAnswerIndex(null);
     }
-  };
+  }, [activeQuestion, questions]);
 
-  const addLeadingZero = (number: number): string =>
-    number > 9 ? number.toString() : `0${number}`;
+  const addLeadingZero = useCallback((number: number): string =>
+    number > 9 ? number.toString() : `0${number}`, []);
 
-  const formatTime = (time: number): string => {
+  const formatTime = useCallback((time: number): string => {
     const minutes = Math.floor(time / 60);
     const seconds = time % 60;
     return `${addLeadingZero(minutes)}:${addLeadingZero(seconds)}`;
-  };
-  const [showMobileNav, setShowMobileNav] = useState(false);
-  const { questionText, optionA, optionB, optionC, optionD, questionType } = questions[activeQuestion] || {};
+  }, [addLeadingZero]);
 
-  // Get stats for confirmation modal
-  const answeredCount = questionStatuses.filter(status => status === QuestionStatus.Attended).length;
-  const skippedCount = questionStatuses.filter(status => status === QuestionStatus.Skipped).length;
-  const notAnsweredCount = questionStatuses.filter(status => status === QuestionStatus.NotAttended).length;
+  // Destructure current question data
+  const { questionText, optionA, optionB, optionC, optionD, questionType } = currentQuestion || {};
 
-  const showQuizResult = () => {
-    navigate('/quizresult', {
-      state: {
-        examId: examId,
-        userId: userId,
-        userExamProgressId: userExamProgressId,
-        userPackageId:userPackageId,
-        examName: examName,
-        answered: questionStatuses.filter(status => status === QuestionStatus.Attended).length,
-        notAnswered: questionStatuses.filter(status => status === QuestionStatus.NotAttended).length,
-        skipped: questionStatuses.filter(status => status === QuestionStatus.Skipped).length,
-        totalQuestions: questions.length,
-        timeTaken: elapsedTime,
-      },
-    });
-  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50">
       <Toaster />
@@ -504,11 +480,31 @@ const Quiz: React.FC<QuizProps> = ({
             <div className="flex fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50">
               <div className="p-6 w-11/12 bg-white rounded-lg shadow-lg md:w-1/2 lg:w-1/3">
                 <h2 className="mb-4 text-xl font-bold">Confirm Submission</h2>
-                <p className="mb-4">Are you sure you want to end the quiz?</p>
+                {isTimeBound ? (
+                  (notAnsweredCount + skippedCount > 0) ? (
+                    <p className="mb-4 text-gray-700">
+                      {notAnsweredCount + skippedCount} Ques are not attended, Are You Sure to Finish Quiz?
+                    </p>
+                  ) : (
+                    <p className="mb-4 text-gray-700">All questions are answered. You can safely end the quiz.</p>
+                  )
+                ) : (
+                  (notAnsweredCount === 0 && skippedCount === 0) ? (
+                    <p className="mb-4 text-gray-700">All questions are answered. You can safely end the quiz.</p>
+                  ) : (
+                    <p className="mb-4 text-gray-700">All Ques are compulsory — attend every question to finish.</p>
+                  )
+                )}
+                {notAnsweredCount !== 0 && skippedCount !== 0 ?
+                  <p className="mb-2 text-gray-700">
+                    You still have <span className="font-semibold">{notAnsweredCount}</span> unanswered and <span className="font-semibold">{skippedCount}</span> skipped questions.
+                  </p>
+                  : ""}
+
                 <div className="flex justify-end space-x-4">
                   <button
                     onClick={() => setShowConfirmModal(false)}
-                    className="px-4 py-2 text-gray-800 bg-gray-200 rounded-md hover:bg-gray-300"
+                    className="p-2 w-full text-gray-800 bg-gray-200 rounded-md hover:bg-gray-300"
                   >
                     Cancel
                   </button>
@@ -517,7 +513,8 @@ const Quiz: React.FC<QuizProps> = ({
                       setShowConfirmModal(false);
                       handleQuizSubmit();
                     }}
-                    className="px-4 py-2 text-white bg-red-500 rounded-md hover:bg-red-600"
+                    disabled={!isTimeBound && (notAnsweredCount > 0 || skippedCount > 0)}
+                    className={`w-full p-2 font-medium text-white rounded-lg transition-colors duration-200 ${!isTimeBound && (notAnsweredCount > 0 || skippedCount > 0) ? 'bg-gray-300 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'}`}
                   >
                     End Quiz
                   </button>
@@ -526,17 +523,15 @@ const Quiz: React.FC<QuizProps> = ({
             </div>
           )}
 
-
           {/* Header */}
           <div className="flex justify-between items-center px-4 py-3 bg-white border-b shadow-sm">
             <div className="flex items-center space-x-4">
               <h1 className="text-2xl font-semibold text-gray-800">{examName}</h1>
-              {allCategories && (
+              {allCategories && currentQuestion && (
                 <span className="px-3 py-1 text-sm text-gray-600 bg-gray-100 rounded-full">
                   Section: {
                     allCategories.find(
-                      (category) =>
-                        category.id === questions[activeQuestion]?.questionCategoryId
+                      (category) => category.id === currentQuestion.questionCategoryId
                     )?.categoryName || ""
                   }
                 </span>
@@ -598,13 +593,13 @@ const Quiz: React.FC<QuizProps> = ({
 
                     {/* Answer Options */}
                     <div className="space-y-4">
-                      {questions && questions.length > 0 ? (
+                      {questions && questions.length > 0 && currentQuestion ? (
                         [optionA, optionB, optionC, optionD]
                           .slice(0, questionType === 1 ? 2 : 4)
                           .map((option, index) => {
                             const optionLetter = String.fromCharCode(65 + index);
                             const isSelected = selectedAnswerIndex === index ||
-                              getSelectedAnswerForQuestion(questions[activeQuestion].id) === optionLetter;
+                              getSelectedAnswerForQuestion(currentQuestion.id) === optionLetter;
 
                             return (
                               <button
@@ -709,7 +704,8 @@ const Quiz: React.FC<QuizProps> = ({
                 {/* End Quiz Button */}
                 <button
                   onClick={handleEndQuizClick}
-                  className="px-4 py-3 mt-8 w-full font-medium text-white bg-red-500 rounded-lg transition-colors duration-200 hover:bg-red-600"
+                  disabled={!isTimeBound && (notAnsweredCount > 0 || skippedCount > 0)}
+                  className={`px-4 py-3 mt-8 w-full font-medium text-white bg-red-500 rounded-lg transition-colors duration-200 hover:bg-red-600`}
                 >
                   End Quiz
                 </button>
@@ -781,7 +777,7 @@ const Quiz: React.FC<QuizProps> = ({
                   {/* End Quiz Button */}
                   <button
                     onClick={handleEndQuizClick}
-                    className="px-4 py-3 w-full font-medium text-white bg-red-500 rounded-lg transition-colors duration-200 hover:bg-red-600"
+                    className={`px-4 py-3 w-full font-medium text-white rounded-lg transition-colors duration-200 ${!isTimeBound && (notAnsweredCount > 0 || skippedCount > 0) ? 'bg-gray-300 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'}`}
                   >
                     End Quiz
                   </button>

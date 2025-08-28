@@ -140,7 +140,9 @@ export const Subscription = () => {
           </div>
 
           <div className="flex items-center space-x-2">
-            {!exam.isCompleted && (
+            {exam.isCompleted ? (
+              <span className="px-4 py-2 text-sm text-gray-600">Completed</span>
+            ) : (
               <button
                 onClick={() => onStartExam(exam.id)}
                 className="flex items-center px-4 py-2 space-x-1 text-sm text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg transition-all hover:from-blue-700 hover:to-blue-800"
