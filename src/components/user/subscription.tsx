@@ -2,11 +2,11 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { UserContext } from "../../provider/UserProvider";
 import { GetUserPackageInfoByUserId } from "../../services/authService";
 import { UserPackageInfoModel, UserExamInfoModel } from "../../types/user";
-import { useNavigate } from "react-router-dom";
+import { UNSAFE_FetchersContext, useNavigate } from "react-router-dom";
 
 import { formatDate } from "../../utils/dateUtils";
 import { useLoader } from "../../provider/LoaderProvider";
-import { ExamSections } from "../../types/exam";
+import { ExamSections, ExamWithSectionViewModel } from "../../types/exam";
 import { getExamInfoByExamId } from "../../services/examService";
 import AvailablePackagesSection from "../packages/AvailablePackagesSection";
 import { Award, CheckCircle, Clock, Eye, Play, ShoppingCart, Star, Users, Zap } from "lucide-react";
@@ -59,6 +59,7 @@ export const Subscription = () => {
     try {
       // Find the exam from the user’s packages
       let selectedExam: UserExamInfoModel | null = null;
+      let fetchedExam: ExamWithSectionViewModel | null = null;
       let userPackageId: number = 0;
       let packageId: number = 0;
       let examProgressId: number = 0;
@@ -75,14 +76,14 @@ export const Subscription = () => {
       }
 
       if (!selectedExam) {
-        console.error("Exam not found.");
+        console.log("Exam not found.");
         return;
       }
 
       // Fetch exam questions if not already available
       let examQuestions = examSections.get(examId)?.flatMap(section => section.questions) || [];
       if (examQuestions.length === 0) {
-        const fetchedExam = await getExamInfoByExamId(examId);
+        fetchedExam = await getExamInfoByExamId(examId) as ExamWithSectionViewModel;
         examQuestions = fetchedExam?.sections?.flatMap(section => section.questions) || [];
       }
       // In QuizPage.tsx or wherever you render <Quiz />
@@ -93,6 +94,7 @@ export const Subscription = () => {
           userId: UserId,
           examId: selectedExam.examId,
           examName: selectedExam.examName,
+          examDescription: fetchedExam?.description?.toString() || "",
           timeLimit: selectedExam.timeLimit,
           userExamProgressId: examProgressId,
           userPackageId: userPackageId,
@@ -102,7 +104,7 @@ export const Subscription = () => {
       });
 
     } catch (error) {
-      console.error("Error fetching exam details:", error);
+      console.log("Error fetching exam details:", error);
     }
   };
   const ExamStatus = ({

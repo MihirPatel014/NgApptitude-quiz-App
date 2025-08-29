@@ -26,6 +26,7 @@ export interface QuizProps {
   userId: number;
   examId: number;
   examName: string;
+  examDescription:string;
   timeLimit: number;
   userExamProgressId: number;
   userPackageId: number;
@@ -39,6 +40,7 @@ const Quiz: React.FC<QuizProps> = ({
   userId,
   examId,
   examName,
+  examDescription,
   timeLimit,
   userExamProgressId,
   userPackageId,
@@ -46,6 +48,7 @@ const Quiz: React.FC<QuizProps> = ({
   examQuestions
 }) => {
   const navigate = useNavigate();
+  const [showInstructions, setShowInstructions] = useState<boolean>(true);
   const [activeQuestion, setActiveQuestion] = useState<number>(0);
   const [selectedAnswer, setSelectedAnswer] = useState<QuizAnswerModel[]>([]);
   const [selectedAnswerIndex, setSelectedAnswerIndex] = useState<number | null>(null);
@@ -473,8 +476,24 @@ const Quiz: React.FC<QuizProps> = ({
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50">
       <Toaster />
-      {
-        <div>
+      
+      {/* Instructions Modal */}
+      {showInstructions && (
+        <div className="flex fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50">
+          <div className="p-6 w-11/12 bg-white rounded-lg shadow-lg md:w-2/3 lg:w-1/2">
+            <h2 className="mb-4 text-2xl font-bold">Exam Instructions</h2>
+            <div className="mb-6 text-gray-700 whitespace-pre-line">{examDescription}</div>
+            <button
+              onClick={() => setShowInstructions(false)}
+              className="p-3 w-full font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+            >
+              Start Quiz
+            </button>
+          </div>
+        </div>
+      )}
+      {!showInstructions && (
+         <div>
           {/* Confirmation Modal */}
           {showConfirmModal && (
             <div className="flex fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50">
@@ -524,7 +543,8 @@ const Quiz: React.FC<QuizProps> = ({
           )}
 
           {/* Header */}
-          <div className="flex justify-between items-center px-4 py-3 bg-white border-b shadow-sm">
+          
+            <div className="flex justify-between items-center px-4 py-3 bg-white border-b shadow-sm">
             <div className="flex items-center space-x-4">
               <h1 className="text-2xl font-semibold text-gray-800">{examName}</h1>
               {allCategories && currentQuestion && (
@@ -786,7 +806,7 @@ const Quiz: React.FC<QuizProps> = ({
             </div>
           )}
         </div>
-      }
+      )}
     </div>
   );
 };
