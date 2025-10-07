@@ -54,7 +54,7 @@ const Result: React.FC = () => {
           setUserDetails(fetchedUserDetails);
         }
       } catch (error) {
-        console.error("Error fetching user details", error);
+        console.log("Error fetching user details", error);
       } finally {
         setLoading(false);
       }
@@ -157,15 +157,15 @@ const Result: React.FC = () => {
       <div className="flex justify-end mx-auto max-w-7xl">
         <PdfDownloader reportRef={resultRef} />
       </div>
-      <div className="p-6 mx-auto mt-4 bg-white shadow-lg rounded-xl hover:shadow-xl max-w-7xl" ref={resultRef}>
+      <div className="p-6 mx-auto mt-4 max-w-7xl bg-white rounded-xl shadow-lg hover:shadow-xl" ref={resultRef}>
         
-        <div className="flex items-center justify-between py-4 border-b">
+        <div className="flex justify-between items-center py-4 border-b">
           <img src={ngLogo1} alt="nglogo1" className="h-16" />
           <h2 className="text-2xl font-bold text-center text-green-800">Career Guidance Assessment Results</h2>
           <img src={ngLogo2} alt="nglogo2" className="h-16" />
         </div>
  
-        <div className="px-8 mt-8 transition-shadow bg-gray-100 rounded-lg shadow-md hover:shadow-lg">
+        <div className="px-8 mt-8 bg-gray-100 rounded-lg shadow-md transition-shadow hover:shadow-lg">
           <h3 className="py-4 text-lg font-semibold text-gray-700 border-b">Student Profile</h3>
           <div className="grid grid-cols-2 gap-4 py-4">
             <div><strong>Name:</strong> {userDetails?.fullName || "-"}</div>
@@ -190,7 +190,7 @@ const Result: React.FC = () => {
         <h1 className="mt-10 text-2xl font-bold text-center text-gray-800">What is Aptitude?</h1>
         <p className="mt-2 text-center">Aptitude refers to an individual’s natural ability to learn and perform tasks.</p>
 
-        <div className="w-full max-w-lg p-4 mx-auto mt-4 transition-shadow bg-white shadow-md rounded-xl hover:shadow-lg">
+        <div className="p-4 mx-auto mt-4 w-full max-w-lg bg-white rounded-xl shadow-md transition-shadow hover:shadow-lg">
           <Pie data={aptitudeDonutData} options={aptitudeDonutOptions} />
         </div>
 
@@ -203,7 +203,7 @@ const Result: React.FC = () => {
 
         <h2 className="mt-12 text-2xl font-bold text-center text-gray-800">Your Personality Types</h2>
         <p className="mt-2 text-center">Personality traits significantly impact career paths.</p>
-        <div className="w-full max-w-lg p-4 mx-auto mt-4 transition-shadow bg-white shadow-md rounded-xl hover:shadow-lg">
+        <div className="p-4 mx-auto mt-4 w-full max-w-lg bg-white rounded-xl shadow-md transition-shadow hover:shadow-lg">
           <Bar data={personalityBarData} options={personalityBarOptions} />
         </div>
 

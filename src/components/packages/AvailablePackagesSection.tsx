@@ -67,7 +67,7 @@ const AvailablePackagesSection = () => {
             const response = await ValidateGiftCode(code, packageId);
 
             if (!response) {
-                console.error("Invalid response structure:", response);
+                console.log("Invalid response structure:", response);
                 return { isValid: false, discountedAmount: 0, giftCodeId: 0 };
             }
 
@@ -87,7 +87,7 @@ const AvailablePackagesSection = () => {
             return { isValid: false, discountedAmount: 0, giftCodeId: 0 };
         } catch (error) {
             setLoading(false);
-            console.error("Error validating Gift Code:", error);
+            console.log("Error validating Gift Code:", error);
             return { isValid: false, discountedAmount: 0, giftCodeId: 0 };
         }
     };
@@ -142,7 +142,7 @@ const AvailablePackagesSection = () => {
                 }
             }
         } catch (error) {
-            console.error('Error completing order internally:', error);
+            console.log('Error completing order internally:', error);
             toast.error('Failed to activate package. Please contact support.');
         }
     };

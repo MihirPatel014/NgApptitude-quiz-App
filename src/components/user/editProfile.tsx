@@ -24,7 +24,7 @@ const EditProfile = () => {
         setLoading(false);
       }
     } catch (error) {
-      console.error("Error fetching user details", error);
+      console.log("Error fetching user details", error);
       setLoading(false);
     } finally {
       setLoading(false);
@@ -65,7 +65,7 @@ const EditProfile = () => {
   }
 
   return (
-    <div className="flex flex-col max-w-4xl min-h-0 p-6 mx-auto mt-20 bg-white rounded-lg shadow-md">
+    <div className="flex flex-col p-6 mx-auto mt-20 max-w-4xl min-h-0 bg-white rounded-lg shadow-md">
       <h2 className="mb-6 text-2xl font-bold text-gray-800">Edit Profile</h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -80,7 +80,7 @@ const EditProfile = () => {
               name="fullName"
               value={formData.fullName}
               onChange={handleChange}
-              className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
           </div>
 
@@ -95,7 +95,7 @@ const EditProfile = () => {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
           </div>
         </div>
@@ -111,7 +111,7 @@ const EditProfile = () => {
             name="email"
             value={formData.email}
             onChange={handleChange}
-            className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            className="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
         </div>
 
@@ -127,7 +127,7 @@ const EditProfile = () => {
               name="phone"
               value={formData.contactNo}
               onChange={handleChange}
-              className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
           </div>
 
@@ -143,7 +143,7 @@ const EditProfile = () => {
               //   value={formData.dateOfBirth}
               value={formData.dateOfBirth ? new Date(formData.dateOfBirth).toISOString().split('T')[0] : ''} // Convert string to 'YYYY-MM-DD'
               onChange={handleChange}
-              className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
           </div>
         </div>
@@ -159,7 +159,7 @@ const EditProfile = () => {
             name="institute"
             value={formData.institute}
             onChange={handleChange}
-            className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            className="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
         </div>
 
@@ -175,7 +175,7 @@ const EditProfile = () => {
               name="city"
               value={formData.city}
               onChange={handleChange}
-              className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
           </div>
 
@@ -190,7 +190,7 @@ const EditProfile = () => {
               name="state"
               value={formData.state}
               onChange={handleChange}
-              className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
           </div>
         </div>
@@ -206,7 +206,7 @@ const EditProfile = () => {
               name="hobbies"
               value={formData.hobbies}
               onChange={handleChange}
-              className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
           </div>
 
@@ -221,7 +221,7 @@ const EditProfile = () => {
               name="dreamCareerOptions"
               value={formData.dreamCareerOptions}
               onChange={handleChange}
-              className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
           </div>
         </div>
@@ -229,13 +229,13 @@ const EditProfile = () => {
         <div className="flex justify-end space-x-4">
           <button
             type="button"
-            className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md border border-transparent shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             Update Profile
           </button>

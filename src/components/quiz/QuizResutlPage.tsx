@@ -3,6 +3,9 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { GetUserPackageInfoByUserId } from '../../services/authService';
 import { getExamInfoByExamId } from '../../services/examService';
 import { useLoader } from '../../provider/LoaderProvider';
+import { useQuery } from '@tanstack/react-query';
+import { UserPackageInfoModel } from '../../types/user';
+import { ExamWithSectionViewModel } from '../../types/exam';
 
 export interface QuizResultProps {
   examId?: number;
@@ -21,7 +24,7 @@ export interface QuizResultProps {
 const QuizResult: React.FC<QuizResultProps> = ({
   examId,
   userId,
-   userPackageId: userPackageId,
+  userPackageId: userPackageId,
   examName,
   totalQuestions,
   answered,
@@ -37,6 +40,37 @@ const QuizResult: React.FC<QuizResultProps> = ({
   const currentUserId = userId ?? location.state?.userId;
   const [nextExam, setNextExam] = useState<any>(null);
   const [currentPackageId, setCurrentPackageId] = useState<number | null>(null);
+
+  const { data: userPackages , isLoading: isLoadingUserPackages, isError: isErrorUserPackages } = useQuery<UserPackageInfoModel[]>({
+    queryKey: ['userPackages', currentUserId],
+    queryFn: async () => {
+      if (!currentUserId) {
+        throw new Error('User ID is required');
+      }
+      const result = await GetUserPackageInfoByUserId(currentUserId);
+      if (!result) {
+        throw new Error('User packages not found');
+      }
+      return result;
+    },
+    enabled: !!currentUserId,
+  });
+
+  const { data: fetchedExamData, isLoading: isLoadingExamData, isError: isErrorExamData } = useQuery<ExamWithSectionViewModel>({
+    queryKey: ['examInfo', nextExam?.examId],
+    queryFn: async () => {
+      if (!nextExam?.examId) {
+        throw new Error('Exam ID is required');
+      }
+      const result = await getExamInfoByExamId(nextExam.examId);
+      if (!result) {
+        throw new Error('Exam not found');
+      }
+      return result;
+    },
+    enabled: !!nextExam?.examId,
+  }
+  );
   const { setLoading } = useLoader();
   // Convert seconds to minutes and seconds format
   const formatTimeTaken = (seconds: number): string => {
@@ -46,23 +80,23 @@ const QuizResult: React.FC<QuizResultProps> = ({
   };
 
   useEffect(() => {
-    const fetchNextExam = async () => {
+    const processPackages = async () => {
       setLoading(true);
       try {
-        if (!currentUserId || !currentExamId) return;
-        const packages = await GetUserPackageInfoByUserId(currentUserId);
-        if (!packages || packages.length === 0) { return }
+        if (!currentUserId || !currentExamId || !userPackages) return;
+
+        if (userPackages.length === 0) { return }
         // Determine the current package. Prefer the one explicitly in progress if status is available,
         // otherwise fall back to the package that contains the current exam.
-        const currentPackage = packages.find(pkg => pkg.status === "In Progress (0% completed)") ||
-          packages.find(pkg => pkg.exams?.some((exam: any) => exam.examId === currentExamId));
+        const currentPackage = userPackages.find(pkg => pkg.status === "In Progress (0% completed)") ||
+          userPackages.find(pkg => pkg.exams?.some((exam: any) => exam.examId === currentExamId));
         if (!currentPackage) {
           setCurrentPackageId(null);
           return;
         }
         setCurrentPackageId(currentPackage.id);
-        
-        console.log("This is the current package",currentPackage);
+
+        console.log("This is the current package", currentPackage);
         if (!currentPackage) return;
         // Find any other available exam in the same package
         const availableExams = currentPackage.exams.filter(
@@ -87,8 +121,9 @@ const QuizResult: React.FC<QuizResultProps> = ({
 
           // Fetch exam questions
           let examQuestions: any[] = [];
-          const fetchedExam = await getExamInfoByExamId(next.examId);
-          examQuestions = fetchedExam?.sections?.flatMap(section => section.questions) || [];
+          if (fetchedExamData) {
+            examQuestions = fetchedExamData?.sections?.flatMap((section: any) => section.questions) || [];
+          }
 
           setNextExam({
             userId: currentUserId,
@@ -107,8 +142,10 @@ const QuizResult: React.FC<QuizResultProps> = ({
         setLoading(false);
       }
     };
-    fetchNextExam();
-  }, [currentUserId, currentExamId]);
+    if (userPackages && !isLoadingUserPackages && !isErrorUserPackages) {
+      processPackages();
+    }
+  }, [currentUserId, currentExamId, userPackages, isLoadingUserPackages, isErrorUserPackages, fetchedExamData]);
 
   const handleNextExam = () => {
     if (nextExam) {
@@ -143,13 +180,6 @@ const QuizResult: React.FC<QuizResultProps> = ({
           </div>
 
           <div className="grid grid-cols-2 gap-3 mt-6">
-            {/* <button
-              onClick={onReturnToQuizPage}
-              className="px-4 py-2 text-sm font-medium text-white bg-gray-500 rounded-md hover:bg-gray-600"
-            >
-              Home
-            </button> */}
-
             <Link to="/">
               <button className="px-4 py-2 w-full text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600">
                 Home

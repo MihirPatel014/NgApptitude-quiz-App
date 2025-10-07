@@ -100,7 +100,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
         }
       }
     } catch (error) {
-      console.error('Error fetching pincode data:', error);
+      console.log('Error fetching pincode data:', error);
       setFormErrors((prevErrors) => ({
         ...prevErrors,
         city: 'Error fetching city data',

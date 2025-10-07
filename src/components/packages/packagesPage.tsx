@@ -77,7 +77,7 @@ const PackagesPage = () => {
 
     //         return { isValid: false, discountedAmount: 0 };
     //     } catch (error) {
-    //         console.error("Error validating coupon:", error);
+    //         console.log("Error validating coupon:", error);
     //         return { isValid: false, discountedAmount: 0 };
     //     }
     // };
@@ -87,7 +87,7 @@ const PackagesPage = () => {
             const response = await ValidateGiftCode(code, packageId);
 
             if (!response) {
-                console.error("Invalid response structure:", response);
+                console.log("Invalid response structure:", response);
                 return { isValid: false, discountedAmount: 0, giftCodeId: 0 };
             }
 
@@ -109,7 +109,7 @@ const PackagesPage = () => {
             return { isValid: false, discountedAmount: 0, giftCodeId: 0 };
         } catch (error) {
             setLoading(false);
-            console.error("Error validating Gift Code:", error);
+            console.log("Error validating Gift Code:", error);
             return { isValid: false, discountedAmount: 0, giftCodeId: 0 };
         }
     };
@@ -163,7 +163,7 @@ const PackagesPage = () => {
                 }
             }
         } catch (error) {
-            console.error('Error completing order internally:', error);
+            console.log('Error completing order internally:', error);
             toast.error('Failed to activate package. Please contact support.');
         }
     };
@@ -288,7 +288,7 @@ const PackagesPage = () => {
 
     if (error) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-100">
+            <div className="flex justify-center items-center min-h-screen bg-gray-100">
                 <h1 className="text-2xl text-red-600">{error}</h1>
             </div>
         );
@@ -311,19 +311,19 @@ const PackagesPage = () => {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-100">
+        <div className="flex flex-col justify-center items-center p-4 min-h-screen bg-gray-100">
             <Toaster />
             <h1 className="mb-6 text-3xl font-bold text-center">Choose a Package</h1>
             {/* Coupon Dialog */}
             {isCouponDialogOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="relative p-6 bg-white rounded-md shadow-lg w-96">
+                <div className="flex fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50">
+                    <div className="relative p-6 w-96 bg-white rounded-md shadow-lg">
                         <h2 className="mb-4 text-lg font-semibold">Enter Gift Code </h2>
                         <input
                             type="text"
                             value={couponCode}
                             onChange={(e) => setCouponCode(e.target.value)}
-                            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="p-2 w-full rounded-md border focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Enter Gift Code"
                         />
                         <div className="flex justify-between mt-4">
@@ -371,14 +371,14 @@ const PackagesPage = () => {
                             <h2 className="mb-2 text-2xl font-bold">{pkg.name}</h2>
                             <p className="mb-4 text-gray-700">{pkg.description}</p>
                             <h3 className="mb-4 text-xl font-semibold">What's included:</h3>
-                            <ul className="pl-5 space-y-2 text-gray-600 list-disc">
+                            <ul className="pl-5 space-y-2 list-disc text-gray-600">
                                 {details?.exams.map((exam) => (
                                     <li key={exam.id}>{exam.name}</li>
                                 ))}
                             </ul>
                         </div>
 
-                        <div className="flex flex-col items-center justify-center p-4 bg-gray-100 rounded-md">
+                        <div className="flex flex-col justify-center items-center p-4 bg-gray-100 rounded-md">
                             <p className="mb-2 text-3xl font-bold text-secondary">₹ {pkg.price.toFixed(2)}</p>
 
                             <button
@@ -409,19 +409,19 @@ const PackagesPage = () => {
                 const hasDiscount = appliedCoupons[pkg.id] !== undefined;
 
                 return (
-                    <div key={pkg.id} className="flex flex-col p-6 mt-5 transition-transform duration-300 transform bg-white rounded-lg shadow-md md:flex-row hover:shadow-lg">
+                    <div key={pkg.id} className="flex flex-col p-6 mt-5 bg-white rounded-lg shadow-md transition-transform duration-300 transform md:flex-row hover:shadow-lg">
                         <div className="flex-1 p-7">
                             <h2 className="mb-2 text-2xl font-bold">{pkg.name}</h2>
                             <p className="mb-4 text-gray-700">{pkg.description}</p>
                             <h3 className="mb-4 text-xl font-semibold">What's included:</h3>
-                            <ul className="pl-5 space-y-2 text-gray-600 list-disc">
+                            <ul className="pl-5 space-y-2 list-disc text-gray-600">
                                 {details?.exams.map((exam) => (
                                     <li key={exam.id}>{exam.name}</li>
                                 ))}
                             </ul>
                         </div>
 
-                        <div className="flex flex-col items-center justify-center p-4 bg-gray-100 rounded-md">
+                        <div className="flex flex-col justify-center items-center p-4 bg-gray-100 rounded-md">
                             {/* Animated Price Change */}
                             <div className={`transition-transform duration-500 ${hasDiscount ? "text-green-600 scale-110" : "text-secondary"}`}>
                                 <p className="mb-2 text-3xl font-bold">

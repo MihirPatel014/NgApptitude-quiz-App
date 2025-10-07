@@ -22,9 +22,9 @@ const Update_USER_DETAILS = "/UpdateUserDetails"
 const ADD_USER_TO_PACKAGE = "/AddUserToPackage"
 const GET_USER_FULL_INFO_BY_USERID = "/GetUserFullInfoByUserId"
 const GET_USER_PACKAGE_INFO_BY_USERID = "/GetUserPackageInfoByUserId"
- 
- const API_URL = process.env.REACT_APP_API_URL;
 
+// const API_URL = process.env.REACT_APP_API_URL;
+const API_URL  = 'https://aping.runasp.net/';
 const GRADE_URL = "api/Grade/GetAllGrades";
 const getAll = () => {
   return http.get<Array<userDetails>>(`/${USERS_URL}`);
@@ -51,15 +51,8 @@ export const removeAll = () => {
 };
 
 export const loginUser = async (data: UserLogin) => {
-
-console.log("Environment:", process.env.REACT_APP_API_URL);
-console.log("API URL:", process.env.REACT_APP_API_URL);
-console.log("Test Var:", process.env.REACT_APP_TEST);
-
-const fullUrl = `${USERS_URL}${LOGIN_URL}`;
-console.log("➡️ Full API Request URL:", fullUrl);
-console.log("📦 Request Data:", data);
-
+  console.log("Environment:", process.env.REACT_APP_API_URL);
+  console.log("API URL:", process.env.REACT_APP_API_URL);
   const response = await http.post<ApiResponse<User>>(`${USERS_URL}${LOGIN_URL}`, data);
   const result = handleApiResponse(response.data);
 
@@ -85,7 +78,7 @@ export const registerUser = async (data: UserRegistration) => {
     return result.data;
   } else {
     // Handle API-level errors
-    console.error("Registration failed with errors:", result.errors);
+    console.log("Registration failed with errors:", result.errors);
     return null;
   }
 };
@@ -97,7 +90,7 @@ export const sendOtp = async (data: string) => {
     let response = "1234";
     return response;
   } catch (error) {
-    console.error("Error during registration:", error);
+    console.log("Error during registration:", error);
     throw error;
   }
 };
@@ -107,7 +100,7 @@ export const VerifyOtp = async (mobileNo: string, otp: string) => {
     let response = "1234";
     return response;
   } catch (error) {
-    console.error("Error during registration:", error);
+    console.log("Error during registration:", error);
     throw error;
   }
 };
@@ -124,7 +117,7 @@ export const getUserDetails = async () => {
     return null;
   }
 };
-export const UpdateUserDetails = async (data:UserProfileUpdate) => {
+export const UpdateUserDetails = async (data: UserProfileUpdate) => {
   const result = await apiRequest<typeof data, UserProfileUpdate>(
     `/${USERS_URL}${Update_USER_DETAILS}`,
     "POST",
@@ -160,7 +153,7 @@ export const pincodeApi = async (pincode: number) => {
     const response = await axios.get(PINCODE_API_URL);
     return response.data;
   } catch (error) {
-    console.error('Error fetching pincode data:', error);
+    console.log('Error fetching pincode data:', error);
     throw error;
   }
 };
@@ -200,7 +193,6 @@ export const GetUserPackageInfoByUserId = async (userId: number) => {
 };
 
 export const getAllGrades = async (): Promise<Grade[] | null> => {
-  debugger
   try {
     const response = await axios.get<Grade[]>(`${API_URL}${GRADE_URL}`);
     // post(`${API_URL}${PROCESS_REQUEST_ORDER}

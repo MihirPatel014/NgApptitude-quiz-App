@@ -55,7 +55,7 @@ const ResultNew: React.FC = () => {
           setUserDetails(fetchedUserDetails);
         }
       } catch (error) {
-        console.error("Error fetching user details", error);
+        console.log("Error fetching user details", error);
       } finally {
         setLoading(false);
       }

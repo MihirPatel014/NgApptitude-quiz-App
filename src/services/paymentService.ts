@@ -40,7 +40,7 @@ export const ValidateGiftCode = async (codeName: string, packageId: number) => {
             return result.data;
         } else {
             // Handle API-level errors
-            console.error("Registration failed with errors:", result.errors);
+            console.log("Registration failed with errors:", result.errors);
             return null;
         }
         
@@ -97,7 +97,7 @@ export const CompletePaymentOrder = async (paymentDetails: {
             return result.data;
         } else {
             // Handle API-level errors
-            console.error("Registration failed with errors:", result.errors);
+            console.log("Registration failed with errors:", result.errors);
             return null;
         }
 

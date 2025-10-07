@@ -13,13 +13,24 @@ import { QuestionSumitStatus } from '../../common/constant';
 import toast, { Toaster } from 'react-hot-toast';
 
 import { useLoader } from '../../provider/LoaderProvider';
+import spatial_Image1 from "../../../src/assests/spatial/image_1.png";
+import spatial_Image2 from "../../../src/assests/spatial/image_2.png";
+import spatial_Image3 from "../../../src/assests/spatial/image_3.png";
+import spatial_Image4 from "../../../src/assests/spatial/image_4.png";
+import spatial_Image5 from "../../../src/assests/spatial/image_5.png";
 
 const QuestionStatus = {
   NotAttended: 0,
   Skipped: 1,
   Attended: 2,
 } as const;
-
+const quiz_image_mapper: { [key: number]: string } = {
+  137: spatial_Image1,
+  138: spatial_Image2,
+  139: spatial_Image3,
+  140: spatial_Image4,
+  141: spatial_Image5,
+}
 type QuestionStatusType = typeof QuestionStatus[keyof typeof QuestionStatus];
 
 export interface QuizProps {
@@ -606,10 +617,19 @@ const Quiz: React.FC<QuizProps> = ({
                   </div>
 
                   {/* Question */}
+                  
                   <div className="p-8 mb-8 bg-white rounded-xl shadow-lg">
-                    <h2 className="mb-8 text-xl font-medium leading-relaxed text-gray-800">
+                     <h2 className="mb-8 text-xl font-medium leading-relaxed text-gray-800">
                       {questionText}
                     </h2>
+                    {currentQuestion && quiz_image_mapper[currentQuestion.id] && (
+                      <img
+                        src={quiz_image_mapper[currentQuestion.id]}
+                        alt="Question Illustration"
+                        className="mx-auto mb-4 max-h-60"
+                      />
+                    )}
+                   
 
                     {/* Answer Options */}
                     <div className="space-y-4">
@@ -617,6 +637,7 @@ const Quiz: React.FC<QuizProps> = ({
                         [optionA, optionB, optionC, optionD]
                           .slice(0, questionType === 1 ? 2 : 4)
                           .map((option, index) => {
+                           
                             const optionLetter = String.fromCharCode(65 + index);
                             const isSelected = selectedAnswerIndex === index ||
                               getSelectedAnswerForQuestion(currentQuestion.id) === optionLetter;

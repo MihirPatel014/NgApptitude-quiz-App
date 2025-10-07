@@ -52,7 +52,7 @@ import jsPDF from 'jspdf';
 //     }
 //   };
 //   return (
-//     <button className='p-2 mt-12 text-white border rounded hover:bg-slate-500 bg-slate-400' onClick={handleGeneratePdf}>Download PDF</button>
+//     <button className='p-2 mt-12 text-white rounded border hover:bg-slate-500 bg-slate-400' onClick={handleGeneratePdf}>Download PDF</button>
 //   );
 // };
 
@@ -136,7 +136,7 @@ const PdfDownloader = ({ reportRef }) => {
               }
             }
           } catch (error) {
-            console.error(`Error processing section ${i + 1}:`, error);
+            console.log(`Error processing section ${i + 1}:`, error);
             // Continue with next section
           }
         }
@@ -148,7 +148,7 @@ const PdfDownloader = ({ reportRef }) => {
 
   return (
     <button 
-      className='p-2 mt-12 text-white border rounded hover:bg-slate-500 bg-slate-400' 
+      className='p-2 mt-12 text-white rounded border hover:bg-slate-500 bg-slate-400' 
       onClick={handleGeneratePdf}
     >
       Download PDF

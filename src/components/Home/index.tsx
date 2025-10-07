@@ -1,9 +1,9 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useState, useContext, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { UserContext } from "../../provider/UserProvider";
 import { GetUserPackageInfoByUserId } from "../../services/authService";
 import { UserPackageInfoModel, UserExamInfoModel } from "../../types/user";
-import { UNSAFE_FetchersContext, useNavigate } from "react-router-dom";
-
+import { useNavigate } from "react-router-dom";
 import { formatDate } from "../../utils/dateUtils";
 import { useLoader } from "../../provider/LoaderProvider";
 import { ExamSections, ExamWithSectionViewModel } from "../../types/exam";
@@ -11,47 +11,28 @@ import { getExamInfoByExamId } from "../../services/examService";
 import AvailablePackagesSection from "../packages/AvailablePackagesSection";
 import { Award, CheckCircle, Clock, Eye, Play, ShoppingCart, Star, Users, Zap } from "lucide-react";
 
-export const Subscription = () => {
+export const HomeComponent = () => {
   const { userAuth } = useContext(UserContext);
   const navigate = useNavigate();
   const { setLoading } = useLoader();
-  const [expandedExamIds, setExpandedExamIds] = useState<Set<number>>(new Set()); // Track multiple expanded exams
+  
   const [examSections, setExamSections] = useState<Map<number, ExamSections[]>>(new Map()); // Store sections per exam
-  const isFetched = useRef(false);
-  const [userPackages, setUserPackages] = useState<UserPackageInfoModel[]>([]);
+
   const [currentPackage, setCurrentPackage] = useState<UserPackageInfoModel | null>(null);
 
   let UserId = userAuth?.userId || 0;
 
+
+  const { data: userPackages, isSuccess } = useQuery({
+    queryKey: ["userPackages"],
+    queryFn: async () => GetUserPackageInfoByUserId(UserId),
+    enabled: !!UserId,
+  });
   useEffect(() => {
-    const fetchUserDetails = async () => {
-      setLoading(true);
-      try {
-        const response = await GetUserPackageInfoByUserId(userAuth?.userId || 0);
-        if (response) {
-          // Sort packages by startedDate (latest first)
-          const sortedPackages = response.sort((a: UserPackageInfoModel, b: UserPackageInfoModel) =>
-            new Date(b.startedDate || 0).getTime() - new Date(a.startedDate || 0).getTime()
-          );
-
-          setUserPackages(sortedPackages);
-          if (sortedPackages.length > 0) {
-            setCurrentPackage(sortedPackages[0]); // Set the latest package as current
-          }
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error("Error fetching user details:", error);
-        setLoading(false);
-      }
-    };
-
-
-
-    fetchUserDetails();
-
-  }, [userAuth?.userId]);
-
+    if (isSuccess && userPackages && userPackages.length > 0) {
+      setCurrentPackage(userPackages[0]);
+    }
+  }, [isSuccess, userPackages]);
   const handleResult = (packageId: number) => {
     navigate("/resultnew", { state: { packageId } });
   };
@@ -64,7 +45,7 @@ export const Subscription = () => {
       let packageId: number = 0;
       let examProgressId: number = 0;
 
-      for (const packageInfo of userPackages) {
+      for (const packageInfo of userPackages || []) {
         const foundExam = packageInfo.exams.find(exam => exam.examId === examId);
         if (foundExam) {
           selectedExam = foundExam;
@@ -162,91 +143,7 @@ export const Subscription = () => {
   );
 
 
-  //     return (
 
-  //         <div className="flex flex-col p-6 mx-auto mt-4 mb-5 max-w-7xl min-h-0 bg-white rounded-lg shadow-md">
-  //             {userPackages.length === 0 ? (
-  //                 <div className="flex flex-col justify-center items-center py-10">
-  //                     <p className="mb-4 text-lg font-semibold text-gray-600">You have no active subscriptions.</p>
-  //                     <button
-  //                         className="px-6 py-3 text-white bg-green-500 rounded-lg hover:bg-green-600"
-  //                         onClick={() => navigate("/packages")}
-  //                     >
-  //                         Buy New Package
-  //                     </button>
-  //                 </div>
-  //             ) : (
-  //                 <>
-  //                     <div className="flex justify-between items-center mb-5">
-  //                         <div>
-  //                             <h3 className="text-2xl font-semibold">My Subscriptions</h3>
-  //                             <p className="text-gray-600">Here is a list of packages/products that you have subscribed to.</p>
-  //                         </div>
-  //                         <button
-  //                             className="px-5 py-2 text-white bg-green-500 rounded hover:bg-green-600"
-  //                             onClick={() => navigate("/packages")}
-  //                         >
-  //                             Buy New Package
-  //                         </button>
-  //                     </div>
-
-  //                     <div className="flex justify-end px-5 py-2">
-  //                         <span className="flex items-center px-1 text-xs">
-  //                             <FaCircle className="mr-1 text-green-500" /> Completed
-  //                         </span>
-  //                         <span className="flex items-center px-1 text-xs">
-  //                             <FaCircle className="mr-1 text-yellow-500" /> In Progress
-  //                         </span>
-  //                     </div>
-
-  //                     <div className="py-5 space-y-6">
-  //                         {userPackages.map((pkg) => {
-  //                           const allExamsCompleted = pkg.exams.length > 0 && pkg.exams.every(exam => exam.isCompleted);
-
-  //                           return (
-  //                               <div key={pkg.userPackageId && (pkg.completionDate?.toString() || "")} className="p-5 rounded-lg border shadow-sm">
-  //                                   {allExamsCompleted && (
-  //                                       <div className="flex justify-end my-2">
-
-  //                                           <button
-  //                                               onClick={() => handleResult(pkg.id)}
-  //                                               className="px-4 py-2 text-sm text-blue-500 rounded border border-blue-500 hover:bg-blue-500 hover:text-white"
-  //                                           >
-  //                                               View Result
-  //                                           </button>
-  //                                       </div>
-  //                                   )}
-
-  //                                   <div
-  //                                       className="grid grid-cols-1 gap-6 items-start mb-4 md:grid-cols-2"
-  //                                   >
-  //                                       {/* Left Side: Package Info */}
-  //                                       <div>
-  //                                           <h4 className="text-xl font-semibold">
-  //                                               {pkg.packageName}
-  //                                               <span className={`px-3 ml-1 py-2 text-xs rounded-full text-white ${pkg.isCompleted ? "bg-red-500" : "bg-green-500"}`}>
-  //                                                   {pkg.isCompleted ? "Ended" : "Active"}
-  //                                               </span>
-  //                                           </h4>
-  //                                           <p className="mt-1 text-sm text-gray-500">
-  //                                               <span className="mt-1 text-sm text-gray-500">
-  //                                                   Billing On: {formatDate(pkg.startedDate || "")}
-  //                                               </span>
-  //                                           </p>
-  //                                           <p className="text-sm text-gray-500">Price: {pkg.packagePrice || "N/A"}</p>
-  // //                                             {/* <p className="text-sm text-gray-500">
-  // //             Status: {pkg.status} ({pkg.completionPercentage}% completed)
-  // //         </p> */}
-  // //                                         </div>
-
-  // //                                         {/* Right Side: Related Exams */}
-  // //                                         <div>
-  // //                                             <h5 className="mb-2 text-lg font-semibold">Exams Included:</h5>
-  // //                                             <ul className="space-y-2">
-  // //                                                 {pkg.exams.map((exam) => (
-  // //                                                     <li key={exam.examId && exam.examName} className="flex justify-between items-center p-3 bg-gray-100 rounded">
-
-  // };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
@@ -264,7 +161,7 @@ export const Subscription = () => {
         </div>
 
         {/* Current Package - Enhanced Design */}
-        {currentPackage && (
+        {userPackages && (
           <div className="mb-12">
             <h2 className="flex items-center mb-6 text-2xl font-semibold text-gray-900">
               <Zap className="mr-2 w-6 h-6 text-blue-600" />
@@ -281,11 +178,9 @@ export const Subscription = () => {
                   <div className="flex justify-between items-start mb-6">
                     <div>
                       <h3 className="mb-3 text-3xl font-bold">{currentPackage?.packageName}</h3>
-                      {/* <p className="max-w-2xl text-lg leading-relaxed text-blue-100">{currentPackage?.}</p> */}
                     </div>
                     <div className="text-right">
                       <div className="mb-1 text-4xl font-bold">₹{currentPackage?.packagePrice}/-</div>
-                      {/* <div className="text-blue-200">Active since {currentPackage?.startedDate ? new Date(currentPackage.startedDate).toLocaleDateString() : 'N/A'}</div> */}
                       <div className="text-blue-200">Active since {formatDate(currentPackage?.startedDate || "")}</div>
 
 
@@ -351,5 +246,4 @@ export const Subscription = () => {
   );
 };
 
-
-export default Subscription;
+export default HomeComponent;

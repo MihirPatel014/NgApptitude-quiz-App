@@ -40,7 +40,7 @@ const Login = () => {
 
     try {
       const userResponse = await loginUser(user);
-console.log(userResponse);
+
       if (userResponse) {      
         switch (Number(userResponse.loginResult)) {
           case userLoginResults.Successful:
@@ -95,7 +95,7 @@ console.log(userResponse);
       setLoading(false);
       }
     } catch (error) {
-      console.error("Login error:", error);
+      console.log("Login error:", error);
       toast.error("An error occurred while logging in. Please try again.");
       setLoading(false);
     }
@@ -120,7 +120,7 @@ console.log(userResponse);
             required
             value={user.email}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 w-full rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -136,7 +136,7 @@ console.log(userResponse);
             required
             value={user.password}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 w-full rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500"
           />
           <button
             type="button"
@@ -150,7 +150,7 @@ console.log(userResponse);
 
         <button
           type="submit"
-          className="w-full py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
+          className="py-2 w-full text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
         >
           Login
         </button>
