@@ -11,7 +11,7 @@ import { getExamInfoByExamId } from "../../services/examService";
 import AvailablePackagesSection from "../packages/AvailablePackagesSection";
 import { Award, CheckCircle, Clock, Play, Users, Zap } from "lucide-react";
 
-export const HomeComponent = () => {
+const HomeComponent = () => {
   const { userAuth } = useContext(UserContext);
   const navigate = useNavigate();
   const { setLoading } = useLoader();
