@@ -19,6 +19,8 @@ export const HomeComponent = () => {
   const [examSections, setExamSections] = useState<Map<number, ExamSections[]>>(new Map()); // Store sections per exam
 
   const [currentPackage, setCurrentPackage] = useState<UserPackageInfoModel | null>(null);
+  const [completedPackages, setCompletedPackages] = useState<UserPackageInfoModel[]>([]);
+
 
   let UserId = userAuth?.userId || 0;
 
@@ -28,9 +30,10 @@ export const HomeComponent = () => {
     queryFn: async () => GetUserPackageInfoByUserId(UserId),
     enabled: !!UserId,
   });
-  useEffect(() => {
+    useEffect(() => {
     if (isSuccess && userPackages && userPackages.length > 0) {
-      setCurrentPackage(userPackages[0]);
+      setCurrentPackage(userPackages.filter(pkg => !pkg.isCompleted && pkg.status.includes("In Progress"))[0] || null);
+      setCompletedPackages(userPackages.filter(pkg => pkg.isCompleted && pkg.status.includes("Completed on")));
     }
   }, [isSuccess, userPackages]);
   const handleResult = (packageId: number) => {
@@ -152,8 +155,8 @@ export const HomeComponent = () => {
         <div className="mb-10">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h1 className="mb-2 text-4xl font-bold text-gray-900">Dashboard</h1>
-              <p className="text-lg text-gray-600">Track your learning progress and explore new packages</p>
+              <h1 className="mb-2 text-4xl font-bold text-gray-900">Self Discovery Suite</h1>
+              <p className="text-lg text-gray-600">Test Beyond Boundaries Reveal the Real you..</p>
             </div>
 
 
@@ -196,7 +199,7 @@ export const HomeComponent = () => {
                     <div className="flex justify-between items-center mb-6">
                       <h4 className="flex items-center text-xl font-semibold text-gray-900">
                         <Users className="mr-2 w-5 h-5" />
-                        Your Exams
+                        Your Assessments
                       </h4>
                       {currentPackage && currentPackage.exams.length > 0 && currentPackage.exams.every(exam => exam.isCompleted) && (
                         <button
@@ -231,6 +234,60 @@ export const HomeComponent = () => {
             </div>
           </div>
         )}
+
+        {/* Completed Packages Section */}
+        {completedPackages && completedPackages.length > 0 && (
+          <div className="mb-12">
+            <h2 className="flex items-center mb-6 text-2xl font-semibold text-gray-900">
+              <CheckCircle className="mr-2 w-6 h-6 text-green-600" />
+              Completed Packages
+            </h2>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {completedPackages.map((pkg) => (
+                <div key={pkg.id} className="overflow-hidden bg-white rounded-2xl border border-gray-200 shadow-lg">
+                  <div className="relative p-6 text-white bg-gradient-to-r from-green-600 via-green-700 to-emerald-700">
+                    <div className="absolute inset-0 opacity-10">
+                      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br to-transparent from-white/20"></div>
+                    </div>
+                    <div className="relative z-10">
+                      <h3 className="mb-2 text-2xl font-bold">{pkg.packageName}</h3>
+                      <div className="text-green-200">Completed on {formatDate(pkg.startedDate || "")}</div>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <h4 className="flex items-center mb-4 text-lg font-semibold text-gray-900">
+                      <Award className="mr-2 w-5 h-5" />
+                      Assessments
+                    </h4>
+                    <div className="space-y-3">
+                      {pkg.exams?.map((exam) => (
+                        <ExamStatus
+                          key={exam.examId}
+                          exam={{
+                            id: exam.examId,
+                            name: exam.examName,
+                            timeLimit: exam.timeLimit,
+                            isCompleted: exam.isCompleted,
+                          }}
+                          onStartExam={handleQuizClick}
+                        />
+                      ))}
+                    </div>
+                    {pkg.exams.every(exam => exam.isCompleted) && (
+                      <button
+                        onClick={() => handleResult(pkg.id)}
+                        className="px-4 py-2 mt-6 w-full text-sm text-white bg-green-500 rounded-lg hover:bg-green-600"
+                      >
+                        View Result
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Available Packages - Grid Layout */}
         <div>
           <div className="mb-10 text-center">

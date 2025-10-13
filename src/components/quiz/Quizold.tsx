@@ -5,7 +5,7 @@ import {
   getQuestionbyExamAndSectionId,
 } from '../../services/questionService';
 import { Question, QuestionCategory } from '../../types/question';
-import { FaCircle } from "react-icons/fa";
+ import { FaCircle } from "react-icons/fa";
 import { Link } from 'react-router-dom';
 import { QuizAnswerModel, SubmitExam, UserExamResponse } from '../../types/exam';
 import { AddUpdateUserExam, SubmitUserExam } from '../../services/examService';

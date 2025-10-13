@@ -16,6 +16,7 @@ import { LoaderProvider } from "./provider/LoaderProvider";
 import Loader from "./common/Loader";
 import ResultNew from "./pages/result/Resultnew";
 import QuizResultWrapper from "./components/quiz/QuizResultProp";
+import PhoneOTP from "./components/auth/PhoneOTP";
 function App() {
   return (
     <UserProvider>
@@ -24,7 +25,7 @@ function App() {
           <Routes>
             {/* Public Path */}
             {/* <Route path="/registeration" element={<Registeration />} /> */}
-            {/* <Route path="/login" element={<Login />} /> */}
+             <Route path="/loginwithotp" element={<PhoneOTP />} /> 
             <Route path="/login" element={<AnimatedForm />} />
             {/* <Route path="/login" element={<PhoneOtp />} /> */}
             <Route element={<ProtectedRoute />}>

@@ -87,7 +87,7 @@ export const registerUser = async (data: UserRegistration) => {
 export const sendOtp = async (data: string) => {
   try {
     // let response = http.post<string>(`/${USERS_URL}${sendOtp}`, data);
-    let response = "1234";
+    let response = "9977";
     return response;
   } catch (error) {
     console.log("Error during registration:", error);

@@ -19,6 +19,11 @@ import spatial_Image3 from "../../../src/assests/spatial/image_3.png";
 import spatial_Image4 from "../../../src/assests/spatial/image_4.png";
 import spatial_Image5 from "../../../src/assests/spatial/image_5.png";
 
+import image_1 from "../../../src/assests/logical/image_1.png";
+import image_2 from "../../../src/assests/logical/image_2.png";
+
+
+
 const QuestionStatus = {
   NotAttended: 0,
   Skipped: 1,
@@ -30,6 +35,8 @@ const quiz_image_mapper: { [key: number]: string } = {
   139: spatial_Image3,
   140: spatial_Image4,
   141: spatial_Image5,
+  123:image_1,
+  124:image_2,
 }
 type QuestionStatusType = typeof QuestionStatus[keyof typeof QuestionStatus];
 
@@ -293,7 +300,7 @@ const Quiz: React.FC<QuizProps> = ({
         if (!confirmExit) {
           window.history.pushState(null, '', window.location.pathname);
         } else {
-          navigate('/quizpage');
+          navigate('/');
         }
       }
     };

@@ -40,6 +40,7 @@
     "start:local": "react-scripts start",
     "dev-start": "react-scripts start serve -s"
   },
+  "proxy": "http://smsmkt.smartsmssolution.co.in",
   "eslintConfig": {
     "extends": [
       "react-app",
