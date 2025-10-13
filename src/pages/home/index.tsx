@@ -1,6 +1,5 @@
-import HomeComponent from "../../components/home/index.tsx";
+import HomeComponent from "../../components/home/index";
 const Home = () => {
-
     return (
         <>
             <HomeComponent />
