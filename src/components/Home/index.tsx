@@ -9,7 +9,7 @@ import { useLoader } from "../../provider/LoaderProvider";
 import { ExamSections, ExamWithSectionViewModel } from "../../types/exam";
 import { getExamInfoByExamId } from "../../services/examService";
 import AvailablePackagesSection from "../packages/AvailablePackagesSection";
-import { Award, CheckCircle, Clock, Eye, Play, ShoppingCart, Star, Users, Zap } from "lucide-react";
+import { Award, CheckCircle, Clock, Play, Users, Zap } from "lucide-react";
 
 export const HomeComponent = () => {
   const { userAuth } = useContext(UserContext);
