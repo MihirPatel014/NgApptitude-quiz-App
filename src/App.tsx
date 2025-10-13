@@ -17,6 +17,7 @@ import Loader from "./common/Loader";
 import ResultNew from "./pages/result/Resultnew";
 import QuizResultWrapper from "./components/quiz/QuizResultProp";
 import PhoneOTP from "./components/auth/PhoneOTP";
+
 function App() {
   return (
     <UserProvider>
