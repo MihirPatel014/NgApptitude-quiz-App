@@ -6,7 +6,7 @@ import {
 } from '../../services/questionService';
 import { Question, QuestionCategory } from '../../types/question';
 import { FaCircle } from "react-icons/fa";
-import { Link } from 'react-router-dom';
+
 import { QuizAnswerModel, SubmitExam, UserExamResponse } from '../../types/exam';
 import { AddUpdateUserExam, SubmitUserExam } from '../../services/examService';
 import { QuestionSumitStatus } from '../../common/constant';
@@ -182,6 +182,8 @@ const Quiz: React.FC<QuizProps> = ({
   }, [calculateScore, userExamProgressId, userId, packageId, userPackageId, examId, startTime, userExamResponse.responseData, stopTimers, setLoading]);
 
   const showQuizResult = useCallback(() => {
+    debugger;
+    
     navigate('/quizresult', {
       state: {
         examId: examId,
@@ -189,6 +191,7 @@ const Quiz: React.FC<QuizProps> = ({
         userExamProgressId: userExamProgressId,
         userPackageId: userPackageId,
         examName: examName,
+        examDescription: examDescription,
         answered: questionStatuses.filter(status => status === QuestionStatus.Attended).length,
         notAnswered: questionStatuses.filter(status => status === QuestionStatus.NotAttended).length,
         skipped: questionStatuses.filter(status => status === QuestionStatus.Skipped).length,
@@ -196,6 +199,7 @@ const Quiz: React.FC<QuizProps> = ({
         timeTaken: elapsedTime,
       },
     });
+    
   }, [navigate, examId, userId, userExamProgressId, userPackageId, examName, questionStatuses, questions.length, elapsedTime]);
 
   // Initialize timers once
@@ -574,6 +578,7 @@ const Quiz: React.FC<QuizProps> = ({
                   }
                 </span>
               )}
+
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex flex-col text-right">

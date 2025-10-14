@@ -94,6 +94,7 @@ const HomeComponent = () => {
   const ExamStatus = ({
     exam,
     onStartExam,
+    isDisabled
   }: {
     exam: {
       id: number;
@@ -103,6 +104,7 @@ const HomeComponent = () => {
       score?: number;
     };
     onStartExam: (examId: number) => void;
+    isDisabled: boolean;
 
   }) => (
     <div className="overflow-hidden relative bg-white rounded-lg border border-gray-200 transition-all duration-300 group hover:border-blue-300 hover:shadow-md">
@@ -131,7 +133,8 @@ const HomeComponent = () => {
             ) : (
               <button
                 onClick={() => onStartExam(exam.id)}
-                className="flex items-center px-4 py-2 space-x-1 text-sm text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg transition-all hover:from-blue-700 hover:to-blue-800"
+                disabled={isDisabled}
+                className={`flex items-center px-4 py-2 space-x-1 text-sm text-white rounded-lg transition-all ${isDisabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800'}`}
               >
                 <Play className="w-4 h-4" />
                 <span>Start Exam</span>
@@ -211,20 +214,24 @@ const HomeComponent = () => {
                       )}
                     </div>
                     <div className="space-y-4">
-                      {currentPackage?.exams?.map((exam) => (
+                      {currentPackage?.exams?.map((exam, index) => {
+                        const previousExamCompleted = index === 0 ? true : currentPackage?.exams[index - 1]?.isCompleted;
+                        const isExamDisabled = !previousExamCompleted;
 
-                        <ExamStatus
-                          key={exam.examId}
-                          exam={{
-                            id: exam.examId,
-                            name: exam.examName,
-                            timeLimit: exam.timeLimit,
-                            isCompleted: exam.isCompleted,
-                          }}
-                          onStartExam={handleQuizClick}
-
-                        />
-                      ))}
+                        return (
+                          <ExamStatus
+                            key={exam.examId}
+                            exam={{
+                              id: exam.examId,
+                              name: exam.examName,
+                              timeLimit: exam.timeLimit,
+                              isCompleted: exam.isCompleted,
+                            }}
+                            onStartExam={handleQuizClick}
+                            isDisabled={isExamDisabled}
+                          />
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -260,18 +267,24 @@ const HomeComponent = () => {
                       Assessments
                     </h4>
                     <div className="space-y-3">
-                      {pkg.exams?.map((exam) => (
-                        <ExamStatus
-                          key={exam.examId}
-                          exam={{
-                            id: exam.examId,
-                            name: exam.examName,
-                            timeLimit: exam.timeLimit,
-                            isCompleted: exam.isCompleted,
-                          }}
-                          onStartExam={handleQuizClick}
-                        />
-                      ))}
+                      {pkg.exams?.map((exam, index) => {
+                        const previousExamCompleted = index === 0 ? true : pkg.exams[index - 1]?.isCompleted;
+                        const isExamDisabled = !previousExamCompleted;
+
+                        return (
+                          <ExamStatus
+                            key={exam.examId}
+                            exam={{
+                              id: exam.examId,
+                              name: exam.examName,
+                              timeLimit: exam.timeLimit,
+                              isCompleted: exam.isCompleted,
+                            }}
+                            onStartExam={handleQuizClick}
+                            isDisabled={isExamDisabled}
+                          />
+                        );
+                      })}
                     </div>
                     {pkg.exams.every(exam => exam.isCompleted) && (
                       <button

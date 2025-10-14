@@ -111,6 +111,7 @@ export interface UserExamInfoModel {
   examName: string;
   examProgressId: number;
   completedOn?: number;
+  examDescription:string;
   isCompleted: boolean;
   isTimeBound: boolean;
   timeLimit: number;
