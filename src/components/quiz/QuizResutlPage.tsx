@@ -110,18 +110,18 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
       const foundExam = currentPackage.exams.find(
         (exam) => exam.examId === next.examId
       );
-
+    console.log('Found next exam:', foundExam);
       if (!foundExam) return;
 
       const examQuestions =
         fetchedExamData?.sections?.flatMap((section: any) => section.questions) ||
         [];
-console.log('next exam from result page', examDescription)
+
       setNextExam({
         userId: currentUserId,
         examId: foundExam.examId,
         examName: foundExam.examName,
-        examDescription: examDescription,
+        examDescription: fetchedExamData?.description || '',
         timeLimit: foundExam.timeLimit,
         userExamProgressId: foundExam.examProgressId,
         userPackageId: currentPackage.userPackageId,
@@ -159,13 +159,13 @@ console.log('next exam from result page', examDescription)
   };
 
   return (
-    <div className="flex justify-center items-center p-4 min-h-screen bg-gray-100">
-      <div className="p-6 w-full max-w-md bg-white rounded-lg shadow-lg">
+    <div className="flex items-center justify-center min-h-screen p-4 bg-gray-100">
+      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
         <div className="text-center">
           <h2 className="mb-2 text-2xl font-semibold text-gray-800">🎉 Exam Completed!</h2>
           <h3 className="mb-4 text-xl font-medium text-gray-700">{examName}</h3>
 
-          <div className="p-4 mb-4 bg-gray-50 rounded-lg">
+          <div className="p-4 mb-4 rounded-lg bg-gray-50">
             <div className="flex justify-between mb-2">
               <span className="text-gray-600">Answered:</span>
               <span className="font-semibold">{answered} / {totalQuestions}</span>
@@ -186,14 +186,14 @@ console.log('next exam from result page', examDescription)
 
           <div className="grid grid-cols-2 gap-3 mt-6">
             <Link to="/">
-              <button className="px-4 py-2 w-full text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600">
+              <button className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600">
                 Home
               </button>
             </Link>
             {nextExam && (
               <button
                 onClick={handleNextExam}
-                className="px-4 py-2 w-full text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600"
+                className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600"
               >
                 Next Exam
               </button>
@@ -202,7 +202,7 @@ console.log('next exam from result page', examDescription)
               <Link
                 to={`/resultnew`}
                 state={{ packageId: currentPackageId }}
-                className="px-4 py-2 w-full text-sm text-center text-blue-500 rounded border border-blue-500 hover:bg-blue-500 hover:text-white"
+                className="w-full px-4 py-2 text-sm text-center text-blue-500 border border-blue-500 rounded hover:bg-blue-500 hover:text-white"
               >
                 View Result
               </Link>
