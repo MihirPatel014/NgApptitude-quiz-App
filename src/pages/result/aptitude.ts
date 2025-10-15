@@ -99,6 +99,20 @@ export const aptitudeDataList: Record<string, Aptitude> = {
         importanceInCareer: [
             "Clerical perception is essential in administrative roles, data entry positions, and any job requiring attention to detail. Strong clerical skills enhance productivity and accuracy in tasks involving documentation, record-keeping, and information management."
         ]
+    },
+    "Logical Aptitude": {
+        title: "Logical Aptitude",
+        description: [
+            "Logical aptitude refers to the ability to think critically, reason logically, and solve problems systematically. It involves the capacity to analyze information, identify patterns, and draw conclusions based on given premises. This skill is crucial for making sound decisions and understanding complex relationships."
+        ],
+        keyComponents: [
+            "Deductive Reasoning: The ability to apply general principles to specific situations, leading to valid conclusions. This involves understanding syllogisms and logical sequences",
+            "Inductive Reasoning: The process of deriving general principles from specific examples or observations. It helps in identifying trends and making predictions based on available data..",
+            "Analytical Thinking: The ability to break down complex problems into manageable parts, evaluate them, and synthesize solutions. This includes evaluating arguments and assessing their validity."
+        ],
+        importanceInCareer: [
+            "Logical aptitude is vital in various fields, including engineering, programming, law, and management. Professionals with strong logical reasoning skills can effectively analyze situations, solve problems creatively, and make strategic decisions, which are essential for success in today's data-driven and complex work environments. Strong logical reasoning abilities also enhance critical thinking, allowing individuals to approach challenges with clarity and insight."
+        ]
     }
 };
 

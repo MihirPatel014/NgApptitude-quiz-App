@@ -87,13 +87,18 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
       if (!currentUserId || !currentExamId) return;
       if (!packages?.length) return;
 
-      const currentPackage =
-        packages.find((pkg) => pkg.status === 'In Progress (0% completed)') ||
-        packages.find((pkg) =>
-          pkg.exams?.some((exam: any) => exam.examId === currentExamId)
-        );
+      const currentUserPackageId = props.userPackageId ?? location.state?.userPackageId;
+      const currentPackageIdFromState = props.userPackageId ?? location.state?.packageId;
 
-      if (!currentPackage) return;
+      // Find the specific package the user was just taking an exam from
+      const currentPackage = packages.find(
+        (pkg) => pkg.userPackageId === currentUserPackageId && pkg.packageId === currentPackageIdFromState
+      );
+
+      if (!currentPackage) {
+        console.log("Current package not found in QuizResultPage.");
+        return;
+      }
 
       setCurrentPackageId(currentPackage.id);
 
@@ -110,18 +115,22 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
       const foundExam = currentPackage.exams.find(
         (exam) => exam.examId === next.examId
       );
-    console.log('Found next exam:', foundExam);
+
+      console.log('Found next exam:', foundExam);
       if (!foundExam) return;
 
+      // Fetch exam details for the next exam directly
+      const fetchedNextExamDetails = await getExamInfoByExamId(foundExam.examId) as ExamWithSectionViewModel;
+
       const examQuestions =
-        fetchedExamData?.sections?.flatMap((section: any) => section.questions) ||
+        fetchedNextExamDetails?.sections?.flatMap((section: any) => section.questions) ||
         [];
 
       setNextExam({
         userId: currentUserId,
         examId: foundExam.examId,
         examName: foundExam.examName,
-        examDescription: fetchedExamData?.description || '',
+        examDescription: fetchedNextExamDetails?.description || '',
         timeLimit: foundExam.timeLimit,
         userExamProgressId: foundExam.examProgressId,
         userPackageId: currentPackage.userPackageId,
@@ -129,7 +138,7 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
         examQuestions,
       });
     },
-    [currentUserId, currentExamId, fetchedExamData]
+    [currentUserId, currentExamId, props.userPackageId, location.state] // Removed fetchedExamData from dependencies
   );
 
   useEffect(() => {
@@ -154,7 +163,15 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
 
   const handleNextExam = () => {
     if (nextExam) {
+      setLoading(true);
       navigate('/quiz', { state: { ...nextExam } });
+    }
+  };
+
+  const handleViewResult = () => {
+    if (currentPackageId) {
+      setLoading(true);
+      navigate(`/resultnew`, { state: { packageId: currentPackageId } });
     }
   };
 
@@ -199,13 +216,12 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
               </button>
             )}
             {!nextExam && currentPackageId && (
-              <Link
-                to={`/resultnew`}
-                state={{ packageId: currentPackageId }}
+              <button
+                onClick={handleViewResult}
                 className="w-full px-4 py-2 text-sm text-center text-blue-500 border border-blue-500 rounded hover:bg-blue-500 hover:text-white"
               >
                 View Result
-              </Link>
+              </button>
             )}
           </div>
         </div>

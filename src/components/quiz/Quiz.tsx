@@ -648,12 +648,12 @@ const Quiz: React.FC<QuizProps> = ({
 
             </div>
             <div className="flex items-center space-x-4">
-              {/* <button
+              <button
                 onClick={handleDeveloperOptions}
                 className="px-3 py-1 text-sm text-blue-600 border border-blue-600 rounded-full hover:bg-blue-100"
               >
                 Developer Options {showDeveloperOptions ? "On" : "Off"}
-              </button> */}
+              </button>
               {showDeveloperOptions && (
                 <button
                   onClick={handleAutoSelectAll}

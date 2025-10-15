@@ -35,6 +35,8 @@ const HomeComponent = () => {
     if (isSuccess && userPackages && userPackages.length > 0) {
       setCurrentPackage(userPackages.filter(pkg => !pkg.isCompleted && pkg.status.includes("In Progress"))[0] || null);
       setCompletedPackages(userPackages.filter(pkg => pkg.isCompleted && pkg.status.includes("Completed on")));
+
+      console.log("This is the current pacakge",currentPackage);
     }
   }, [isSuccess, userPackages]);
   const handleResult = (packageId: number) => {
