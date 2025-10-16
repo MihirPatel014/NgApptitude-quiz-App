@@ -32,38 +32,43 @@ const HomeComponent = () => {
   });
   
     useEffect(() => {
-    if (isSuccess && userPackages && userPackages.length > 0) {
-      setCurrentPackage(userPackages.filter(pkg => !pkg.isCompleted && pkg.status.includes("In Progress"))[0] || null);
-      setCompletedPackages(userPackages.filter(pkg => pkg.isCompleted && pkg.status.includes("Completed on")));
-
-      console.log("This is the current pacakge",currentPackage);
+    if (userPackages && userPackages.length > 0) {
+      const newCurrentPackage = userPackages.filter(pkg => !pkg.isCompleted)[0] || null;
+      setCurrentPackage(newCurrentPackage);
+      setCompletedPackages(userPackages.filter(pkg => pkg.isCompleted));
+      
+      console.log("This is the current package", newCurrentPackage);
     }
-  }, [isSuccess, userPackages]);
+  }, [userPackages]);
   const handleResult = (packageId: number) => {
     navigate("/resultnew", { state: { packageId } });
   };
   const handleQuizClick = async (examId: number) => {
     try {
-      // Find the exam from the user’s packages
+      setLoading(true);
+      // Use the current package instead of looping through all packages
+      if (!currentPackage) {
+        console.log("No active package found.");
+        setLoading(false);
+        return;
+      }
+
+      // Find the exam from the current package
       let selectedExam: UserExamInfoModel | null = null;
       let fetchedExam: ExamWithSectionViewModel | null = null;
-      let userPackageId: number = 0;
-      let packageId: number = 0;
+      let userPackageId: number = currentPackage.userPackageId;
+      let packageId: number = currentPackage.packageId;
       let examProgressId: number = 0;
 
-      for (const packageInfo of userPackages || []) {
-        const foundExam = packageInfo.exams.find(exam => exam.examId === examId);
-        if (foundExam) {
-          selectedExam = foundExam;
-          userPackageId = packageInfo.userPackageId;
-          packageId = packageInfo.packageId;
-          examProgressId = foundExam.examProgressId;
-          break;
-        }
+      const foundExam = currentPackage.exams.find(exam => exam.examId === examId);
+      if (foundExam) {
+        selectedExam = foundExam;
+        examProgressId = foundExam.examProgressId;
       }
 
       if (!selectedExam) {
-        console.log("Exam not found.");
+        console.log("Exam not found in current package.");
+        setLoading(false);
         return;
       }
 
@@ -73,7 +78,6 @@ const HomeComponent = () => {
         fetchedExam = await getExamInfoByExamId(examId) as ExamWithSectionViewModel;
         examQuestions = fetchedExam?.sections?.flatMap(section => section.questions) || [];
       }
-      // In QuizPage.tsx or wherever you render <Quiz />
 
       // Navigate to the quiz page
       navigate('/quiz', {
@@ -89,9 +93,10 @@ const HomeComponent = () => {
           examQuestions: examQuestions,
         },
       });
-
+      setLoading(false);
     } catch (error) {
       console.log("Error fetching exam details:", error);
+      setLoading(false);
     }
   };
   const ExamStatus = ({
@@ -110,9 +115,9 @@ const HomeComponent = () => {
     isDisabled: boolean;
 
   }) => (
-    <div className="relative overflow-hidden transition-all duration-300 bg-white border border-gray-200 rounded-lg group hover:border-blue-300 hover:shadow-md">
+    <div className="overflow-hidden relative bg-white rounded-lg border border-gray-200 transition-all duration-300 group hover:border-blue-300 hover:shadow-md">
       <div className="p-5">
-        <div className="flex items-start justify-between">
+        <div className="flex justify-between items-start">
           <div className="flex-1">
             <div className="flex items-center mb-2 space-x-2">
               <h4 className="font-semibold text-gray-900">{exam.name}</h4>
@@ -121,7 +126,7 @@ const HomeComponent = () => {
             <div className="flex items-center space-x-4 text-sm text-gray-500">
               {exam.timeLimit > 0 && (
                 <span className="flex items-center">
-                  <Clock className="w-4 h-4 mr-1" />
+                  <Clock className="mr-1 w-4 h-4" />
                   {exam.timeLimit} min
                 </span>
               )}
@@ -159,7 +164,7 @@ const HomeComponent = () => {
       <div className="p-6 mx-auto max-w-7xl">
         {/* Header with Stats */}
         <div className="mb-10">
-          <div className="flex items-start justify-between mb-6">
+          <div className="flex justify-between items-start mb-6">
             <div>
               <h1 className="mb-2 text-4xl font-bold text-gray-900">Self Discovery Suite</h1>
               <p className="text-lg text-gray-600">Test Beyond Boundaries Reveal the Real you..</p>
@@ -173,18 +178,18 @@ const HomeComponent = () => {
         {currentPackage  && (
           <div className="mb-12">
             <h2 className="flex items-center mb-6 text-2xl font-semibold text-gray-900">
-              <Zap className="w-6 h-6 mr-2 text-blue-600" />
+              <Zap className="mr-2 w-6 h-6 text-blue-600" />
               Active Package
             </h2>
 
-            <div className="overflow-hidden bg-white border border-gray-200 shadow-lg rounded-2xl">
+            <div className="overflow-hidden bg-white rounded-2xl border border-gray-200 shadow-lg">
               <div className="relative p-8 text-white bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700">
                 <div className="absolute inset-0 opacity-10">
                   <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br to-transparent from-white/20"></div>
                 </div>
 
                 <div className="relative z-10">
-                  <div className="flex items-start justify-between mb-6">
+                  <div className="flex justify-between items-start mb-6">
                     <div>
                       <h3 className="mb-3 text-3xl font-bold">{currentPackage?.packageName}</h3>
                     </div>
@@ -200,15 +205,15 @@ const HomeComponent = () => {
                 <div className="grid grid-cols-1 gap-8">
                   {/* Exams Section */}
                   <div>
-                    <div className="flex items-center justify-between mb-6">
+                    <div className="flex justify-between items-center mb-6">
                       <h4 className="flex items-center text-xl font-semibold text-gray-900">
-                        <Users className="w-5 h-5 mr-2" />
+                        <Users className="mr-2 w-5 h-5" />
                         Your Assessments
                       </h4>
                       {currentPackage && currentPackage.exams.length > 0 && currentPackage.exams.every(exam => exam.isCompleted) && (
                         <button
                           onClick={() => handleResult(currentPackage.id)}
-                          className="px-4 py-2 text-sm text-blue-500 border border-blue-500 rounded hover:bg-blue-500 hover:text-white"
+                          className="px-4 py-2 text-sm text-blue-500 rounded border border-blue-500 hover:bg-blue-500 hover:text-white"
                         >
                           View Result
                         </button>
@@ -247,12 +252,12 @@ const HomeComponent = () => {
         {completedPackages && completedPackages.length > 0 && (
           <div className="mb-12">
             <h2 className="flex items-center mb-6 text-2xl font-semibold text-gray-900">
-              <CheckCircle className="w-6 h-6 mr-2 text-green-600" />
+              <CheckCircle className="mr-2 w-6 h-6 text-green-600" />
               Completed Packages
             </h2>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {completedPackages.map((pkg) => (
-                <div key={pkg.id} className="overflow-hidden bg-white border border-gray-200 shadow-lg rounded-2xl">
+                <div key={pkg.id} className="overflow-hidden bg-white rounded-2xl border border-gray-200 shadow-lg">
                   <div className="relative p-6 text-white bg-gradient-to-r from-green-600 via-green-700 to-emerald-700">
                     <div className="absolute inset-0 opacity-10">
                       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br to-transparent from-white/20"></div>
@@ -264,7 +269,7 @@ const HomeComponent = () => {
                   </div>
                   <div className="p-6">
                     <h4 className="flex items-center mb-4 text-lg font-semibold text-gray-900">
-                      <Award className="w-5 h-5 mr-2" />
+                      <Award className="mr-2 w-5 h-5" />
                       Assessments
                     </h4>
                     <div className="space-y-3">
@@ -290,7 +295,7 @@ const HomeComponent = () => {
                     {pkg.exams.every(exam => exam.isCompleted) && (
                       <button
                         onClick={() => handleResult(pkg.id)}
-                        className="w-full px-4 py-2 mt-6 text-sm text-white bg-green-500 rounded-lg hover:bg-green-600"
+                        className="px-4 py-2 mt-6 w-full text-sm text-white bg-green-500 rounded-lg hover:bg-green-600"
                       >
                         View Result
                       </button>
@@ -306,7 +311,7 @@ const HomeComponent = () => {
         <div>
           <div className="mb-10 text-center">
             <h2 className="mb-3 text-3xl font-bold text-gray-900">Upgrade Your Learning</h2>
-            <p className="max-w-2xl mx-auto text-lg text-gray-600">
+            <p className="mx-auto max-w-2xl text-lg text-gray-600">
               Explore our comprehensive assessment packages designed to unlock your potential
             </p>
           </div>

@@ -91,10 +91,10 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
       const currentPackageIdFromState = props.userPackageId ?? location.state?.packageId;
 
       // Find the specific package the user was just taking an exam from
-      const currentPackage = packages.find(
-        (pkg) => pkg.userPackageId === currentUserPackageId && pkg.packageId === currentPackageIdFromState
-      );
-
+      // const currentPackage = packages.find(
+      //   (pkg) => pkg.userPackageId === currentUserPackageId && pkg.packageId === currentPackageIdFromState
+      // );
+      const currentPackage = packages.filter(pkg => !pkg.isCompleted)[0] || null;
       if (!currentPackage) {
         console.log("Current package not found in QuizResultPage.");
         return;
@@ -164,7 +164,14 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
   const handleNextExam = () => {
     if (nextExam) {
       setLoading(true);
-      navigate('/quiz', { state: { ...nextExam } });
+      // Use setTimeout to ensure navigation happens after loader is shown
+      setTimeout(() => {
+        navigate('/quiz', { state: { ...nextExam } });
+        // Turn off loader after navigation is initiated
+        setTimeout(() => {
+          setLoading(false);
+        }, 100);
+      }, 0);
     }
   };
 

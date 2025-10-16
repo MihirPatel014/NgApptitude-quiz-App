@@ -568,13 +568,13 @@ const Quiz: React.FC<QuizProps> = ({
       
       {/* Instructions Modal */}
       {showInstructions && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="w-11/12 p-6 bg-white rounded-lg shadow-lg md:w-2/3 lg:w-1/2">
+        <div className="flex fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50">
+          <div className="p-6 w-11/12 bg-white rounded-lg shadow-lg md:w-2/3 lg:w-1/2">
             <h2 className="mb-4 text-2xl font-bold">Exam Instructions</h2>
             <div className="mb-6 text-gray-700 whitespace-pre-line">{examDescription}</div>
             <button
               onClick={() => setShowInstructions(false)}
-              className="w-full p-3 font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+              className="p-3 w-full font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
             >
               Start Quiz
             </button>
@@ -585,8 +585,8 @@ const Quiz: React.FC<QuizProps> = ({
          <div>
           {/* Confirmation Modal */}
           {showConfirmModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-              <div className="w-11/12 p-6 bg-white rounded-lg shadow-lg md:w-1/2 lg:w-1/3">
+            <div className="flex fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50">
+              <div className="p-6 w-11/12 bg-white rounded-lg shadow-lg md:w-1/2 lg:w-1/3">
                 <h2 className="mb-4 text-xl font-bold">Confirm Submission</h2>
                 {isTimeBound ? (
                   (notAnsweredCount + skippedCount > 0) ? (
@@ -612,7 +612,7 @@ const Quiz: React.FC<QuizProps> = ({
                 <div className="flex justify-end space-x-4">
                   <button
                     onClick={() => setShowConfirmModal(false)}
-                    className="w-full p-2 text-gray-800 bg-gray-200 rounded-md hover:bg-gray-300"
+                    className="p-2 w-full text-gray-800 bg-gray-200 rounded-md hover:bg-gray-300"
                   >
                     Cancel
                   </button>
@@ -633,7 +633,7 @@ const Quiz: React.FC<QuizProps> = ({
 
           {/* Header */}
           
-            <div className="flex items-center justify-between px-4 py-3 bg-white border-b shadow-sm">
+            <div className="flex justify-between items-center px-4 py-3 bg-white border-b shadow-sm">
             <div className="flex items-center space-x-4">
               <h1 className="text-2xl font-semibold text-gray-800">{examName}</h1>
               {allCategories && currentQuestion && (
@@ -648,20 +648,26 @@ const Quiz: React.FC<QuizProps> = ({
 
             </div>
             <div className="flex items-center space-x-4">
-              <button
+              
+              {/* Developer Options toggle button */}
+              {/* <button
                 onClick={handleDeveloperOptions}
-                className="px-3 py-1 text-sm text-blue-600 border border-blue-600 rounded-full hover:bg-blue-100"
+                className="px-3 py-1 text-sm text-blue-600 rounded-full border border-blue-600 hover:bg-blue-100"
               >
+                
                 Developer Options {showDeveloperOptions ? "On" : "Off"}
-              </button>
+              </button>  */}
+              {/* If developer options are enabled, show the Auto Select All button */}
               {showDeveloperOptions && (
                 <button
                   onClick={handleAutoSelectAll}
-                  className="px-3 py-1 text-sm text-green-600 border border-green-600 rounded-full hover:bg-green-100"
+                  className="px-3 py-1 text-sm text-green-600 rounded-full border border-green-600 hover:bg-green-100"
                 >
+                  {/* Button to auto-select answers for all questions */}
                   Auto Select All
                 </button>
               )}
+              
               <div className="flex flex-col text-right">
                 <div className="items-center">
                   <span className="font-medium text-gray-600">Elapsed Time: </span>
@@ -693,16 +699,16 @@ const Quiz: React.FC<QuizProps> = ({
             {/* Main Quiz Container */}
             <div className="flex flex-col flex-1">
               <div className="flex-1 p-6 lg:p-8">
-                <div className="max-w-2xl mx-auto">
+                <div className="mx-auto max-w-2xl">
                   {/* Question Header */}
                   <div className="mb-8">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex justify-between items-center mb-4">
                       <span className="text-lg font-semibold text-gray-700">
                         Q No: {activeQuestion + 1}/{questions.length}
                       </span>
-                      <div className="w-full h-2 max-w-xs ml-4 bg-gray-200 rounded-full">
+                      <div className="ml-4 w-full max-w-xs h-2 bg-gray-200 rounded-full">
                         <div
-                          className="h-2 transition-all duration-300 bg-indigo-600 rounded-full"
+                          className="h-2 bg-indigo-600 rounded-full transition-all duration-300"
                           style={{ width: `${((activeQuestion + 1) / questions.length) * 100}%` }}
                         ></div>
                       </div>
@@ -711,7 +717,7 @@ const Quiz: React.FC<QuizProps> = ({
 
                   {/* Question */}
                   
-                  <div className="p-8 mb-8 bg-white shadow-lg rounded-xl">
+                  <div className="p-8 mb-8 bg-white rounded-xl shadow-lg">
                      <h2 className="mb-8 text-xl font-medium leading-relaxed text-gray-800">
                       {questionText}
                     </h2>
@@ -744,7 +750,7 @@ const Quiz: React.FC<QuizProps> = ({
                                   : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                                   }`}
                               >
-                                <span className="inline-block w-8 h-8 mr-3 text-sm font-bold leading-8 text-center text-indigo-600 bg-indigo-100 rounded-full">
+                                <span className="inline-block mr-3 w-8 h-8 text-sm font-bold leading-8 text-center text-indigo-600 bg-indigo-100 rounded-full">
                                   {optionLetter}
                                 </span>
                                 {option}
@@ -761,7 +767,7 @@ const Quiz: React.FC<QuizProps> = ({
 
               {/* Navigation Controls */}
               <div className="p-6 bg-white border-t">
-                <div className="flex justify-between max-w-2xl mx-auto">
+                <div className="flex justify-between mx-auto max-w-2xl">
                   <button
                     onClick={onClickPrevious}
                     disabled={activeQuestion === 0}
@@ -790,7 +796,7 @@ const Quiz: React.FC<QuizProps> = ({
             </div>
 
             {/* Question Navigator - Desktop */}
-            <div className="hidden bg-white border-l shadow-sm w-80 lg:block">
+            <div className="hidden w-80 bg-white border-l shadow-sm lg:block">
               <div className="p-6">
                 <h3 className="mb-4 text-lg font-semibold text-gray-800">Question Navigator</h3>
 
@@ -850,9 +856,9 @@ const Quiz: React.FC<QuizProps> = ({
           {/* Mobile Navigation Modal */}
           {showMobileNav && (
             <div className="fixed inset-0 z-50 bg-black bg-opacity-50 lg:hidden">
-              <div className="absolute top-0 right-0 h-full bg-white shadow-xl w-80">
+              <div className="absolute top-0 right-0 w-80 h-full bg-white shadow-xl">
                 <div className="p-6">
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="flex justify-between items-center mb-6">
                     <h3 className="text-lg font-semibold text-gray-800">Question Navigator</h3>
                     <button
                       onClick={() => setShowMobileNav(false)}
