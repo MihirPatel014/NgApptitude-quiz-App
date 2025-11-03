@@ -104,20 +104,15 @@ const PdfDownloader = ({ reportRef }) => {
 
           try {
             // Convert current section to canvas
-            const canvas = await html2canvas(section, { 
-              scale: 2,
-              logging: false,
-              useCORS: true
-            });
-            
-            const imgData = canvas.toDataURL("image/png");
+            const canvas = await html2canvas(section, { scale: 1.2, logging: false, useCORS: true });
+            const imgData = canvas.toDataURL("image/jpeg", 0.6); 
             const imgWidth = pageWidth;
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
             
             // Check if the section fits on one page
             if (imgHeight <= pageHeight) {
               // Section fits on one page
-              pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+              pdf.addImage(imgData, "JPEG", 10, 10, imgWidth, imgHeight, undefined, 'FAST');
             } else {
               // Section is too tall, split across multiple pages
               let yPosition = 10;
