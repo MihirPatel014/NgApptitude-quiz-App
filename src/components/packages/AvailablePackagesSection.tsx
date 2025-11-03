@@ -10,6 +10,8 @@ import { AddUserToPackageApiModel } from "../../types/user";
 import { useLoader } from "../../provider/LoaderProvider";
 import toast, { Toaster } from "react-hot-toast";
 import { CheckCircle, ShoppingCart, Star } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+
 
 const AvailablePackagesSection = () => {
     let { userAuth } = useContext(UserContext);
@@ -18,6 +20,7 @@ const AvailablePackagesSection = () => {
     const [error, setError] = useState<string | null>(null);
     const [packageDetails, setPackageDetails] = useState<Map<number, PackagesInfo>>(new Map());
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
 
     // Coupon State Variables
     const [isCouponDialogOpen, setIsCouponDialogOpen] = useState(false);
@@ -132,7 +135,8 @@ const AvailablePackagesSection = () => {
                             TransactionId: result.id,
                             PackageId: paymentModel.packageId,
                         }
-                        const adduserToPackage = await AddUserToPackage(userPackageApiModel);
+                        await AddUserToPackage(userPackageApiModel);
+                        await queryClient.invalidateQueries({ queryKey: ["userPackages"] });
                     }
                     setLoading(true);
                     toast.success('Package activated successfully!');
@@ -223,7 +227,8 @@ const AvailablePackagesSection = () => {
                                         TransactionId: result.id,
                                         PackageId: paymentModel.packageId,
                                     }
-                                    const adduserToPackage = await AddUserToPackage(userPackageApiModel);
+                                    await AddUserToPackage(userPackageApiModel);
+                                    await queryClient.invalidateQueries({ queryKey: ["userPackages"] });
                                 }
                                 navigate("/");
                             } else {
