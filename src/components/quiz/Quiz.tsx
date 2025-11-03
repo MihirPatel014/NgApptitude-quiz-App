@@ -636,7 +636,7 @@ const Quiz: React.FC<QuizProps> = ({
             <div className="flex justify-between items-center px-4 py-3 bg-white border-b shadow-sm">
             <div className="flex items-center space-x-4">
               <h1 className="text-2xl font-semibold text-gray-800">{examName}</h1>
-              {allCategories && currentQuestion && (
+              {/* {allCategories && currentQuestion && (
                 <span className="px-3 py-1 text-sm text-gray-600 bg-gray-100 rounded-full">
                   Section: {
                     allCategories.find(
@@ -644,7 +644,7 @@ const Quiz: React.FC<QuizProps> = ({
                     )?.categoryName || ""
                   }
                 </span>
-              )}
+              )} */}
 
             </div>
             <div className="flex items-center space-x-4">
