@@ -250,7 +250,7 @@ const ResultNew: React.FC = () => {
 
                   <div>
                     <h1 className="text-4xl font-bold text-indigo-600 md:text-5xl">
-                      Career Guidance Assessment Results
+                      Personality and Aptitude Profile
                    </h1>
                     <p className="mx-auto mt-4 max-w-2xl text-xl text-gray-600">
                       Discover Your Path to Success

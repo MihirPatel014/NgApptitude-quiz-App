@@ -70,7 +70,6 @@ const FinalResult: React.FC<FinalResultProps> = ({ resultSummaries }) => {
           <h3 className="text-lg font-bold">Note:</h3>
           <ul className="pl-8 space-y-2 list-disc">
             <li>This is a preliminary aptitude assessment. For a more thorough and comprehensive analysis, we recommend undertaking a detailed evaluation.</li>
-            <li>Following the recommendations can greatly elevate the potential for success and long-term satisfaction in the chosen career.</li>
           </ul>
         </div>
 

@@ -183,7 +183,7 @@ const HomeComponent = () => {
             </h2>
 
             <div className="overflow-hidden bg-white rounded-2xl border border-gray-200 shadow-lg">
-              <div className="relative p-8 text-white bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700">
+              <div className="relative p-8 text-white bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500">
                 <div className="absolute inset-0 opacity-10">
                   <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br to-transparent from-white/20"></div>
                 </div>

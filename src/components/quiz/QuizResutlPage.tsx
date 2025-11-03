@@ -94,7 +94,9 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
       // const currentPackage = packages.find(
       //   (pkg) => pkg.userPackageId === currentUserPackageId && pkg.packageId === currentPackageIdFromState
       // );
-      const currentPackage = packages.filter(pkg => !pkg.isCompleted)[0] || null;
+      // Prefer an active package, but fallback to any package
+      const currentPackage = packages.find(pkg => !pkg.isCompleted) || packages.find(pkg => pkg.isCompleted) || null;
+
       if (!currentPackage) {
         console.log("Current package not found in QuizResultPage.");
         return;

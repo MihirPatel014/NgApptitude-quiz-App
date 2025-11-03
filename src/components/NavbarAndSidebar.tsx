@@ -76,7 +76,7 @@ export const NavbarAndSidebar = () => {
                             </button>
                             <a href="/" className="flex ms-2 md:me-24">
                                 <img width="50" height="50" src="https://img.icons8.com/bubbles/100/checklist.png" alt="NGAptitudeLogo" className="w-auto h-8" />
-                                <span className="self-center ml-2 text-xl font-semibold whitespace-nowrap sm:text-2xl dark:text-white">NGAptitude</span>
+                                <span className="self-center ml-2 text-xl font-semibold whitespace-nowrap sm:text-2xl dark:text-white">NG-Santvana Aptitude</span>
                             </a>
                         </div>
 
