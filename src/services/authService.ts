@@ -25,6 +25,7 @@ const GET_USER_PACKAGE_INFO_BY_USERID = "/GetUserPackageInfoByUserId"
 
 // const API_URL = process.env.REACT_APP_API_URL;
 const API_URL  = 'https://aping.runasp.net/';
+// const API_URL  = 'https://localhost:44389/';
 const GRADE_URL = "api/Grade/GetAllGrades";
 const getAll = () => {
   return http.get<Array<userDetails>>(`/${USERS_URL}`);

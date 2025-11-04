@@ -6,6 +6,10 @@ import { useLoader } from '../../provider/LoaderProvider';
 import { useQuery } from '@tanstack/react-query';
 import { UserPackageInfoModel } from '../../types/user';
 import { ExamWithSectionViewModel } from '../../types/exam';
+import { sendExamReportSms } from '../../services/smsService';
+import toast from 'react-hot-toast';
+import { UserContext } from "../../provider/UserProvider";
+import { useContext } from "react";
 
 export interface QuizResultProps {
   examId?: number;
@@ -40,9 +44,11 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
 
   const currentExamId = examId ?? location.state?.examId;
   const currentUserId = userId ?? location.state?.userId;
+ const { userAuth } = useContext(UserContext);
 
   const [nextExam, setNextExam] = useState<any>(null);
   const [currentPackageId, setCurrentPackageId] = useState<number | null>(null);
+  const [reportSmsSent, setReportSmsSent] = useState(false);
 
   // Fetch user packages
   const {
@@ -101,8 +107,11 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
         console.log("Current package not found in QuizResultPage.");
         return;
       }
+      if (currentPackage.isCompleted) {
+        await sendExamReportSms(userAuth?.contactNo || "", userAuth?.email.split('@')[0] || "", userAuth?.email || "");
+      }
 
-      setCurrentPackageId(currentPackage.id);
+      setCurrentPackageId(currentPackage.userPackageId || currentPackage.id);
 
       const availableExams = currentPackage.exams?.filter(
         (exam) => !exam.isCompleted && exam.examId !== currentExamId
@@ -162,6 +171,41 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
     findNextExam,
     setLoading,
   ]);
+
+// useEffect(() => {
+//   if (
+//     !nextExam &&                     
+//     currentPackageId &&              
+//     userAuth?.contactNo &&           
+//     userAuth?.email &&
+//     !reportSmsSent                   
+//   ) {
+//     console.log("All exams completed — sending SMS automatically...");
+
+//     const name = userAuth.email.split('@')[0] || 'User';
+//     const mobile = userAuth.contactNo;
+//     const email = userAuth.email;
+
+//     (async () => {
+//       try {
+//         const smsResponse = await sendExamReportSms(mobile, name, email);
+
+//         // Optionally show toast notifications
+//         // if (smsResponse.success) {
+//         //   toast.success("Exam completion SMS sent successfully!");
+//         // } else {
+//         //   toast.error("Failed to send SMS: " + (smsResponse.errors?.[0] || "Unknown error"));
+//         // }
+
+//         setReportSmsSent(true);
+//       } catch (err) {
+//         console.error("Error sending SMS after all exams:", err);
+//         toast.error("Failed to send completion SMS.");
+//       }
+//     })();
+//   }
+// }, [nextExam, currentPackageId, userAuth, reportSmsSent]);
+
 
   const handleNextExam = () => {
     if (nextExam) {

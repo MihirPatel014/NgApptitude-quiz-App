@@ -11,6 +11,7 @@ import { useLoader } from "../../provider/LoaderProvider";
 import toast, { Toaster } from "react-hot-toast";
 import { CheckCircle, ShoppingCart, Star } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { sendAptitudeTestSms } from "../../services/smsService"; 
 
 
 const AvailablePackagesSection = () => {
@@ -135,8 +136,19 @@ const AvailablePackagesSection = () => {
                             TransactionId: result.id,
                             PackageId: paymentModel.packageId,
                         }
-                        await AddUserToPackage(userPackageApiModel);
+                         
+                        AddUserToPackage(userPackageApiModel);
                         await queryClient.invalidateQueries({ queryKey: ["userPackages"] });
+                       
+                       if (userAuth?.contactNo) {
+   await sendAptitudeTestSms(userAuth.contactNo, userAuth.email.split('@')[0] || "User");
+//   if (smsResponse.success) {
+//     toast.success("SMS sent successfully!");
+//   } else {
+//     toast.error("SMS sending failed: " + (smsResponse.errors?.[0] || ""));
+//   }
+}
+
                     }
                     setLoading(true);
                     toast.success('Package activated successfully!');
@@ -228,7 +240,16 @@ const AvailablePackagesSection = () => {
                                         PackageId: paymentModel.packageId,
                                     }
                                     await AddUserToPackage(userPackageApiModel);
-                                    await queryClient.invalidateQueries({ queryKey: ["userPackages"] });
+                                    await queryClient.invalidateQueries({ queryKey: ["userPackages"] });                                    
+                                     if (userAuth?.contactNo) {
+                                     await sendAptitudeTestSms(userAuth.contactNo, userAuth.email.split('@')[0] || "User");
+                                    // if (smsResponse.success) {
+                                    //     toast.success("SMS sent successfully!");
+                                    // } else {
+                                    //     toast.error("SMS sending failed: " + (smsResponse.errors?.[0] || ""));
+                                    // }
+                                }
+
                                 }
                                 navigate("/");
                             } else {

@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 //  const API_URL = process.env.REACT_APP_API_URL;
 
 const API_URL = "https://aping.runasp.net/";
+// const API_URL = "https://localhost:44389/";
 
 
 export const http = axios.create({

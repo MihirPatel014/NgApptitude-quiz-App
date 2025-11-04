@@ -38,13 +38,13 @@ const OTP_TEMPLATE_CONTENT = "Thank you for your registration to opt Aptitude te
 
 // New template constants for booking confirmation
 const BOOKING_TEMPLATE_CONTENT = "Dear {#var#} Thank you for booking of your aptitude test with NG-Santvana Received amount full for test Best wishes for future way ahead NG-Santvana";
-const BOOKING_TEMPLATE_ID = "YOUR_BOOKING_TEMPLATE_ID"; // Placeholder: Please replace with actual template ID
-const BOOKING_ENTITY_ID = "YOUR_BOOKING_ENTITY_ID"; // Placeholder: Please replace with actual entity ID
+const BOOKING_TEMPLATE_ID = "1007856582437611081"; // Placeholder: Please replace with actual template ID
+const BOOKING_ENTITY_ID = "1701158029699472008"; // Placeholder: Please replace with actual entity ID
 
 // New template constants for test report
-const REPORT_TEMPLATE_CONTENT = "Dear {#var#} You have finished your aptitude test and we have send you report on your mail id.{#var#} You can connect with us for further test/counselling";
-const REPORT_TEMPLATE_ID = "YOUR_REPORT_TEMPLATE_ID"; // Placeholder: Please replace with actual template ID
-const REPORT_ENTITY_ID = "YOUR_REPORT_ENTITY_ID"; // Placeholder: Please replace with actual entity ID
+const REPORT_TEMPLATE_CONTENT = "Dear {#var#},\nYou have finished your aptitude test and we have send you report on your mail id :{#var#}.\nYou can connect with us for further test/counselling.\n\nM- {#var#}\nNG-Santvana";
+const REPORT_TEMPLATE_ID = "1007280050152347560"; // Placeholder: Please replace with actual template ID
+const REPORT_ENTITY_ID = "1701158029699472008"; // Placeholder: Please replace with actual entity ID
 
 const smsHttp = axios.create({
   baseURL: SMS_API_BASE_URL,
@@ -109,7 +109,7 @@ export const sendTemplatedSms = async (
         authkey: SMS_API_AUTHKEY,
         sender: SMS_API_SENDER,
         mobile: mobile,
-        text: smsText,
+        text: encodeURIComponent(smsText),
         entityid: entityId,
         templateid: templateId,
       },
@@ -125,4 +125,31 @@ export const sendTemplatedSms = async (
     const errorMessage = error.response?.data?.RESPONSE?.INFO || error.message || "An unknown error occurred while sending SMS.";
     return { success: false, errors: [errorMessage] };
   }
+};
+
+export const sendAptitudeTestSms = async (
+  mobile: string,
+  name: string
+): Promise<InternalSmsServiceResponse> => {
+  return await sendTemplatedSms(
+    mobile,
+    BOOKING_TEMPLATE_ID,
+    BOOKING_ENTITY_ID,
+    BOOKING_TEMPLATE_CONTENT,
+    [name] 
+  );
+};
+
+export const sendExamReportSms = async (
+  mobile: string,
+  name: string,
+  email: string
+): Promise<InternalSmsServiceResponse> => {
+  return await sendTemplatedSms(
+    mobile,
+    REPORT_TEMPLATE_ID,
+    REPORT_ENTITY_ID,
+    REPORT_TEMPLATE_CONTENT,
+    [name, email, mobile] 
+  );
 };

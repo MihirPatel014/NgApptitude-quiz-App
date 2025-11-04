@@ -11,6 +11,7 @@ export interface User {
   apiToken: string;
   userId: number;
   userGuidId: string;
+  contactNo: string;
   // Add any other user-specific fields here
 }
 export interface userDetails {
