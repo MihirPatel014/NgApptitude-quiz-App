@@ -8,8 +8,8 @@ export const apiRequest = async <T, R>(
     try {
       // Construct the request payload
       const requestPayload = {
-        accessKey: 8525, // AccessKey required by the API
-        data: data || {}, // Send an empty object if no data is provided
+        AccessKey: 8525,
+        Data: data || {},
       };
   
       // Axios request configuration
@@ -17,7 +17,7 @@ export const apiRequest = async <T, R>(
         url: route.startsWith("/") ? route : `/${route}`, // Ensure leading `/`
         method,
         ...(method === "POST" || method === "PUT"
-          ? { data: requestPayload } // Send POST/PUT data in the body
+          ? { data: requestPayload }
           : {}),
       };
   

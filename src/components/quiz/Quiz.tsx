@@ -7,20 +7,12 @@ import {
 import { Question, QuestionCategory } from '../../types/question';
 import { FaCircle } from "react-icons/fa";
 
-import { QuizAnswerModel, SubmitExam, UserExamResponse } from '../../types/exam';
+import { ExamSections, QuizAnswerModel, SubmitExam, UserExamResponse } from '../../types/exam';
 import { AddUpdateUserExam, SubmitUserExam } from '../../services/examService';
 import { QuestionSumitStatus } from '../../common/constant';
 import toast, { Toaster } from 'react-hot-toast';
-
 import { useLoader } from '../../provider/LoaderProvider';
-import spatial_Image1 from "../../../src/assests/spatial/image_1.png";
-import spatial_Image2 from "../../../src/assests/spatial/image_2.png";
-import spatial_Image3 from "../../../src/assests/spatial/image_3.png";
-import spatial_Image4 from "../../../src/assests/spatial/image_4.png";
-import spatial_Image5 from "../../../src/assests/spatial/image_5.png";
-
-import image_1 from "../../../src/assests/logical/image_1.png";
-import image_2 from "../../../src/assests/logical/image_2.png";
+import { getImageUrlByName } from '../../services/filesService';
 
 
 
@@ -29,27 +21,19 @@ const QuestionStatus = {
   Skipped: 1,
   Attended: 2,
 } as const;
-const quiz_image_mapper: { [key: number]: string } = {
-  137: spatial_Image1,
-  138: spatial_Image2,
-  139: spatial_Image3,
-  140: spatial_Image4,
-  141: spatial_Image5,
-  123:image_1,
-  124:image_2,
-}
 type QuestionStatusType = typeof QuestionStatus[keyof typeof QuestionStatus];
 
 export interface QuizProps {
   userId: number;
   examId: number;
   examName: string;
-  examDescription:string;
+  examDescription: string;
   timeLimit: number;
   userExamProgressId: number;
   userPackageId: number;
   packageId: number;
   examQuestions: Question[];
+  sections?: ExamSections[];
   hasNextExam: boolean;
   onNextExam: () => void;
 }
@@ -63,7 +47,8 @@ const Quiz: React.FC<QuizProps> = ({
   userExamProgressId,
   userPackageId,
   packageId,
-  examQuestions
+  examQuestions,
+  sections
 }) => {
   const navigate = useNavigate();
   const [showInstructions, setShowInstructions] = useState<boolean>(true);
@@ -81,6 +66,7 @@ const Quiz: React.FC<QuizProps> = ({
   const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
   const [showMobileNav, setShowMobileNav] = useState(false);
   const [showDeveloperOptions, setShowDeveloperOptions] = useState<boolean>(false);
+  const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
 
   // Memoized values
   const startTime = useMemo(() => new Date().toISOString(), []);
@@ -250,8 +236,7 @@ const Quiz: React.FC<QuizProps> = ({
   }, [calculateScore, userExamProgressId, userId, packageId, userPackageId, examId, startTime, userExamResponse.responseData, stopTimers, setLoading]);
 
   const showQuizResult = useCallback(() => {
-    debugger;
-    
+
     navigate('/quizresult', {
       state: {
         examId: examId,
@@ -266,7 +251,7 @@ const Quiz: React.FC<QuizProps> = ({
         timeTaken: elapsedTime,
       },
     });
-    
+
   }, [navigate, examId, userId, userExamProgressId, userPackageId, examName, questionStatuses, questions.length, elapsedTime]);
 
   // Initialize timers once
@@ -285,15 +270,13 @@ const Quiz: React.FC<QuizProps> = ({
 
   // Initialize remaining time timer
   useEffect(() => {
-    if (isTimeBound && remainingTime !== null && remainingTime > 0) {
+    if (isTimeBound) {
       remainingTimeTimer.current = setInterval(() => {
         setRemainingTime((prev) => {
           if (prev !== null && prev > 0) {
             return prev - 1;
-          } else {
-            handleQuizSubmit();
-            return prev;
           }
+          return prev;
         });
       }, 1000);
     }
@@ -304,7 +287,15 @@ const Quiz: React.FC<QuizProps> = ({
         remainingTimeTimer.current = null;
       }
     };
-  }, [isTimeBound, remainingTime, handleQuizSubmit]); // Only re-run when these specific values change
+  }, [isTimeBound]);
+
+  // Handle auto-submit when time runs out
+  useEffect(() => {
+    if (isTimeBound && remainingTime === 0 && isQuizActiveRef.current) {
+      console.log("Timer ended, auto-submitting exam...");
+      handleQuizSubmit();
+    }
+  }, [remainingTime, isTimeBound, handleQuizSubmit]);
 
   // Update question start time only when active question changes
   useEffect(() => {
@@ -315,32 +306,65 @@ const Quiz: React.FC<QuizProps> = ({
   useEffect(() => {
     const fetchExamQuestions = async () => {
       try {
+        let loadedQuestions: Question[] = [];
         if (examQuestions && examQuestions.length > 0) {
-          setQuestions(examQuestions);
+          loadedQuestions = examQuestions;
+        } else {
+          const fetchedQuestions = await getQuestionbyExamAndSectionId(examId, 0);
+          if (fetchedQuestions) {
+            loadedQuestions = fetchedQuestions;
+          }
+        }
 
-          setQuestionStatuses(Array(examQuestions.length).fill(QuestionStatus.NotAttended));
+        if (loadedQuestions.length > 0) {
+          setQuestions(loadedQuestions);
+          setQuestionStatuses(Array(loadedQuestions.length).fill(QuestionStatus.NotAttended));
 
           if (timeLimit > 0) {
             setIsTimeBound(true);
             setRemainingTime(timeLimit * 60);
-          }
-        } else {
-          const response = await getQuestionbyExamAndSectionId(examId, 0);
-          if (response) {
-            setQuestions(response);
-
-            setQuestionStatuses(Array(response.length).fill(QuestionStatus.NotAttended));
-
-            if (timeLimit > 0) {
-              setIsTimeBound(true);
-              setRemainingTime(timeLimit * 60);
-            }
           }
         }
 
         const fetchAllCategories = await GetAllquestionsCategory();
         if (fetchAllCategories) {
           setAllCategories(fetchAllCategories);
+        }
+
+        // Fetch image URLs for all questions that have an image in batches
+        const questionsWithImages = loadedQuestions.filter(q => q.image);
+
+        if (questionsWithImages.length > 0) {
+          const BATCH_SIZE = 2;
+          const firstBatch = questionsWithImages.slice(0, BATCH_SIZE);
+          const remainingBatch = questionsWithImages.slice(BATCH_SIZE);
+
+          const fetchBatch = async (batch: Question[]) => {
+            const fetchPromises = batch.map(async (q) => {
+              const result = await getImageUrlByName(q.image);
+              return { name: q.image, url: result?.imageUrl };
+            });
+
+            const results = await Promise.all(fetchPromises);
+            const urlMap: Record<string, string> = {};
+            results.forEach(res => {
+              if (res.url) {
+                urlMap[res.name] = res.url;
+              }
+            });
+
+            setImageUrls(prev => ({ ...prev, ...urlMap }));
+          };
+
+          // Fetch first batch immediately
+          await fetchBatch(firstBatch);
+
+          // Fetch remaining images after a short delay
+          if (remainingBatch.length > 0) {
+            setTimeout(() => {
+              fetchBatch(remainingBatch);
+            }, 2000); // 2 second delay for background loading
+          }
         }
       } catch (err) {
         console.log("Failed to load questions:", err);
@@ -350,6 +374,16 @@ const Quiz: React.FC<QuizProps> = ({
 
     fetchExamQuestions();
   }, [examId, examQuestions, timeLimit]); // Only re-run when these props change
+
+  // Pre-fetch images
+  useEffect(() => {
+    Object.values(imageUrls).forEach(url => {
+      if (url) {
+        const img = new Image();
+        img.src = url;
+      }
+    });
+  }, [imageUrls]);
 
   // Browser navigation prevention
   useEffect(() => {
@@ -383,15 +417,62 @@ const Quiz: React.FC<QuizProps> = ({
       }
     };
 
+    // Secret code listener for developer options
+    let typedKeys = '';
+    let typingTimeout: NodeJS.Timeout;
+
+    const handleSecretCode = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input field
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      // Clear the timeout if user is still typing
+      clearTimeout(typingTimeout);
+
+      // Add the typed key to the buffer
+      typedKeys += e.key.toLowerCase();
+
+      // Check if the secret code "admin" was typed
+      if (typedKeys.includes('admin')) {
+        // Toggle developer options
+        setShowDeveloperOptions(prev => {
+          const newState = !prev;
+          if (newState) {
+            toast.success('🔓 Developer Options Enabled!');
+            console.log('Developer options enabled via secret code');
+          } else {
+            toast.success('🔒 Developer Options Disabled!');
+            console.log('Developer options disabled via secret code');
+          }
+          return newState;
+        });
+        typedKeys = ''; // Reset after activation
+      }
+
+      // Reset the typed keys after 2 seconds of inactivity
+      typingTimeout = setTimeout(() => {
+        typedKeys = '';
+      }, 2000);
+
+      // Keep only last 10 characters to prevent memory issues
+      if (typedKeys.length > 10) {
+        typedKeys = typedKeys.slice(-10);
+      }
+    };
+
     window.history.pushState(null, '', window.location.pathname);
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('popstate', handlePopState);
     window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keypress', handleSecretCode);
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('popstate', handlePopState);
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keypress', handleSecretCode);
+      clearTimeout(typingTimeout);
     };
   }, [navigate]);
 
@@ -565,7 +646,7 @@ const Quiz: React.FC<QuizProps> = ({
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50">
       <Toaster />
-      
+
       {/* Instructions Modal */}
       {showInstructions && (
         <div className="flex fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50">
@@ -582,7 +663,7 @@ const Quiz: React.FC<QuizProps> = ({
         </div>
       )}
       {!showInstructions && (
-         <div>
+        <div>
           {/* Confirmation Modal */}
           {showConfirmModal && (
             <div className="flex fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50">
@@ -632,31 +713,88 @@ const Quiz: React.FC<QuizProps> = ({
           )}
 
           {/* Header */}
-          
-            <div className="flex justify-between items-center px-4 py-3 bg-white border-b shadow-sm">
+          {/* Mobile Question Header */}
+        <div className="lg:hidden sticky top-0 z-40 bg-white shadow-sm border-b">
+          <div className="px-4 py-3 space-y-2">
+
+            {/* Exam title + menu */}
+            <div className="flex items-center justify-between">
+              <h1 className="text-base font-semibold text-gray-800 truncate">
+                {examName}
+              </h1>
+
+              <button
+                onClick={() => setShowMobileNav(true)}
+                className="p-2 rounded-md bg-gray-100 active:bg-gray-200"
+              >
+                <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Section + Time */}
+            <div className="flex items-center justify-between text-sm">
+              <span className="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 font-medium">
+                 SECTION : {
+                  sections?.find(s =>
+                    s.questions.some(q => q.id === currentQuestion?.id)
+                  )?.sectionName || "Section"
+                }
+              </span>
+
+              <div className="font-mono text-gray-700">
+                ⏱ {formatTime(elapsedTime)} / {timeLimit}m
+              </div>
+            </div>
+
+            {/* Question count */}
+            <div className="flex items-center justify-between text-xs text-gray-600">
+              <span>
+                Q {activeQuestion + 1} of {questions.length}
+              </span>
+              <span>
+                {Math.round(((activeQuestion + 1) / questions.length) * 100)}%
+              </span>
+            </div>
+
+            {/* Progress bar */}
+            <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-indigo-600 transition-all duration-300"
+                style={{
+                  width: `${((activeQuestion + 1) / questions.length) * 100}%`
+                }}
+              />
+            </div>
+
+          </div>
+        </div>
+
+        {/* Desktop Header */}
+          <div className="hidden lg:flex justify-between items-center px-4 py-3 bg-white border-b shadow-sm">
             <div className="flex items-center space-x-4">
               <h1 className="text-2xl font-semibold text-gray-800">{examName}</h1>
-              {/* {allCategories && currentQuestion && (
+              {currentQuestion && (
                 <span className="px-3 py-1 text-sm text-gray-600 bg-gray-100 rounded-full">
                   Section: {
-                    allCategories.find(
-                      (category) => category.id === currentQuestion.questionCategoryId
-                    )?.categoryName || ""
+                    sections?.find(s => s.questions.some(q => q.id === currentQuestion.id))?.sectionName ||
+                    ""
                   }
                 </span>
-              )} */}
+              )}
 
             </div>
             <div className="flex items-center space-x-4">
-              
+
               {/* Developer Options toggle button */}
               {/* <button
                 onClick={handleDeveloperOptions}
                 className="px-3 py-1 text-sm text-blue-600 rounded-full border border-blue-600 hover:bg-blue-100"
               >
-                
+
                 Developer Options {showDeveloperOptions ? "On" : "Off"}
-              </button>  */}
+              </button> */}
               {/* If developer options are enabled, show the Auto Select All button */}
               {showDeveloperOptions && (
                 <button
@@ -667,7 +805,7 @@ const Quiz: React.FC<QuizProps> = ({
                   Auto Select All
                 </button>
               )}
-              
+
               <div className="flex flex-col text-right">
                 <div className="items-center">
                   <span className="font-medium text-gray-600">Elapsed Time: </span>
@@ -701,7 +839,7 @@ const Quiz: React.FC<QuizProps> = ({
               <div className="flex-1 p-6 lg:p-8">
                 <div className="mx-auto max-w-2xl">
                   {/* Question Header */}
-                  <div className="mb-8">
+                  <div className="hidden lg:block mb-8">
                     <div className="flex justify-between items-center mb-4">
                       <span className="text-lg font-semibold text-gray-700">
                         Q No: {activeQuestion + 1}/{questions.length}
@@ -716,19 +854,55 @@ const Quiz: React.FC<QuizProps> = ({
                   </div>
 
                   {/* Question */}
-                  
+
                   <div className="p-8 mb-8 bg-white rounded-xl shadow-lg">
-                     <h2 className="mb-8 text-xl font-medium leading-relaxed text-gray-800">
+                    <h2 className="mb-8 text-xl font-medium leading-relaxed text-gray-800">
                       {questionText}
                     </h2>
-                    {currentQuestion && quiz_image_mapper[currentQuestion.id] && (
-                      <img
-                        src={quiz_image_mapper[currentQuestion.id]}
-                        alt="Question Illustration"
-                        className="mx-auto mb-4 max-h-60"
-                      />
+                    {currentQuestion && (
+                      <div className="flex justify-center mb-4 relative min-h-[150px]">
+                        {currentQuestion.image && imageUrls[currentQuestion.image] ? (
+                          <>
+                            <img
+                              src={imageUrls[currentQuestion.image]}
+                              alt="Question Illustration"
+                              className="max-h-60 object-contain transition-opacity duration-300"
+                              onLoad={(e) => {
+                                const target = e.currentTarget;
+                                target.style.opacity = '1';
+                              }}
+                              onError={(e) => {
+                                // If remote image fails, try fallback to mapper if available
+                                const target = e.currentTarget;
+                                target.style.display = 'none';
+                                console.log(`Failed to load remote image: ${imageUrls[currentQuestion.image]}`);
+                              }}
+                              style={{ opacity: 0 }}
+                              loading="lazy"
+                            />
+                            {/* Simple loader shown while opacity is 0 */}
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-300"
+                              ref={(ref) => {
+                                if (ref && currentQuestion.image) {
+                                  // This is a bit hacky but works for a quick "lazy load" feel
+                                  const img = ref.previousSibling as HTMLImageElement;
+                                  if (img && img.complete) {
+                                    ref.style.opacity = '0';
+                                  } else {
+                                    ref.style.opacity = '1';
+                                  }
+                                }
+                              }}
+                            >
+                              <div className="animate-pulse flex space-x-4">
+                                <div className="rounded-md bg-slate-200 h-40 w-60"></div>
+                              </div>
+                            </div>
+                          </>
+                        ) : null}
+                      </div>
                     )}
-                   
+
 
                     {/* Answer Options */}
                     <div className="space-y-4">
@@ -736,7 +910,7 @@ const Quiz: React.FC<QuizProps> = ({
                         [optionA, optionB, optionC, optionD]
                           .slice(0, questionType === 1 ? 2 : 4)
                           .map((option, index) => {
-                           
+
                             const optionLetter = String.fromCharCode(65 + index);
                             const isSelected = selectedAnswerIndex === index ||
                               getSelectedAnswerForQuestion(currentQuestion.id) === optionLetter;
@@ -796,12 +970,12 @@ const Quiz: React.FC<QuizProps> = ({
             </div>
 
             {/* Question Navigator - Desktop */}
-            <div className="hidden w-80 bg-white border-l shadow-sm lg:block">
-              <div className="p-6">
+            <div className="hidden w-80 h-full bg-white border-l shadow-sm lg:block">
+              <div className="flex flex-col p-6 h-full">
                 <h3 className="mb-4 text-lg font-semibold text-gray-800">Question Navigator</h3>
 
                 {/* Question Grid */}
-                <div className="grid grid-cols-5 gap-2 mb-6" style={{ overflowY: 'auto', maxHeight: '400px' }}>
+                <div className="grid overflow-y-auto flex-1 grid-cols-5 gap-2 mb-6 min-h-0">
                   {questions.map((_, index) => {
                     let bgColorClass = 'bg-gray-200 text-gray-700 hover:bg-gray-300';
                     if (questionStatuses[index] === QuestionStatus.Skipped) {

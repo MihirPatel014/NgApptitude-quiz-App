@@ -5,13 +5,13 @@ import { CompletePaymentOrder, ProcessPayment, ValidateGiftCode } from "../../se
 import { PaymentModel } from "../../types/payment";
 import { UserContext } from "../../provider/UserProvider";
 import { useNavigate } from "react-router-dom";
-import { AddUserToPackage } from "../../services/authService";
+import { AddUserToPackage, GetUserPackageInfoByUserId } from "../../services/authService";
 import { AddUserToPackageApiModel } from "../../types/user";
 import { useLoader } from "../../provider/LoaderProvider";
 import toast, { Toaster } from "react-hot-toast";
-import { CheckCircle, ShoppingCart, Star } from "lucide-react";
+import { CheckCircle, ShoppingCart, Star, AlertTriangle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { sendAptitudeTestSms } from "../../services/smsService"; 
+import { sendAptitudeTestSms } from "../../services/smsService";
 
 
 const AvailablePackagesSection = () => {
@@ -72,6 +72,7 @@ const AvailablePackagesSection = () => {
 
             if (!response) {
                 console.log("Invalid response structure:", response);
+                setLoading(false);
                 return { isValid: false, discountedAmount: 0, giftCodeId: 0 };
             }
 
@@ -79,9 +80,23 @@ const AvailablePackagesSection = () => {
             if (response != null) {
 
                 if (response.giftCodeStatus === GiftCodeValidationStatus.Valid) {
+                    const discountedValue = Number(response.discountedValue);
+
+                    // Ensure the discounted amount is never negative
+                    const finalAmount = Math.max(0, discountedValue);
+
+                    console.log("Original discounted value:", discountedValue);
+                    console.log("Final amount (after validation):", finalAmount);
+
+                    // Warn if backend returned negative value (but still apply it as ₹0)
+                    if (discountedValue < 0) {
+                        console.warn("⚠️ Backend returned negative discount value:", discountedValue, "- Applying as ₹0");
+                    }
+
+                    setLoading(false);
                     return {
                         isValid: true,
-                        discountedAmount: Number(response.discountedValue),
+                        discountedAmount: finalAmount,
                         giftCodeId: response.giftCodeId
                     };
                 }
@@ -115,9 +130,14 @@ const AvailablePackagesSection = () => {
     };
 
     const completeOrderInternally = async (paymentModel: PaymentModel, finalAmount: number, giftCodeId: number) => {
-        setLoading(false);
+        console.log("🔵 [FREE PACKAGE] Starting completeOrderInternally");
+        setLoading(true);
+        console.log("🔵 [FREE PACKAGE] Loader set to TRUE");
         try {
+            console.log("🔵 [FREE PACKAGE] Calling ProcessPayment...");
             const merchantOrder = await ProcessPayment(paymentModel);
+            console.log("🔵 [FREE PACKAGE] ProcessPayment response:", merchantOrder);
+
             if (merchantOrder) {
 
                 const result = await CompletePaymentOrder({
@@ -136,45 +156,75 @@ const AvailablePackagesSection = () => {
                             TransactionId: result.id,
                             PackageId: paymentModel.packageId,
                         }
-                         
+
                         AddUserToPackage(userPackageApiModel);
                         await queryClient.invalidateQueries({ queryKey: ["userPackages"] });
-                       
-                       if (userAuth?.contactNo) {
-   await sendAptitudeTestSms(userAuth.contactNo, userAuth.email.split('@')[0] || "User");
-//   if (smsResponse.success) {
-//     toast.success("SMS sent successfully!");
-//   } else {
-//     toast.error("SMS sending failed: " + (smsResponse.errors?.[0] || ""));
-//   }
-}
+
+                        //                        if (userAuth?.contactNo) {
+                        //    await sendAptitudeTestSms(userAuth.contactNo, userAuth.email.split('@')[0] || "User");
+                        //   if (smsResponse.success) {
+                        //     toast.success("SMS sent successfully!");
+                        //   } else {
+                        //     toast.error("SMS sending failed: " + (smsResponse.errors?.[0] || ""));
+                        //   }
+                        // }
 
                     }
-                    setLoading(true);
-                    toast.success('Package activated successfully!');
-                    navigate("/");
+                    console.log("🔵 [FREE PACKAGE] Invalidating queries...");
+                    await queryClient.invalidateQueries({ queryKey: ["userPackages"] });
+                    console.log("🔵 [FREE PACKAGE] Queries invalidated successfully");
+
+                    toast.success('Package activated successfully! Redirecting to dashboard...');
+                    console.log("🔵 [FREE PACKAGE] Navigating to dashboard in 500ms...");
+
+                    // Keep loader visible during navigation
+                    setTimeout(() => {
+                        console.log("🔵 [FREE PACKAGE] Executing navigation now");
+                        navigate("/");
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                    }, 500);
                 } else {
-                    toast.success('Failed to activate package. Please contact support.');
+                    console.log("🔴 [FREE PACKAGE] Payment result is null/false");
+                    setLoading(false);
+                    console.log("🔴 [FREE PACKAGE] Loader set to FALSE");
+                    toast.error('Failed to activate package. Please contact support.');
                 }
+            } else {
+                console.log("🔴 [FREE PACKAGE] merchantOrder is null");
+                setLoading(false);
+                console.log("🔴 [FREE PACKAGE] Loader set to FALSE");
+                toast.error('Your Already have Active Package...');
             }
         } catch (error) {
-            console.log('Error completing order internally:', error);
+            console.log('🔴 [FREE PACKAGE] Error in completeOrderInternally:', error);
+            setLoading(false);
+            console.log("🔴 [FREE PACKAGE] Loader set to FALSE (error)");
             toast.error('Failed to activate package. Please contact support.');
         }
     };
 
     const handlePackageSelection = async (packageId: number, packageAmount: number) => {
+
+        setLoading(true);
+
+
         let finalAmount = packageAmount;
         let currentgiftCodeId = 0;
 
         if (couponCode) {
+            console.log("🟢 [PURCHASE] Validating coupon code:", couponCode);
             const { isValid, discountedAmount, giftCodeId } = await validateCoupon(couponCode, packageId);
             if (isValid) {
+                console.log("🟢 [PURCHASE] Coupon valid! Discounted amount:", discountedAmount);
                 currentgiftCodeId = giftCodeId;
                 finalAmount = discountedAmount;
 
             } else {
+
+                setLoading(false);
+
                 toast.error("Invalid Gift Code.");
+                return;
             }
         }
 
@@ -191,14 +241,17 @@ const AvailablePackagesSection = () => {
 
 
         if (paymentModel.amount === 0) {
+
             completeOrderInternally(paymentModel, finalAmount, currentgiftCodeId);
         } else {
+
             handlePayment(paymentModel, packageId, finalAmount, currentgiftCodeId);
         }
     };
 
     const handlePayment = async (paymentModel: PaymentModel, packageId: number, finalAmount: number, giftCodeId: number) => {
         setLoading(true);
+
         try {
             const scriptLoaded = await loadScript('https://checkout.razorpay.com/v1/checkout.js');
             if (!scriptLoaded) {
@@ -207,84 +260,100 @@ const AvailablePackagesSection = () => {
 
             const merchantOrder = await ProcessPayment(paymentModel);
 
-            if (merchantOrder != null) {
-                let selectedPaymentMethod = "";
-                const options = {
-                    key: merchantOrder?.razorpayPaymentId,
-                    amount: merchantOrder?.amount,
-                    currency: merchantOrder?.currency,
-                    name: paymentModel.name,
-                    description: "",
-                    order_id: merchantOrder?.razorpayOrderId,
-                    handler: async function (response: any) {
-                        try {
-                            console.log("Payment Completed. Sending to backend...");
-                            console.log("Payment Method:", selectedPaymentMethod);
+            if (!merchantOrder) {
 
-                            const result = await CompletePaymentOrder({
-                                razorpayPaymentId: response.razorpay_payment_id,
-                                razorpayOrderId: response.razorpay_order_id,
-                                razorpaySignature: response.razorpay_signature,
-                                paymentMethod: selectedPaymentMethod || "Unknown",
-                                discountedAmount: finalAmount.toString(),
-                                giftCodeId: giftCodeId.toString()
-                            });
+                toast.error('Your Already have Active Package...');
+                setLoading(false);
 
-                            if (result) {
-                                toast.success('Payment successful! Your package has been activated.');
-                                const packageId = paymentModel.packageId;
-                                if (packageId) {
-                                    const userPackageApiModel: AddUserToPackageApiModel = {
-                                        UserId: userAuth?.userId || 0,
-                                        TransactionId: result.id,
-                                        PackageId: paymentModel.packageId,
-                                    }
-                                    await AddUserToPackage(userPackageApiModel);
-                                    await queryClient.invalidateQueries({ queryKey: ["userPackages"] });                                    
-                                     if (userAuth?.contactNo) {
-                                     await sendAptitudeTestSms(userAuth.contactNo, userAuth.email.split('@')[0] || "User");
-                                    // if (smsResponse.success) {
-                                    //     toast.success("SMS sent successfully!");
-                                    // } else {
-                                    //     toast.error("SMS sending failed: " + (smsResponse.errors?.[0] || ""));
-                                    // }
+                return;
+            }
+
+            let selectedPaymentMethod = "";
+            const options = {
+                key: merchantOrder?.razorpayPaymentId,
+                amount: merchantOrder?.amount,
+                currency: merchantOrder?.currency,
+                name: paymentModel.name,
+                description: "",
+                order_id: merchantOrder?.razorpayOrderId,
+                handler: async function (response: any) {
+                    console.log("💳 [PAID PACKAGE] Payment completed! Response:", response);
+                    setLoading(true); // Show loader during payment completion
+                    console.log("💳 [PAID PACKAGE] Loader set to TRUE (payment handler)");
+                    try {
+                        console.log("Payment Completed. Sending to backend...");
+                        console.log("Payment Method:", selectedPaymentMethod);
+
+                        const result = await CompletePaymentOrder({
+                            razorpayPaymentId: response.razorpay_payment_id,
+                            razorpayOrderId: response.razorpay_order_id,
+                            razorpaySignature: response.razorpay_signature,
+                            paymentMethod: selectedPaymentMethod || "Unknown",
+                            discountedAmount: finalAmount.toString(),
+                            giftCodeId: giftCodeId.toString()
+                        });
+
+                        if (result) {
+                            console.log("💳 [PAID PACKAGE] Payment verification successful");
+                            const packageId = paymentModel.packageId;
+                            if (packageId) {
+                                console.log("💳 [PAID PACKAGE] Adding user to package...");
+                                const userPackageApiModel: AddUserToPackageApiModel = {
+                                    UserId: userAuth?.userId || 0,
+                                    TransactionId: result.id,
+                                    PackageId: paymentModel.packageId,
                                 }
+                                await AddUserToPackage(userPackageApiModel);
+                                console.log("💳 [PAID PACKAGE] User added to package successfully");
 
-                                }
-                                navigate("/");
-                            } else {
-                                toast.success('Payment verification failed. Please contact support.');
+                                console.log("💳 [PAID PACKAGE] Invalidating queries...");
+                                await queryClient.invalidateQueries({ queryKey: ["userPackages"] });
+                                console.log("💳 [PAID PACKAGE] Queries invalidated successfully");
                             }
-                        } catch (error) {
-                            console.log('Error completing payment:', error);
+                            toast.success('Payment successful! Redirecting to dashboard...');
+                            console.log("💳 [PAID PACKAGE] Navigating to dashboard in 500ms...");
+
+                            // Keep loader visible during navigation
+                            setTimeout(() => {
+                                console.log("💳 [PAID PACKAGE] Executing navigation now");
+                                navigate("/");
+                                window.scrollTo({ top: 0, behavior: "smooth" });
+                            }, 500);
+                        } else {
+                            console.log("🔴 [PAID PACKAGE] Payment verification failed");
+                            setLoading(false);
+                            console.log("🔴 [PAID PACKAGE] Loader set to FALSE");
                             toast.error('Payment verification failed. Please contact support.');
                         }
-                    },
-                    prefill: {
-                        name: paymentModel.name,
-                        email: paymentModel.email,
-                        contact: ""
-                    },
-                    modal: {
-                        ondismiss: function () {
-                            console.log('Payment cancelled by user');
-                        }
+                    } catch (error) {
+                        console.log('🔴 [PAID PACKAGE] Error completing payment:', error);
+                        setLoading(false);
+                        console.log("🔴 [PAID PACKAGE] Loader set to FALSE (error)");
+                        toast.error('Payment verification failed. Please contact support.');
                     }
-                };
+                },
+                prefill: {
+                    name: paymentModel.name,
+                    email: paymentModel.email,
+                    contact: ""
+                },
+                modal: {
+                    ondismiss: function () {
+                        console.log('💳 [PAID PACKAGE] Payment modal dismissed by user');
+                        setLoading(false);
+                        console.log("💳 [PAID PACKAGE] Loader set to FALSE (modal dismissed)");
+                    }
+                }
+            };
 
-                const paymentObject = new (window as any).Razorpay(options);
-                paymentObject.on("payment.submit", (response: any) => {
-                    console.log("Payment method selected:", response.method);
-                    selectedPaymentMethod = response.method || "Unknown";
-                });
-                paymentObject.open();
-            }
-            
+            const paymentObject = new (window as any).Razorpay(options);
+            paymentObject.on("payment.submit", (response: any) => {
+                selectedPaymentMethod = response.method || "Unknown";
+            });
+            paymentObject.open();
             setLoading(false);
         } catch (error: any) {
-            console.log('Payment initialization failed:', error);
-            toast.error(error.message);
-            toast.error('Unable to initialize payment. Please try again later.');
+            toast.error(error.message || 'Unable to initialize payment. Please try again later.');
             setLoading(false);
         }
     };
@@ -317,7 +386,7 @@ const AvailablePackagesSection = () => {
     return (
         <div>
             <Toaster />
-            
+
             {isCouponDialogOpen && (
                 <div className="flex fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50">
                     <div className="relative p-6 w-96 bg-white rounded-md shadow-lg">
@@ -384,9 +453,19 @@ const AvailablePackagesSection = () => {
 
                             <div className="flex flex-col justify-center items-center p-4 rounded-md">
                                 <div className={`transition-transform duration-500 ${hasDiscount ? "text-green-600 scale-110" : "text-secondary"}`}>
+                                    {hasDiscount && (
+                                        <p className="mb-1 text-sm text-gray-500 line-through">
+                                            ₹ {pkg.price.toFixed(2)}
+                                        </p>
+                                    )}
                                     <p className="mb-2 text-3xl font-bold">
                                         ₹ {discountedPrice.toFixed(2)}
                                     </p>
+                                    {hasDiscount && discountedPrice < pkg.price && (
+                                        <p className="text-sm text-green-600 font-semibold">
+                                            You save ₹{(pkg.price - discountedPrice).toFixed(2)}!
+                                        </p>
+                                    )}
                                 </div>
 
                                 {hasDiscount ? (

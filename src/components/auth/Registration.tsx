@@ -139,20 +139,20 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
         switch (result) {
           case UserRegistrationResults.Successful:
             toast.success("Registration successful! Redirecting to login...");
-            setTimeout(() => setIsRightPanelActive(false), 2000); // Redirect after a short delay
+            setTimeout(() => setIsRightPanelActive(false), 500); // Redirect after a short delay
             break;
 
           case UserRegistrationResults.ContactNoAlreadyExists:
             toast.error(
-              "Your contact numberalready exists. Redirecting to login..."
+              "Your mobile number already exists. Redirecting to login..."
             );
-            setTimeout(() => setIsRightPanelActive(false), 2000); // Redirect after a short delay
+            setTimeout(() => setIsRightPanelActive(false), 500); // Redirect after a short delay
             break;
           case UserRegistrationResults.EmailAlreadyExists:
             toast.error(
               "Your  email already exists. Redirecting to login..."
             );
-            setTimeout(() => setIsRightPanelActive(false), 2000); // Redirect after a short delay
+            setTimeout(() => setIsRightPanelActive(false), 500); // Redirect after a short delay
             break;
 
           case UserRegistrationResults.PasswordPolicyNotMet:
@@ -194,12 +194,12 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
       errors.email = 'Email is invalid';
     }
 
-    if (!values.password) {
-      errors.password = 'Password is required';
+    // if (!values.password) {
+    //   errors.password = 'Password is required';
 
-    } else if (values.password.length < 5) {
-      errors.password = 'Password must be at least 6 characters';
-    } 
+    // } else if (values.password.length < 5) {
+    //   errors.password = 'Password must be at least 6 characters';
+    // } 
 
     if (!values.name) {
       errors.name = ' name is required';
@@ -222,9 +222,9 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
     }
 
     if (!values.contactNo) {
-      errors.contactNo = 'Contact number is required';
+      errors.contactNo = 'Mobile number is required';
     } else if (!phoneRegex.test(values.contactNo)) {
-      errors.contactNo = 'Contact number should be 10 digits';
+      errors.contactNo = 'Mobile number should be 10 digits';
     }
 
     if (!values.city) {
@@ -262,7 +262,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 
           <div className="space-y-2">
-            <label htmlFor="contactNo" className="text-sm font-medium text-gray-700">Contact Number</label>
+            <label htmlFor="contactNo" className="text-sm font-medium text-gray-700">Mobile Number</label>
             <input
               id="contactNo"
               name="contactNo"
@@ -289,45 +289,6 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
             {formErrors.name && <span className="text-xs text-red-500">{formErrors.name}</span>}
           </div>
           <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium text-gray-700">Email</label>
-            <input
-              id="email"
-              name="email"
-              placeholder="Enter Email"
-              required
-              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              size={20}
-              defaultValue={formValues.email}
-              onChange={(e) => handleChange(e)}
-            />
-            {formErrors.email && <span className="text-xs text-red-500">{formErrors.email}</span>}
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium text-gray-700">Password</label>
-            <div className='relative'>
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                // placeholder="Enter Password"
-                required
-                onChange={(e) => handleChange(e)}
-                className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                defaultValue={formValues.password}
-              />
-              <button
-                type="button"
-                className="absolute text-gray-600  end-2.5 bottom-2.5 font-medium rounded-lg text-sm px-4 py-1 hover:text-gray-600 focus:outline-none bg-transparent hover:bg-gray-100"
-                onClick={togglePasswordVisibility}
-                aria-label="Toggle password visibility"
-              >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
-              </button>
-            </div>
-            {formErrors.password && <span className="text-xs text-red-500">{formErrors.password}</span>}
-          </div>
-
-          <div className="space-y-2">
             <label htmlFor="dateOfBirth" className="text-sm font-medium text-gray-700">Date of Birth</label>
             <CommonDatePicker
               id="dateOfBirth"
@@ -352,6 +313,47 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
               </span>
             )}
           </div>
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-sm font-medium text-gray-700">Email</label>
+            <input
+              id="email"
+              name="email"
+              placeholder="Enter Email"
+              required
+              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              size={20}
+              defaultValue={formValues.email}
+              onChange={(e) => handleChange(e)}
+            />
+            {formErrors.email && <span className="text-xs text-red-500">{formErrors.email}</span>}
+          </div>
+          {/*
+          <div className="space-y-2">
+            <label htmlFor="password" className="text-sm font-medium text-gray-700">Password</label>
+            <div className='relative'>
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                // placeholder="Enter Password"
+                required
+                onChange={(e) => handleChange(e)}
+                className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                defaultValue={formValues.password}
+              />
+              <button
+                type="button"
+                className="absolute text-gray-600  end-2.5 bottom-2.5 font-medium rounded-lg text-sm px-4 py-1 hover:text-gray-600 focus:outline-none bg-transparent hover:bg-gray-100"
+                onClick={togglePasswordVisibility}
+                aria-label="Toggle password visibility"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+            {formErrors.password && <span className="text-xs text-red-500">{formErrors.password}</span>}
+          </div>
+*/}
+
           <div className="space-y-2">
             <label htmlFor="class" className="text-sm font-medium text-gray-700">Grade/Class</label>
             <select
@@ -480,7 +482,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
               defaultValue={formValues.dreamCareerOptions}
               className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            
+
           </div>
         </div>
         <button

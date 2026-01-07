@@ -9,9 +9,9 @@ import { GiftCodeResponseModel } from "../types/package";
 const PROCESS_REQUEST_ORDER = 'process-request-order';
 const COMPLETE_REQUEST_ORDER = 'complete-order-process';
 const VALIDATE_GIFT_CODE = 'validate-gift-code';
- 
-// const API_URL = process.env.REACT_APP_API_URL;
-const API_URL  = 'https://aping.runasp.net/';
+
+const API_URL = process.env.REACT_APP_API_URL;
+
 export const ProcessPayment = async (data: PaymentModel) => {
 
     try {
@@ -20,7 +20,11 @@ export const ProcessPayment = async (data: PaymentModel) => {
         if (result.success) {
 
             return result.data;
-        } 
+        } else {
+            // Handle API-level errors
+            console.log("Registration failed with errors:", result.errors);
+            return null;
+        }
     } catch (error) {
         console.log("Error processing payment:", error);
         throw error;
@@ -43,7 +47,7 @@ export const ValidateGiftCode = async (codeName: string, packageId: number) => {
             console.log("Registration failed with errors:", result.errors);
             return null;
         }
-        
+
     } catch (error) {
         console.log("Error processing GiftCode:", error);
         throw error;
@@ -66,8 +70,8 @@ export const CompletePaymentOrder = async (paymentDetails: {
     razorpayOrderId: string;
     razorpaySignature: string;
     paymentMethod: string;
-    discountedAmount:string;
-    giftCodeId:string;
+    discountedAmount: string;
+    giftCodeId: string;
 }) => {
     try {
         // Create FormData

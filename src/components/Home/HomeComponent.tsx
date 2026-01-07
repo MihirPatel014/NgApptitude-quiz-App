@@ -10,12 +10,14 @@ import { ExamSections, ExamWithSectionViewModel } from "../../types/exam";
 import { getExamInfoByExamId } from "../../services/examService";
 import AvailablePackagesSection from "../packages/AvailablePackagesSection";
 import { Award, CheckCircle, Clock, Play, Users, Zap } from "lucide-react";
+import { GetExamResultByExamProgressId } from "../../services/resultService";
 
 const HomeComponent = () => {
   const { userAuth } = useContext(UserContext);
+
   const navigate = useNavigate();
   const { setLoading } = useLoader();
-  
+
   const [examSections, setExamSections] = useState<Map<number, ExamSections[]>>(new Map()); // Store sections per exam
 
   const [currentPackage, setCurrentPackage] = useState<UserPackageInfoModel | null>(null);
@@ -25,24 +27,94 @@ const HomeComponent = () => {
   let UserId = userAuth?.userId || 0;
 
 
-  const { data: userPackages, isSuccess } = useQuery({
+  const { data: UserPackageInfoModel, isSuccess, isLoading: isLoadingPackages, isFetching } = useQuery({
     queryKey: ["userPackages"],
-    queryFn: async () => GetUserPackageInfoByUserId(UserId),
-    enabled: !!UserId,
+    queryFn: async () => {
+
+      const data = await GetUserPackageInfoByUserId(UserId);
+      return data ?? null; // Ensure we never return undefined
+    },
+    enabled: !!UserId && UserId > 0, // Only fetch if UserId is valid and positive
   });
-  
-    useEffect(() => {
-    if (userPackages && userPackages.length > 0) {
-      const newCurrentPackage = userPackages.filter(pkg => !pkg.isCompleted)[0] || null;
-      setCurrentPackage(newCurrentPackage);
-      setCompletedPackages(userPackages.filter(pkg => pkg.isCompleted));
-      
-      console.log("This is the current package", newCurrentPackage);
+
+  // Show loader while fetching packages
+  useEffect(() => {
+    const loading = isLoadingPackages || isFetching;
+    setLoading(loading);
+
+  }, [isLoadingPackages, isFetching, setLoading]);
+
+  useEffect(() => {
+
+    // Only process if query was successful
+    if (isSuccess) {
+      if (UserPackageInfoModel && Array.isArray(UserPackageInfoModel) && UserPackageInfoModel.length > 0) {
+        const newCurrentPackage = UserPackageInfoModel.find(pkg => !pkg.isCompleted) || null;
+        const newCompletedPackages = UserPackageInfoModel.filter(pkg => pkg.isCompleted);
+
+        setCurrentPackage(newCurrentPackage);
+        setCompletedPackages(newCompletedPackages);
+
+
+      } else {
+        // No packages found or empty array
+        setCurrentPackage(null);
+        setCompletedPackages([]);
+      }
     }
-  }, [userPackages]);
-  const handleResult = (packageId: number) => {
-    navigate("/resultnew", { state: { packageId } });
-  };
+  }, [UserPackageInfoModel, isSuccess]);
+  const handleResult = async (packageId: number) => {
+  setLoading(true);
+
+  try {
+    // Find the package (current or completed)
+    const pkg =
+      currentPackage?.id === packageId
+        ? currentPackage
+        : completedPackages.find(p => p.id === packageId);
+
+    if (!pkg || !pkg.exams || pkg.exams.length === 0) {
+     
+      return;
+    }
+
+    // Pick any completed exam (first is enough)
+    const completedExam = pkg.exams.find(e => e.isCompleted && e.examProgressId);
+
+    if (!completedExam) {
+     
+      return;
+    }
+
+    // 🔑 Ask backend what type this exam is
+    const result = await GetExamResultByExamProgressId(completedExam.examProgressId);
+
+    if (!result) {
+      
+      return;
+    }
+
+    // 🔑 SAME RULE AS QuizResult
+    if (result.resultTypeEnum === 1) {
+      // SCORE-BASED
+      navigate("/exam-summary", {
+        state: { examProgressId: completedExam.examProgressId }
+      });
+    } else {
+      // PROFILE / APTITUDE
+      navigate("/resultnew", {
+        state: { packageId }
+      });
+    }
+
+  } catch (error) {
+    console.error(error);
+    
+  } finally {
+    setLoading(false);
+  }
+};
+
   const handleQuizClick = async (examId: number) => {
     try {
       setLoading(true);
@@ -72,25 +144,28 @@ const HomeComponent = () => {
         return;
       }
 
-      // Fetch exam questions if not already available
-      let examQuestions = examSections.get(examId)?.flatMap(section => section.questions) || [];
-      if (examQuestions.length === 0) {
-        fetchedExam = await getExamInfoByExamId(examId) as ExamWithSectionViewModel;
-        examQuestions = fetchedExam?.sections?.flatMap(section => section.questions) || [];
+      // Fetch exam sections if not already available
+      let sections = examSections.get(examId) || [];
+      if (sections.length === 0) {
+        const fetchedExam = await getExamInfoByExamId(examId);
+        sections = fetchedExam?.sections || [];
       }
 
+      // Extract all questions from sections
+      const examQuestions = sections.flatMap(section => section.questions) || [];
+      debugger;
       // Navigate to the quiz page
       navigate('/quiz', {
         state: {
           userId: UserId,
           examId: selectedExam.examId,
           examName: selectedExam.examName,
-          examDescription: fetchedExam?.description?.toString() || "",
           timeLimit: selectedExam.timeLimit,
           userExamProgressId: examProgressId,
           userPackageId: userPackageId,
           packageId: packageId,
           examQuestions: examQuestions,
+          sections: sections,
         },
       });
       setLoading(false);
@@ -99,6 +174,8 @@ const HomeComponent = () => {
       setLoading(false);
     }
   };
+
+
   const ExamStatus = ({
     exam,
     onStartExam,
@@ -175,7 +252,7 @@ const HomeComponent = () => {
         </div>
 
         {/* Current Package - Enhanced Design */}
-        {currentPackage  && (
+        {currentPackage && (
           <div className="mb-12">
             <h2 className="flex items-center mb-6 text-2xl font-semibold text-gray-900">
               <Zap className="mr-2 w-6 h-6 text-blue-600" />

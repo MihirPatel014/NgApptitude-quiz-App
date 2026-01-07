@@ -1,12 +1,7 @@
 import axios from "axios";
 
 import { lookInSession } from "./session";
-import toast from "react-hot-toast";
-//  const API_URL = process.env.REACT_APP_API_URL;
-
-const API_URL = "https://aping.runasp.net/";
-// const API_URL = "https://localhost:44389/";
-
+ const API_URL = process.env.REACT_APP_API_URL;
 
 export const http = axios.create({
   baseURL: API_URL,
@@ -46,7 +41,6 @@ export const handleApiResponse = <T>(response: ApiResponse<T>): { success: boole
     return { success: true, data: response.data };
   } else {
     const errorMessages = response.errorDetails.map(error => `${error.errorCode}: ${error.errorMessage}`);
-    toast.error(errorMessages.toString()); // Log errors for debugging
     return { success: false, errors: errorMessages };
   }
 };

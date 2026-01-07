@@ -10,6 +10,7 @@ import { AddUserToPackageApiModel } from "../../types/user";
 import './package.css';
 import { useLoader } from "../../provider/LoaderProvider";
 import toast, { Toaster } from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 
 const PackagesPage = () => {
@@ -17,6 +18,7 @@ const PackagesPage = () => {
     const [packages, setPackages] = useState<Packages[]>([]);
     // const [loading, setLoading] = useState<boolean>(true);
     const { setLoading } = useLoader();
+    const queryClient = useQueryClient();
     const [error, setError] = useState<string | null>(null);
     const [packageDetails, setPackageDetails] = useState<Map<number, PackagesInfo>>(new Map());
     const navigate = useNavigate();
@@ -88,6 +90,7 @@ const PackagesPage = () => {
 
             if (!response) {
                 console.log("Invalid response structure:", response);
+                setLoading(false);
                 return { isValid: false, discountedAmount: 0, giftCodeId: 0 };
             }
 
@@ -97,9 +100,23 @@ const PackagesPage = () => {
 
                 // Ensure we check against `GiftCodeValidationStatus.Valid`
                 if (response.giftCodeStatus === GiftCodeValidationStatus.Valid) {
+                    const discountedValue = Number(response.discountedValue);
+
+                    // Ensure the discounted amount is never negative
+                    const finalAmount = Math.max(0, discountedValue);
+
+                    console.log("Original discounted value:", discountedValue);
+                    console.log("Final amount (after validation):", finalAmount);
+
+                    // Warn if backend returned negative value (but still apply it as ₹0)
+                    if (discountedValue < 0) {
+                        console.warn("⚠️ Backend returned negative discount value:", discountedValue, "- Applying as ₹0");
+                    }
+
+                    setLoading(false);
                     return {
                         isValid: true,
-                        discountedAmount: Number(response.discountedValue),
+                        discountedAmount: finalAmount,
                         giftCodeId: response.giftCodeId
                     };
                 }
@@ -132,7 +149,7 @@ const PackagesPage = () => {
         setIsCouponDialogOpen(false);
     };
     const completeOrderInternally = async (paymentModel: PaymentModel, finalAmount: number, giftCodeId: number) => {
-        setLoading(false);
+        setLoading(true);
         try {
             const merchantOrder = await ProcessPayment(paymentModel);
             if (merchantOrder) {
@@ -155,20 +172,27 @@ const PackagesPage = () => {
                         }
                         const adduserToPackage = await AddUserToPackage(userPackageApiModel);
                     }
-                    setLoading(true);
+                    // Invalidate user packages query to refresh dashboard
+                    queryClient.invalidateQueries({ queryKey: ["userPackages"] });
                     toast.success('Package activated successfully!');
                     navigate("/quizpage");
                 } else {
-                    toast.success('Failed to activate package. Please contact support.');
+                    setLoading(false);
+                    toast.error('Failed to activate package. Please contact support.');
                 }
+            } else {
+                setLoading(false);
+                toast.error('Failed to process payment. Please try again.');
             }
         } catch (error) {
             console.log('Error completing order internally:', error);
+            setLoading(false);
             toast.error('Failed to activate package. Please contact support.');
         }
     };
 
     const handlePackageSelection = async (packageId: number, packageAmount: number) => {
+        setLoading(true);
         let finalAmount = packageAmount;
         let currentgiftCodeId = 0;
         // Apply coupon discount if a valid coupon code exists
@@ -179,7 +203,9 @@ const PackagesPage = () => {
                 finalAmount = discountedAmount;
 
             } else {
+                setLoading(false);
                 toast.error("Invalid Gift Code.");
+                return;
             }
         }
 
@@ -220,7 +246,7 @@ const PackagesPage = () => {
                     currency: merchantOrder?.currency,
                     name: paymentModel.name,
                     description: "",
-                    order_id: merchantOrder?.razorpayOrderId,
+                    order_id: merchantOrder?.orderId,
                     handler: async function (response: any) {
                         try {
                             console.log("Payment Completed. Sending to backend...");
@@ -246,6 +272,8 @@ const PackagesPage = () => {
                                     }
                                     const adduserToPackage = await AddUserToPackage(userPackageApiModel);
                                 }
+                                // Invalidate user packages query to refresh dashboard
+                                queryClient.invalidateQueries({ queryKey: ["userPackages"] });
                                 navigate("/quizpage");
                             } else {
                                 toast.success('Payment verification failed. Please contact support.');
@@ -274,7 +302,7 @@ const PackagesPage = () => {
                 });
                 paymentObject.open();
             }
-            
+
             setLoading(false);
         } catch (error: any) {
             console.log('Payment initialization failed:', error);
@@ -424,9 +452,19 @@ const PackagesPage = () => {
                         <div className="flex flex-col justify-center items-center p-4 bg-gray-100 rounded-md">
                             {/* Animated Price Change */}
                             <div className={`transition-transform duration-500 ${hasDiscount ? "text-green-600 scale-110" : "text-secondary"}`}>
+                                {hasDiscount && (
+                                    <p className="mb-1 text-sm text-gray-500 line-through">
+                                        ₹ {pkg.price.toFixed(2)}
+                                    </p>
+                                )}
                                 <p className="mb-2 text-3xl font-bold">
                                     ₹ {discountedPrice.toFixed(2)}
                                 </p>
+                                {hasDiscount && discountedPrice < pkg.price && (
+                                    <p className="text-sm text-green-600 font-semibold">
+                                        You save ₹{(pkg.price - discountedPrice).toFixed(2)}!
+                                    </p>
+                                )}
                             </div>
 
                             {/* Applied Coupon Message or Apply Button */}

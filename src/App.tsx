@@ -15,6 +15,7 @@ import Result1 from "./pages/result/Result"
 import { LoaderProvider } from "./provider/LoaderProvider";
 import Loader from "./common/Loader";
 import ResultNew from "./pages/result/Resultnew";
+import ExamSummary from "./pages/result/ExamSummary";
 import QuizResultWrapper from "./components/quiz/QuizResultProp";
 import PhoneOTP from "./components/auth/PhoneOTP";
 
@@ -27,7 +28,7 @@ function App() {
           <Routes>
             {/* Public Path */}
             {/* <Route path="/registeration" element={<Registeration />} /> */}
-            <Route path="/loginwithotp" element={<PhoneOTP />} /> 
+            {/* <Route path="/loginwithotp" element={<PhoneOTP />} />  */}
             <Route path="/login" element={<AnimatedForm />} />
             {/* <Route path="/login" element={<PhoneOtp />} /> */}
             <Route element={<ProtectedRoute />}>
@@ -40,10 +41,11 @@ function App() {
                 <Route path='/result' element={<Result1 />} />
                 <Route path='/resultnew' element={<ResultNew />} />
                 <Route path='/loader' element={<Loader />} />
+                <Route path="/exam-summary" element={<ExamSummary />} />
               </Route>
+              <Route path='/quizresult' element={<QuizResultWrapper />} />
+              <Route path='/quiz' element={<QuizWrapper />} />
             </Route>
-            <Route path='/quizresult' element={<QuizResultWrapper />} />
-            <Route path='/quiz' element={<QuizWrapper />} />
             {/* <Route path='/quiz' element={<Quiz value={QuizProps} />} /> */}
             {/* <Route path="/quiz/:userId/:examId/:sectionId/:timeLimit/:userExamProgressId/:userPackageId/:packageId/:examSubmitId" element={<Quiz />} /> */}
             {/* Catch-all route for unknown paths */}

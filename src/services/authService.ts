@@ -3,7 +3,7 @@ import { UserRegistrationResults } from "../common/constant";
 import { ApiResponse, handleApiResponse } from "../common/http-common";
 import http from "../common/http-common"
 import { apiRequest } from "../common/requestwithdata";
-import { AddUserToPackageApiModel, User, userDetails, UserInfoModel, UserLogin, UserPackage, UserPackageInfoModel, UserProfileUpdate, UserRegistration } from "../types/user"
+import { AddUserToPackageApiModel, User, userDetails, UserInfoModel, UserLogin, UserLoginResultModel, UserPackage, UserPackageInfoModel, UserProfileUpdate, UserRegistration } from "../types/user"
 import { Grade } from "../types/grade";
 
 //Backend api Url
@@ -13,19 +13,18 @@ const SECRET_KEY = 'your-secret-key';
 const USERS_URL = 'api/User';
 
 const LOGIN_URL = "/Login"
+const LOGIN_WITH_MOBILE_URL = "/LoginWithMobile";
 const REGISTER_URL = "/Register"
 
-const OTP_URL = "/sendOTP"
-const Verify_OTP_URL = "/VerifyOtp"
+const GENERATE_OTP_URL = "/generate_otp";
+const VERIFY_OTP_URL = "/otp_verification";
 const GET_USER_DETAILS = "/GetUserDetails"
 const Update_USER_DETAILS = "/UpdateUserDetails"
 const ADD_USER_TO_PACKAGE = "/AddUserToPackage"
 const GET_USER_FULL_INFO_BY_USERID = "/GetUserFullInfoByUserId"
 const GET_USER_PACKAGE_INFO_BY_USERID = "/GetUserPackageInfoByUserId"
 
-// const API_URL = process.env.REACT_APP_API_URL;
-const API_URL  = 'https://aping.runasp.net/';
-// const API_URL  = 'https://localhost:44389/';
+ const API_URL = process.env.REACT_APP_API_URL;
 const GRADE_URL = "api/Grade/GetAllGrades";
 const getAll = () => {
   return http.get<Array<userDetails>>(`/${USERS_URL}`);
@@ -52,8 +51,6 @@ export const removeAll = () => {
 };
 
 export const loginUser = async (data: UserLogin) => {
-  console.log("Environment:", process.env.REACT_APP_API_URL);
-  console.log("API URL:", process.env.REACT_APP_API_URL);
   const response = await http.post<ApiResponse<User>>(`${USERS_URL}${LOGIN_URL}`, data);
   const result = handleApiResponse(response.data);
 
@@ -85,26 +82,82 @@ export const registerUser = async (data: UserRegistration) => {
 };
 
 
-export const sendOtp = async (data: string) => {
+export const generateOTPSms = async (mobile: string) => {
   try {
-    // let response = http.post<string>(`/${USERS_URL}${sendOtp}`, data);
-    let response = "9977";
-    return response;
+    const requestPayload = {
+      AccessKey: "8525", 
+      Data: { Mobile: mobile },
+    };
+
+    const response = await http.post<ApiResponse<any>>(
+      `${USERS_URL}${GENERATE_OTP_URL}`,
+      requestPayload
+    );
+
+    const result = handleApiResponse(response.data);
+    if (result.success) return result.data;
   } catch (error) {
-    console.log("Error during registration:", error);
+    console.error("Error generating OTP:", error);
     throw error;
   }
 };
-export const VerifyOtp = async (mobileNo: string, otp: string) => {
+
+// Verify OTP
+export const verifyOTPSms = async (mobile: string, otp: string, hashValue?: string) => {
   try {
-    // let response = http.post<string>(`/${USERS_URL}${sendOtp}`, data);
-    let response = "1234";
-    return response;
+    const requestPayload = {
+      AccessKey: "8525",
+      Data: {
+        Mobile: mobile,
+        OTP: otp,
+        Hashvalue: hashValue || "",
+      },
+    };
+
+    const response = await http.post<ApiResponse<any>>(
+      `${USERS_URL}${VERIFY_OTP_URL}`,
+      requestPayload
+    );
+
+    const result = handleApiResponse(response.data);
+    if (result.success) return result.data;
   } catch (error) {
-    console.log("Error during registration:", error);
+    console.error("Error verifying OTP:", error);
     throw error;
   }
 };
+
+export const loginWithMobile = async (
+  mobile: string,
+  otp: string,
+  hashValue: string
+): Promise<User | null> => {
+  try {
+    const requestPayload = {
+      Mobile: mobile,      
+      OTP: otp,            
+      Hashvalue: hashValue
+    };
+
+    const response = await http.post<ApiResponse<User>>(
+      `${USERS_URL}${LOGIN_WITH_MOBILE_URL}`,
+      requestPayload
+    );
+
+    const result = handleApiResponse(response.data);
+    if (result.success) {
+      return result.data ?? null;
+    } else {
+      console.warn("Login with mobile failed:", result.errors);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error during mobile login:", error);
+    throw error;
+  }
+};
+
+
 export const getUserDetails = async () => {
   const result = await apiRequest<true, UserProfileUpdate>(
     `/${USERS_URL}${GET_USER_DETAILS}`,
@@ -125,10 +178,10 @@ export const UpdateUserDetails = async (data: UserProfileUpdate) => {
     data
   );
   if (result.success) {
-    return result.data; // Return the package data
+     return true; 
   } else {
     console.log("Error fetching examByID:", result.errors);
-    return null;
+    return false;
   }
 };
 export const AddUserToPackage = async (data: AddUserToPackageApiModel) => {

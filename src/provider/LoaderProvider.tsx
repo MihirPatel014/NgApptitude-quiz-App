@@ -1,9 +1,9 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
 // Define the shape of the loader context
 interface LoaderContextType {
   loading: boolean;
-  setLoading: (loading: boolean) => void;
+  setLoading: (loading: boolean, source?: string) => void;
 }
 
 // Create the context with an initial undefined value
@@ -15,7 +15,19 @@ interface LoaderProviderProps {
 }
 
 export const LoaderProvider: React.FC<LoaderProviderProps> = ({ children }) => {
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoadingState] = useState<boolean>(false);
+  const [loadingSource, setLoadingSource] = useState<string>("unknown");
+
+  const setLoading = (newLoading: boolean, source: string = "unknown") => {
+    const timestamp = new Date().toLocaleTimeString();
+
+    setLoadingState(newLoading);
+    setLoadingSource(source);
+  };
+
+  useEffect(() => {
+
+  }, [loading, loadingSource]);
 
   return (
     <LoaderContext.Provider value={{ loading, setLoading }}>

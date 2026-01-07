@@ -1,7 +1,6 @@
 import { userLoginResults, UserRegistrationResults } from "../common/constant";
 import { ApiResponse, handleApiResponse } from "../common/http-common";
 import http from "../common/http-common"
-import PackagesPage from "../components/packages/packagesPage";
 import { Packages, PackagesInfo, UserPackagesModel } from "../types/package"
 import { apiRequest } from "../common/requestwithdata"
 import { PackageId } from "typescript";

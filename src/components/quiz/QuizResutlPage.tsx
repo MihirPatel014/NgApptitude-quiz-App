@@ -10,6 +10,7 @@ import { sendExamReportSms } from '../../services/smsService';
 import toast from 'react-hot-toast';
 import { UserContext } from "../../provider/UserProvider";
 import { useContext } from "react";
+import { GetExamResultByExamProgressId } from "../../services/resultService";
 
 export interface QuizResultProps {
   examId?: number;
@@ -44,11 +45,12 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
 
   const currentExamId = examId ?? location.state?.examId;
   const currentUserId = userId ?? location.state?.userId;
- const { userAuth } = useContext(UserContext);
+  const { userAuth } = useContext(UserContext);
 
   const [nextExam, setNextExam] = useState<any>(null);
   const [currentPackageId, setCurrentPackageId] = useState<number | null>(null);
   const [reportSmsSent, setReportSmsSent] = useState(false);
+  const [examProgressId, setExamProgressId] = useState<number | null>(null);
 
   // Fetch user packages
   const {
@@ -66,21 +68,7 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
     enabled: !!currentUserId,
   });
 
-  // Fetch exam info for the next exam when available
-  const {
-    data: fetchedExamData,
-    isLoading: isLoadingExamData,
-    isError: isErrorExamData,
-  } = useQuery<ExamWithSectionViewModel>({
-    queryKey: ['examInfo', nextExam?.examId],
-    queryFn: async () => {
-      if (!nextExam?.examId) throw new Error('Exam ID is required');
-      const result = await getExamInfoByExamId(nextExam.examId);
-      if (!result) throw new Error('Exam not found');
-      return result;
-    },
-    enabled: !!nextExam?.examId,
-  });
+
 
   const formatTimeTaken = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
@@ -96,25 +84,25 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
       const currentUserPackageId = props.userPackageId ?? location.state?.userPackageId;
       const currentPackageIdFromState = props.userPackageId ?? location.state?.packageId;
 
-      // Find the specific package the user was just taking an exam from
-      // const currentPackage = packages.find(
-      //   (pkg) => pkg.userPackageId === currentUserPackageId && pkg.packageId === currentPackageIdFromState
-      // );
-      // Prefer an active package, but fallback to any package
-      const currentPackage = packages.find(pkg => !pkg.isCompleted) || packages.find(pkg => pkg.isCompleted) || null;
+      const currentPackage =
+        packages.find(pkg => !pkg.isCompleted) ||
+        packages.find(pkg => pkg.isCompleted) ||
+        null;
+      
+      if (!currentPackage) return;
 
-      if (!currentPackage) {
-        console.log("Current package not found in QuizResultPage.");
-        return;
-      }
-      if (currentPackage.isCompleted) {
-        await sendExamReportSms(userAuth?.contactNo || "", userAuth?.email.split('@')[0] || "", userAuth?.email || "");
-      }
+      setCurrentPackageId(currentPackage.id);
+      // 🔹 capture completed exam's examProgressId (for Exam Summary only)
+const completedExam = currentPackage.exams?.find(
+  e => e.examId === currentExamId
+);
 
-      setCurrentPackageId(currentPackage.userPackageId || currentPackage.id);
+if (completedExam?.examProgressId) {
+  setExamProgressId(completedExam.examProgressId);
+}
 
       const availableExams = currentPackage.exams?.filter(
-        (exam) => !exam.isCompleted && exam.examId !== currentExamId
+        exam => !exam.isCompleted && exam.examId !== currentExamId
       );
 
       if (!availableExams?.length) {
@@ -123,88 +111,79 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
       }
 
       const next = availableExams[0];
-      const foundExam = currentPackage.exams.find(
-        (exam) => exam.examId === next.examId
-      );
 
-      console.log('Found next exam:', foundExam);
-      if (!foundExam) return;
+      const fetchedNextExamDetails =
+        await getExamInfoByExamId(next.examId);
 
-      // Fetch exam details for the next exam directly
-      const fetchedNextExamDetails = await getExamInfoByExamId(foundExam.examId) as ExamWithSectionViewModel;
+      if (!fetchedNextExamDetails) return;
 
       const examQuestions =
-        fetchedNextExamDetails?.sections?.flatMap((section: any) => section.questions) ||
-        [];
+        fetchedNextExamDetails.sections?.flatMap(sec => sec.questions) || [];
 
       setNextExam({
         userId: currentUserId,
-        examId: foundExam.examId,
-        examName: foundExam.examName,
-        examDescription: fetchedNextExamDetails?.description || '',
-        timeLimit: foundExam.timeLimit,
-        userExamProgressId: foundExam.examProgressId,
+        examId: next.examId,
+        examName: next.examName,
+        examDescription: fetchedNextExamDetails.description || "",
+        timeLimit: next.timeLimit,
+        userExamProgressId: next.examProgressId,
         userPackageId: currentPackage.userPackageId,
         packageId: currentPackage.packageId,
-        examQuestions,
+        examQuestions
       });
     },
-    [currentUserId, currentExamId, props.userPackageId, location.state] // Removed fetchedExamData from dependencies
+    [currentUserId, currentExamId]  // keep dependency list small
   );
 
+
   useEffect(() => {
-    const processData = async () => {
+    if (!userPackages || isLoadingUserPackages || isErrorUserPackages) return;
+
+    const timeoutId = setTimeout(async () => {
       setLoading(true);
       try {
-        if (!isLoadingUserPackages && !isErrorUserPackages && userPackages) {
-          await findNextExam(userPackages);
-        }
+        await findNextExam(userPackages);
       } finally {
         setLoading(false);
       }
-    };
-    processData();
-  }, [
-    userPackages,
-    isLoadingUserPackages,
-    isErrorUserPackages,
-    findNextExam,
-    setLoading,
-  ]);
+    }, 200);
 
-// useEffect(() => {
-//   if (
-//     !nextExam &&                     
-//     currentPackageId &&              
-//     userAuth?.contactNo &&           
-//     userAuth?.email &&
-//     !reportSmsSent                   
-//   ) {
-//     console.log("All exams completed — sending SMS automatically...");
+    return () => clearTimeout(timeoutId);
+  }, [userPackages, isLoadingUserPackages, isErrorUserPackages, findNextExam]);
 
-//     const name = userAuth.email.split('@')[0] || 'User';
-//     const mobile = userAuth.contactNo;
-//     const email = userAuth.email;
+  // useEffect(() => {
+  //   if (
+  //     !nextExam &&                     
+  //     currentPackageId &&              
+  //     userAuth?.contactNo &&           
+  //     userAuth?.email &&
+  //     !reportSmsSent                   
+  //   ) {
+  //     console.log("All exams completed — sending SMS automatically...");
 
-//     (async () => {
-//       try {
-//         const smsResponse = await sendExamReportSms(mobile, name, email);
+  //     const name = userAuth.email.split('@')[0] || 'User';
+  //     const mobile = userAuth.contactNo;
+  //     const email = userAuth.email;
 
-//         // Optionally show toast notifications
-//         // if (smsResponse.success) {
-//         //   toast.success("Exam completion SMS sent successfully!");
-//         // } else {
-//         //   toast.error("Failed to send SMS: " + (smsResponse.errors?.[0] || "Unknown error"));
-//         // }
+  //     (async () => {
+  //       try {
+  //         const smsResponse = await sendExamReportSms(mobile, name, email);
 
-//         setReportSmsSent(true);
-//       } catch (err) {
-//         console.error("Error sending SMS after all exams:", err);
-//         toast.error("Failed to send completion SMS.");
-//       }
-//     })();
-//   }
-// }, [nextExam, currentPackageId, userAuth, reportSmsSent]);
+  //         // Optionally show toast notifications
+  //         // if (smsResponse.success) {
+  //         //   toast.success("Exam completion SMS sent successfully!");
+  //         // } else {
+  //         //   toast.error("Failed to send SMS: " + (smsResponse.errors?.[0] || "Unknown error"));
+  //         // }
+
+  //         setReportSmsSent(true);
+  //       } catch (err) {
+  //         console.error("Error sending SMS after all exams:", err);
+  //         toast.error("Failed to send completion SMS.");
+  //       }
+  //     })();
+  //   }
+  // }, [nextExam, currentPackageId, userAuth, reportSmsSent]);
 
 
   const handleNextExam = () => {
@@ -221,21 +200,56 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
     }
   };
 
-  const handleViewResult = () => {
-    if (currentPackageId) {
-      setLoading(true);
-      navigate(`/resultnew`, { state: { packageId: currentPackageId } });
+
+const handleViewResult = async () => {
+  setLoading(true);
+
+  try {
+    if (!examProgressId) {
+      // fallback → profile result
+      navigate("/resultnew", {
+        state: { packageId: currentPackageId }
+      });
+      return;
     }
-  };
+
+    const result = await GetExamResultByExamProgressId(examProgressId);
+
+    if (!result) {
+      toast.error("Unable to fetch exam result");
+      return;
+    }
+
+    // 🔑 SIMPLE RULE
+    if (result.resultTypeEnum === 1) {
+      // SCORE-BASED → Exam Summary
+      navigate("/exam-summary", {
+        state: { examProgressId }
+      });
+    } else {
+      // PROFILE / APTITUDE → ResultNew
+      navigate("/resultnew", {
+        state: { packageId: currentPackageId }
+      });
+    }
+
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to load result");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4 bg-gray-100">
-      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
+    <div className="flex justify-center items-center p-4 min-h-screen bg-gray-100">
+      <div className="p-6 w-full max-w-md bg-white rounded-lg shadow-lg">
         <div className="text-center">
           <h2 className="mb-2 text-2xl font-semibold text-gray-800">🎉 Exam Completed!</h2>
           <h3 className="mb-4 text-xl font-medium text-gray-700">{examName}</h3>
 
-          <div className="p-4 mb-4 rounded-lg bg-gray-50">
+          <div className="p-4 mb-4 bg-gray-50 rounded-lg">
             <div className="flex justify-between mb-2">
               <span className="text-gray-600">Answered:</span>
               <span className="font-semibold">{answered} / {totalQuestions}</span>
@@ -256,14 +270,14 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
 
           <div className="grid grid-cols-2 gap-3 mt-6">
             <Link to="/">
-              <button className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600">
+              <button className="px-4 py-2 w-full text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600">
                 Home
               </button>
             </Link>
             {nextExam && (
               <button
                 onClick={handleNextExam}
-                className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600"
+                className="px-4 py-2 w-full text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600"
               >
                 Next Exam
               </button>
@@ -271,7 +285,7 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
             {!nextExam && currentPackageId && (
               <button
                 onClick={handleViewResult}
-                className="w-full px-4 py-2 text-sm text-center text-blue-500 border border-blue-500 rounded hover:bg-blue-500 hover:text-white"
+                className="px-4 py-2 w-full text-sm text-center text-blue-500 rounded border border-blue-500 hover:bg-blue-500 hover:text-white"
               >
                 View Result
               </button>

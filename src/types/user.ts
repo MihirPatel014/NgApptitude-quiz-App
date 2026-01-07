@@ -6,13 +6,23 @@ import { TranscationDetail } from "./payment";
 
 // Define the user interface
 export interface User {
-  loginResult: string;
+  loginResult: number;
   email: string;
   apiToken: string;
   userId: number;
   userGuidId: string;
   contactNo: string;
   // Add any other user-specific fields here
+}
+
+// OTP login response (matches backend UserLoginResultModel)
+export interface UserLoginResultModel {
+  loginResult: number;   // 1 = Successful, other numbers = enum (WrongPassword, NotActive, etc.)
+  apiToken: string | null;
+  email?: string;
+  userId?: number;
+  userGuidId?: string;
+  contactNo?: string;
 }
 export interface userDetails {
   email: string;
@@ -112,11 +122,33 @@ export interface UserExamInfoModel {
   examName: string;
   examProgressId: number;
   completedOn?: number;
-  examDescription:string;
+  examDescription: string;
   isCompleted: boolean;
   isTimeBound: boolean;
   timeLimit: number;
   resultType: number;
   resultTypeName: string;
   status: string;
+}
+// OTP generation response
+export interface UserVerifyOTPModel {
+  mobile: string;      // e.g. "+919876543210"
+  otp: string;         // e.g. "123456"
+  hashvalue: string;   // e.g. "<hash>.<expiry>"
+  loginResult: UserLoginResults;
+}
+
+
+
+// Optional enum for readability
+export enum UserLoginResults {
+  Successful = 1,
+  UserNotExist = 2,
+  WrongPassword = 3,
+  NotActive = 4,
+  Deleted = 5,
+  VerifyContactNoPending = 7,
+  VerifyEmailPending = 8,
+  AccountLockout = 6,
+  InvalidOTP = 9,
 }

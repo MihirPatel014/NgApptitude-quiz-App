@@ -60,90 +60,123 @@ import jsPDF from 'jspdf';
 
 const PdfDownloader = ({ reportRef }) => {
   const handleGeneratePdf = async () => {
-    if (reportRef.current) {
-      // Find all elements with pdf-section class
-      const sections = reportRef.current.querySelectorAll('.pdf-section');
-      
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pageWidth = 190; // Width of the content in the PDF
-      const pageHeight = 277; // Available height (297 - margins)
-      let isFirstPage = true;
+    if (!reportRef.current) return;
 
-      if (sections.length === 0) {
-        // Fallback: if no pdf-section classes found, use the original method
-        console.warn('No .pdf-section elements found, using original method');
-        const canvas = await html2canvas(reportRef.current, { scale: 2 });
-        const imgData = canvas.toDataURL("image/png");
-        const imgWidth = pageWidth;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        
-        let yPosition = 10;
-        let heightLeft = imgHeight;
-        let pageOffset = 0;
+    const popup = window.open("", "_blank", "width=1400,height=900,scrollbars=yes");
+    const doc = popup.document;
 
-        while (heightLeft > 0) {
-          pdf.addImage(imgData, "PNG", 10, yPosition - pageOffset, imgWidth, imgHeight);
-          heightLeft -= pageHeight;
-          pageOffset += pageHeight;
-          
-          if (heightLeft > 0) {
-            pdf.addPage();
-            yPosition = 0;
-          }
-        }
-      } else {
-        // Process each section separately
-        for (let i = 0; i < sections.length; i++) {
-          const section = sections[i];
-          
-          // Add a new page for each section (except the first one)
-          if (!isFirstPage) {
-            pdf.addPage();
-          }
-          isFirstPage = false;
+    // 1️⃣ Inject full HTML + CSS + Chart.js
+    doc.open();
+    doc.write(`
+      <html>
+      <head>
+        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
-          try {
-            // Convert current section to canvas
-            const canvas = await html2canvas(section, { scale: 1.2, logging: false, useCORS: true });
-            const imgData = canvas.toDataURL("image/jpeg", 0.6); 
-            const imgWidth = pageWidth;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            
-            // Check if the section fits on one page
-            if (imgHeight <= pageHeight) {
-              // Section fits on one page
-              pdf.addImage(imgData, "JPEG", 10, 10, imgWidth, imgHeight, undefined, 'FAST');
-            } else {
-              // Section is too tall, split across multiple pages
-              let yPosition = 10;
-              let heightLeft = imgHeight;
-              let pageOffset = 0;
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-              while (heightLeft > 0) {
-                pdf.addImage(imgData, "PNG", 10, yPosition - pageOffset, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
-                pageOffset += pageHeight;
-                
-                if (heightLeft > 0) {
-                  pdf.addPage();
-                  yPosition = 0;
-                }
-              }
-            }
-          } catch (error) {
-            console.log(`Error processing section ${i + 1}:`, error);
-            // Continue with next section
-          }
-        }
-      }
+       <style>
+  body {
+    width: 1200px !important;
+    margin: 0 auto;
+    background: white !important;
+  }
 
-      pdf.save("report.pdf");
-    }
+  /* Center hidden PDF charts */
+  .pdf-only {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin: 0 auto !important;
+  }
+
+  /* Center the chart canvas */
+  .chart-canvas {
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: 350px !important;
+    height: 350px !important;
+  }
+
+  /* Hide React charts */
+  .react-chart {
+    display: none !important;
+  }
+</style>
+
+      </head>
+      <body>
+        ${reportRef.current.innerHTML}
+      </body>
+      </html>
+    `);
+    doc.close();
+
+    // Wait for popup load
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+
+    //  Re-render CHARTS inside popup
+    popup.eval(`
+  document.querySelectorAll("canvas").forEach((canvas) => {
+    const type = canvas.dataset.type;
+    const chartData = canvas.dataset.chart;
+    const chartOptions = canvas.dataset.options;
+
+    // Skip canvases that are NOT charts
+    if (!type || !chartData || !chartOptions) return;
+
+    const ctx = canvas.getContext("2d");
+
+    const data = JSON.parse(chartData);
+    const options = JSON.parse(chartOptions);
+
+    new Chart(ctx, { type, data, options });
+  });
+`);
+
+
+    // Wait for charts to render
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    // Multi-page PDF generation
+    const pdf = new jsPDF("p", "mm", "a4");
+    const sections = popup.document.querySelectorAll(".pdf-section");
+
+    let isFirstPage = true;
+
+    for (let section of sections) {
+  const canvas = await html2canvas(section, { scale: 1.2, useCORS: true });
+  
+  const imgData = canvas.toDataURL("image/jpeg", 0.85);
+  const pdfWidth = pdf.internal.pageSize.getWidth();
+  const pdfHeight = pdf.internal.pageSize.getHeight();
+
+  const imgWidth = pdfWidth;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+  let heightLeft = imgHeight;
+  let yPosition = 0;
+
+  while (heightLeft > 0) {
+    if (!isFirstPage) pdf.addPage();
+    isFirstPage = false;
+
+    pdf.addImage(imgData, "JPEG", 0, yPosition, imgWidth, imgHeight);
+
+    heightLeft -= pdfHeight;
+    yPosition -= pdfHeight; // shift image upward for next page
+  }
+}
+
+
+    pdf.save("report.pdf");
+    popup.close();
   };
 
   return (
-    <button 
-      className='p-2 mt-12 text-white rounded border hover:bg-slate-500 bg-slate-400' 
+    <button
+      className="p-2 mt-12 text-white rounded border hover:bg-slate-500 bg-slate-400"
       onClick={handleGeneratePdf}
     >
       Download PDF
@@ -154,3 +187,7 @@ const PdfDownloader = ({ reportRef }) => {
 
 
 export default PdfDownloader;
+
+
+
+

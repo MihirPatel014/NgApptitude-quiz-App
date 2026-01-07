@@ -20,20 +20,30 @@ export interface OverallStats {
     overallScore: number;
     sectionWiseBreakdown: SectionBreakdown[];
 }
+export interface ScoreStats {
+  totalScore: number;
+  wrongAnswers: number;
+  negativeMarks: number;
+  finalScore: number;
+}
 
 export interface ExamResultApiModel {
     examResultId: number;
     examProgressId: number;
     userId: number;
+    userName: string;      
+    email: string; 
     examId: number;
     examName: string;
     //It can be Score-Based or Profile-Based for Aptitude or Personality
+    resultTypeEnum: 1 | 2;
     resultType: "Score-Based" | "Profile-Based";
     score?: number;
     timeTaken?: number;
     //A dictionary with string keys and SectionData values for Aptitude or Personality
     sectionWiseData: { [key: string]: SectionData };
     overallStats?: OverallStats;
+    scoreStats?: ScoreStats;
     //A dictionary with string keys and SectionData values for Personality Evaluation
     profileEvaluation?: { [key: string]: SectionData };
     createdAtUtc: string;

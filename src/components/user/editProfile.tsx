@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { getUserDetails, UpdateUserDetails } from '../../services/authService'
 import { UserProfileUpdate } from '../../types/user';
 import { useLoader } from '../../provider/LoaderProvider';
+import toast, { Toaster } from "react-hot-toast";
 
 const EditProfile = () => {
   const [userDetails, setUserDetails] = useState<UserProfileUpdate | null>(null);
@@ -38,6 +39,10 @@ const EditProfile = () => {
       [name]: value,
     }));
   };
+  const handleCancel = () => {
+  setFormData(userDetails); 
+  toast("Changes reverted", { icon: "↩️" });
+};
 
   // Handle form submission (update user profile)
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,14 +51,17 @@ const EditProfile = () => {
     if (formData) {
       // You can add a function here to send the updated data to the server
       console.log("Form data to be updated:", formData);
-      const result =await UpdateUserDetails(formData);
-      if(result){
-        setLoading(false);
+      const result = await UpdateUserDetails(formData);
+
+    if (result) {
+        toast.success("Profile updated successfully!");
         fetchUserDetails();
-      }
-      else{
-        setLoading(false);
-      }
+    } else {
+        toast.error("Something went wrong.");
+    }
+
+
+    setLoading(false);
       
       // Example: await updateUserDetails(formData);
     }
@@ -65,6 +73,8 @@ const EditProfile = () => {
   }
 
   return (
+    <>
+    <Toaster />
     <div className="flex flex-col p-6 mx-auto mt-20 max-w-4xl min-h-0 bg-white rounded-lg shadow-md">
       <h2 className="mb-6 text-2xl font-bold text-gray-800">Edit Profile</h2>
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -141,7 +151,7 @@ const EditProfile = () => {
               id="dateOfBirth"
               name="dateOfBirth"
               //   value={formData.dateOfBirth}
-              value={formData.dateOfBirth ? new Date(formData.dateOfBirth).toISOString().split('T')[0] : ''} // Convert string to 'YYYY-MM-DD'
+              value={formData.dateOfBirth ? new Date(formData.dateOfBirth).toLocaleDateString("en-CA") : ''} // Convert string to 'YYYY-MM-DD'
               onChange={handleChange}
               className="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
@@ -229,6 +239,7 @@ const EditProfile = () => {
         <div className="flex justify-end space-x-4">
           <button
             type="button"
+            onClick={handleCancel}
             className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             Cancel
@@ -242,6 +253,7 @@ const EditProfile = () => {
         </div>
       </form>
     </div>
+    </>
   );
 };
 
