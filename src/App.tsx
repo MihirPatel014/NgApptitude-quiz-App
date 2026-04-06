@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Missing from "./pages/missing";
+import Missing from "./pages/Missing";
 // import Login from "./components/auth/Login";
 import './index.css';
 import { NavbarAndSidebar } from "./components/NavbarAndSidebar";
