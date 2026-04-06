@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, ReactNode, useCallback } from "react";
 import "../common/loader.css";
 
 // Define the shape of the loader context
