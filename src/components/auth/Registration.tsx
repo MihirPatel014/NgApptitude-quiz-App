@@ -2,29 +2,33 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { getAllGrades, pincodeApi, registerUser } from "../../services/authService"
-import { Link } from 'react-router-dom';
-import { UserRegistration } from "../../types/user"
-import { emailRegex, phoneRegex, passwordRegex } from "../../common/constant";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-import { UserRegistrationResults } from '../../common/constant';
-import toast, { Toaster } from "react-hot-toast";
+import { UserRegistration } from "../../types/user";
+import { emailRegex, phoneRegex } from "../../common/constant";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useLoader } from '../../provider/LoaderProvider';
-import Datepicker from "tailwind-datepicker-react"
+import toast, { Toaster } from "react-hot-toast";
 import CommonDatePicker from '../datepicker';
 import { Grade } from '../../types/grade';
+import { useContext } from 'react';
+import { UserContext } from '../../provider/UserProvider';
+import { storeInSession } from '../../common/session';
+import { UserLoginResults } from '../../types/user';
+
 interface RegistrationProps {
-  setIsRightPanelActive: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsRightPanelActive?: React.Dispatch<React.SetStateAction<boolean>>;
+  mobile?: string;
 }
 
-const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) => {
-  // Now you can use setIsRightPanelActive inside the component
+const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive, mobile: propMobile }) => {
+  const { setUserAuth } = useContext(UserContext);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const stateMobile = location.state?.mobile;
+  const mobile = propMobile || stateMobile;
 
   const formRef = useRef<HTMLDivElement>(null);
-
-  const navigate = useNavigate();
   const [grades, setGrades] = useState<Grade[]>([]);
-  const [showPassword, setShowPassword] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [pincode, setPincode] = useState(0);
   const { setLoading } = useLoader();
   const [formValues, setFormValues] = useState<UserRegistration>({
@@ -44,7 +48,6 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
     dreamCareerOptions: '',
   });
 
-  // const [formValues, setFormValues] = useState<RegistrationValues>();
   const [formErrors, setFormErrors] = useState<UserRegistration>({
     email: "",
     password: "",
@@ -61,15 +64,16 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
     expectationFromThisTest: '',
     dreamCareerOptions: '',
   });
-  // const [formErrors, setFormErrors] = useState({});
+
   const handlePincodeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
     setPincode(Number(value));
 
-    if (value.length === 6) { // Ensure pincode is valid (6 digits)
+    if (value.length === 6) {
       fetchCityAndState(Number(value));
     }
   };
+
   useEffect(() => {
     const fetchGrades = async () => {
       const data = await getAllGrades();
@@ -77,6 +81,16 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
     };
     fetchGrades();
   }, []);
+
+  useEffect(() => {
+    if (mobile) {
+      setFormValues((prev) => ({
+        ...prev,
+        contactNo: mobile,
+      }));
+    }
+  }, [mobile]);
+
   const fetchCityAndState = async (pincode: number) => {
     try {
       const response = await pincodeApi(pincode)
@@ -85,7 +99,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
         const postOffices = response[0]?.PostOffice || [];
 
         if (postOffices.length > 0) {
-          const { District, State } = postOffices[0]; // Assuming first result is the correct one
+          const { District, State } = postOffices[0];
           setFormValues((prevValues) => ({
             ...prevValues,
             city: District,
@@ -110,12 +124,10 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-
     const { name, value } = e.target
-
     setFormValues({
       ...formValues,
-      [name]: name === 'dateOfBirth' ? new Date(value) : value, // Special handling for 'dob' field
+      [name]: name === 'dateOfBirth' ? new Date(value) : value,
     });
     setFormErrors((prevErrors) => ({
       ...prevErrors,
@@ -123,56 +135,50 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
     }));
   };
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     setLoading(true);
     e.preventDefault();
     const errors = validate(formValues);
     if (Object.keys(errors).length > 0) {
-      setLoading(false); // Stop loading if validation fails
+      setLoading(false);
       return;
     }
     try {
-
       const result = await registerUser(formValues);
       if (result) {
-        switch (result) {
-          case UserRegistrationResults.Successful:
-            toast.success("Registration successful! Redirecting to login...");
-            setTimeout(() => setIsRightPanelActive(false), 500); // Redirect after a short delay
-            break;
-
-          case UserRegistrationResults.ContactNoAlreadyExists:
-            toast.error(
-              "Your mobile number already exists. Redirecting to login..."
-            );
-            setTimeout(() => setIsRightPanelActive(false), 500); // Redirect after a short delay
-            break;
-          case UserRegistrationResults.EmailAlreadyExists:
-            toast.error(
-              "Your  email already exists. Redirecting to login..."
-            );
-            setTimeout(() => setIsRightPanelActive(false), 500); // Redirect after a short delay
-            break;
-
-          case UserRegistrationResults.PasswordPolicyNotMet:
-            toast.error(
-              "Password policy not met. Please ensure your password follows the requirements."
-            );
-            break;
-
-          case UserRegistrationResults.InvalidDetails:
-            toast.error("Invalid details provided. Please check your input.");
-            break;
-
-          default:
-            toast.error("An unexpected error occurred. Please try again later.");
-            break;
+        if (result.loginResult === UserLoginResults.Successful) {
+          // Store user info and token for auto-login
+          const authData = {
+            loginResult: result.loginResult,
+            apiToken: result.apiToken,
+            email: result.email,
+            userId: result.userId,
+            userGuidId: result.userGuidId,
+            contactNo: result.contactNo,
+          };
+          
+          setUserAuth(authData as any);
+          storeInSession("user", authData);
+          
+          if (result.isExistingUser) {
+            toast.success("User already present! Logging you in...");
+          } else {
+            toast.success("Registration successful! Logging you in...");
+          }
+          
+          setTimeout(() => {
+            navigate("/");
+          }, 1500);
+        } else if (result.loginResult === UserLoginResults.AccountLockout) {
+          toast.error("Your account is locked. Please try again later.");
+        } else {
+          toast.error("Registration failed. Please check your details.");
         }
       } else {
         toast.error("An error occurred during registration.");
       }
     } catch (err: any) {
+
       setLoading(false);
       console.log(err.message);
       toast.error('unable to register');
@@ -182,83 +188,65 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
         formRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     }
-
   };
 
   const validate = (values: any) => {
     const errors: any = {};
-
     if (!values.email) {
       errors.email = 'Email is required';
     } else if (!emailRegex.test(values.email)) {
       errors.email = 'Email is invalid';
     }
-
-    // if (!values.password) {
-    //   errors.password = 'Password is required';
-
-    // } else if (values.password.length < 5) {
-    //   errors.password = 'Password must be at least 6 characters';
-    // } 
-
     if (!values.name) {
       errors.name = ' name is required';
     }
-
-    if (!values.dateOfBirth || values.dateOfBirth == "" || values.dateOfBirth == Date.now) {
+    if (!values.dateOfBirth || values.dateOfBirth === "" || values.dateOfBirth === Date.now) {
       errors.dateOfBirth = 'Date of birth is required';
     }
-
     if (!values.class) {
       errors.class = 'Grade/Class is required';
     }
-
     if (!values.medium) {
       errors.medium = 'Language is required';
     }
-
     if (!values.institute) {
       errors.institute = 'School/College name is required';
     }
-
     if (!values.contactNo) {
       errors.contactNo = 'Mobile number is required';
     } else if (!phoneRegex.test(values.contactNo)) {
       errors.contactNo = 'Mobile number should be 10 digits';
     }
-
     if (!values.city) {
       errors.city = 'City is required';
     }
-
     if (!values.state) {
       errors.state = 'State is required';
     }
     if (!values.hobbies) {
       errors.hobbies = 'hobbies is required';
     }
-
     if (!values.expectationFromThisTest) {
       errors.expectationFromThisTest = 'expectation From This Test is required';
     }
     setFormErrors(errors)
-    console.log("NO of Errors", errors.length)
     return errors;
+  };
 
-  };
-  const togglePasswordVisibility = () => {
-    setShowPassword((prevState) => !prevState);
-  };
   return (
-    <>
-      <Toaster />
-      {/* <div className="flex justify-center items-center p-4 min-h-screen bg-gray-100">
-        <div className="p-6 w-full bg-white rounded-lg border border-gray-200 shadow md:w-3/6 dark:bg-gray-800 dark:border-gray-700"> */}
-      <div ref={formRef}>
-        <h1 className="mt-10 mb-4 text-3xl font-bold text-center">Student Register</h1>
-        {/* <p className="mb-6 text-center">Please fill in your details to register</p> */}
-      </div>
-      <form id='formElement' className="pb-6 space-y-4" >
+    <div className="flex justify-center items-center min-h-screen bg-slate-100 py-12 px-4 shadow-inner font-inter">
+      <div className="bg-white p-8 md:p-12 rounded-2xl shadow-2xl w-full max-w-4xl animate-scale-up">
+        <Toaster />
+        <div ref={formRef}>
+          {mobile && (
+            <div className="mb-8 px-5 py-4 text-sm text-blue-800 bg-blue-50 border border-blue-100 rounded-xl flex items-center shadow-sm">
+              <span className="mr-3 text-lg">ℹ️</span>
+              Please fill the registration form for {mobile} as it is not registered.
+            </div>
+          )}
+          <h1 className="mb-8 text-3xl font-extrabold text-gray-800 text-center tracking-tight">Student Registration</h1>
+        </div>
+        <form id='formElement' className="space-y-8" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 
           <div className="space-y-2">
@@ -270,7 +258,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
               // placeholder="1234567890"
               required
               onChange={(e) => handleChange(e)}
-              defaultValue={formValues.contactNo}
+              value={formValues.contactNo}
               className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {formErrors.contactNo && <span className="text-xs text-red-500">{formErrors.contactNo}</span>}
@@ -298,7 +286,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
                 handleChange({
                   target: {
                     name: "dateOfBirth",
-                    value: date.toISOString().split("T")[0],
+                    value: isNaN(date.getTime()) ? "" : date.toISOString().split("T")[0],
                   },
                 } as React.ChangeEvent<HTMLInputElement>)
               }
@@ -485,22 +473,26 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive }) =>
 
           </div>
         </div>
-        <button
-          type="submit"
-          className="py-2 w-full text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          onClick={(e) => handleSubmit(e)}
-        >
-          Register
-        </button>
+        <div className="pt-6">
+          <button
+            type="submit"
+            className="w-full py-4 text-white bg-blue-600 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-200"
+          >
+            Register Now
+          </button>
+        </div>
       </form>
-      {/* <p className='mt-3'>Already have an account ?
-
-            <Link to="/login" className='px-3 py-1 ml-2 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800'> Login</Link>
-          </p> */}
-      {/* </div>
-      </div> */}
-
-    </>
+      
+      <div className="mt-10 pt-6 border-t border-gray-100 text-center">
+        <p className="text-gray-500 text-sm">
+          Already have an account?{" "}
+          <Link to="/login" className="font-bold text-blue-600 hover:underline">
+            Log In
+          </Link>
+        </p>
+      </div>
+    </div>
+  </div>
   )
 }
 

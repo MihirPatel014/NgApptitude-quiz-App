@@ -1,7 +1,7 @@
 import axios from "axios";
 import { apiRequest } from "../common/requestwithdata";
 import { PaymentModel, MerchantOrderDetails } from "../types/payment";
-import { ExamResultApiModel, FinalResultViewModel } from "../types/result";
+import { ExamResultApiModel, FinalResultViewModel, ExamTemplateMappingInfo } from "../types/result";
 const API_URL = process.env.REACT_APP_API_URL;
 
 
@@ -38,6 +38,20 @@ export const GetExamResult_ByExamProgressId = async (ExamProgressId: number) => 
         return result.data; // Return the packages data
     } else {
         console.log("Error Submit  questions:", result.errors);
+        return null;
+    }
+}
+
+export const GetExamTemplateMappings = async () => {
+    const result = await apiRequest<number, ExamTemplateMappingInfo[]>(
+        `/${RESULT_ROUTE}/GetExamTemplateMappings`,
+        "POST",
+        0
+    );
+    if (result.success) {
+        return result.data;
+    } else {
+        console.log("Error fetching template mappings:", result.errors);
         return null;
     }
 }

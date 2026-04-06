@@ -120,7 +120,6 @@ const QuizPage = () => {
 
       // Extract all questions from sections
       const examQuestions = sections.flatMap(section => section.questions) || [];
-      debugger;
       // Navigate to the quiz page
       navigate('/quiz', {
         state: {

@@ -496,7 +496,7 @@ const PackagesPage = () => {
                                 onClick={() => handlePackageSelection(pkg.id, discountedPrice)}
                                 className="px-6 py-2 text-white rounded bg-primary"
                             >
-                                Get Access
+                                Pay Now 
                             </button>
                             <p className="mt-2 text-sm text-gray-500">
                                 Invoices and receipts available for easy company reimbursement

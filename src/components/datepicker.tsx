@@ -1,7 +1,5 @@
-import React, { useState } from "react";
-import Datepicker from "tailwind-datepicker-react";
-import { FaArrowRight } from "react-icons/fa";
-import { FaArrowLeft } from "react-icons/fa";
+import React from "react";
+
 interface CommonDatePickerProps {
   id: string;
   name: string;
@@ -23,62 +21,40 @@ const CommonDatePicker: React.FC<CommonDatePickerProps> = ({
   min,
   max,
 }) => {
-  const [show, setShow] = useState<boolean>(false);
 
-  const handleChange = (selectedDate: Date) => {
-    onChange(selectedDate);
-  };
-
-  const handleClose = (state: boolean) => {
-    setShow(state);
-  };
-
-  const options = {
-    title: label || "Select Date",
-    autoHide: true,
-    todayBtn: false,
-    clearBtn: true,
-    clearBtnText: "Clear",
-    maxDate: max ? new Date(max) : new Date("2020-01-01"),
-    minDate: min ? new Date(min) : new Date("1995-01-01"),
-    theme: {
-      background: "bg-white dark:bg-gray-800",
-      todayBtn: "",
-      clearBtn: "",
-      icons: "",
-      text: "",
-      disabledText: "bg-grey-100",
-      input: "",
-      inputIcon: "",
-      selected: "",
-    },
-    icons: {
-      prev: () => <span> <FaArrowLeft/> </span>,
-      next: () => <span><FaArrowRight /></span>,
-    },
-    datepickerClassNames: "top-12",
-    defaultDate: typeof value === "string" ? new Date(value) : (value as Date),
-    language: "en",
-    disabledDates: [],
-    weekDays: ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
-    inputNameProp: name,
-    inputIdProp: id,
-    inputPlaceholderProp: label || "Select Date",
-    inputDateFormatProp: {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    } as const,
-
-  };
+  const formattedValue =
+  value instanceof Date && !isNaN(value.getTime())
+    ? value.toISOString().split("T")[0]
+    : "";
 
   return (
-    <Datepicker
-      options={options}
-      onChange={handleChange}
-      show={show}
-      setShow={handleClose}
-    />
+    <div className="space-y-1">
+      {label && (
+        <label htmlFor={id} className="text-sm font-medium text-gray-700">
+          {label}
+        </label>
+      )}
+
+      <input
+        type="date"
+        id={id}
+        name={name}
+        value={formattedValue}
+        min={min}
+        max={max}
+        onChange={(e) => {
+            if (!e.target.value) {
+              onChange(new Date("")); 
+              return;
+            }
+            onChange(new Date(e.target.value));
+          }}
+        className="px-3 py-2 w-full rounded-md border border-gray-300
+                   focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+
+      {error && <span className="text-xs text-red-500">{error}</span>}
+    </div>
   );
 };
 

@@ -1,8 +1,6 @@
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Missing from "./pages/Missing";
+import Missing from "./pages/missing";
 // import Login from "./components/auth/Login";
-import AnimatedForm from "./components/auth/AnimatedForm";
 import './index.css';
 import { NavbarAndSidebar } from "./components/NavbarAndSidebar";
 import { UserProvider } from "./provider/UserProvider";
@@ -18,6 +16,7 @@ import ResultNew from "./pages/result/Resultnew";
 import ExamSummary from "./pages/result/ExamSummary";
 import QuizResultWrapper from "./components/quiz/QuizResultProp";
 import PhoneOTP from "./components/auth/PhoneOTP";
+import Registration from "./components/auth/Registration";
 
 
 function App() {
@@ -29,8 +28,8 @@ function App() {
             {/* Public Path */}
             {/* <Route path="/registeration" element={<Registeration />} /> */}
             {/* <Route path="/loginwithotp" element={<PhoneOTP />} />  */}
-            <Route path="/login" element={<AnimatedForm />} />
-            {/* <Route path="/login" element={<PhoneOtp />} /> */}
+            <Route path="/login" element={<PhoneOTP />} />
+            <Route path="/register" element={<Registration />} />
             <Route element={<ProtectedRoute />}>
               <Route element={<NavbarAndSidebar />}>
                 {/* <Route path="/" element={<Home />} /> */}

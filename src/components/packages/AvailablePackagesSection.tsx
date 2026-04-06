@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { getAllPackages, getPackageInfoByPackageId } from "../../services/packagesService";
+import { getAllPackagesList, getPackageInfoByPackageId } from "../../services/packagesService";
 import { GiftCodeValidationStatus, Packages, PackagesInfo } from "../../types/package";
 import { CompletePaymentOrder, ProcessPayment, ValidateGiftCode } from "../../services/paymentService";
 import { PaymentModel } from "../../types/payment";
@@ -44,7 +44,7 @@ const AvailablePackagesSection = () => {
         const fetchPackages = async () => {
             setLoading(true);
             try {
-                const response = await getAllPackages();
+                const response = await getAllPackagesList();
                 if (response) {
                     setPackages(response.filter((pkg) => pkg.isActive));
                     setLoading(false);
@@ -493,9 +493,9 @@ const AvailablePackagesSection = () => {
 
                                 <button
                                     onClick={() => handlePackageSelection(pkg.id, discountedPrice)}
-                                    className="px-6 py-2 text-white rounded bg-primary"
+                                    className="px-6 mt-2 py-2 text-white rounded bg-primary"
                                 >
-                                    Get Access
+                                    Pay Now
                                 </button>
                                 <p className="mt-2 text-sm text-gray-500">
                                     Invoices and receipts available for easy company reimbursement

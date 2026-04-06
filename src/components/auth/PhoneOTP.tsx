@@ -6,9 +6,10 @@ import { storeInSession } from "../../common/session";
 import { useNavigate } from "react-router-dom";
 import { UserVerifyOTPModel, User, UserLoginResults } from "../../types/user";
 import { UserContext } from "../../provider/UserProvider";
+import { Link } from "react-router-dom";
 
 interface PhoneOTPProps {
-  onUserNotFound?: () => void;
+  onUserNotFound?: (mobile: string) => void;
 }
 
 const PhoneOTP: React.FC<PhoneOTPProps> = ({ onUserNotFound }) => {
@@ -20,6 +21,7 @@ const PhoneOTP: React.FC<PhoneOTPProps> = ({ onUserNotFound }) => {
   const [displayMobile, setDisplayMobile] = useState<string>("");
   const navigate = useNavigate();
   const { setUserAuth } = useContext(UserContext);
+
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (resendTimer > 0) {
@@ -43,13 +45,16 @@ const PhoneOTP: React.FC<PhoneOTPProps> = ({ onUserNotFound }) => {
       if (!response || response.loginResult !== UserLoginResults.Successful) {
         switch (response?.loginResult) {
           case UserLoginResults.UserNotExist:
-            toast.error("User does not exist. Redirecting to SignUp...");
-            if (onUserNotFound) {
-              setTimeout(() => {
-                onUserNotFound();
-              }, 1000);
+          toast.error("User does not exist. Redirecting to register...");
+          setTimeout(() => {
+            if(onUserNotFound) {
+              onUserNotFound?.(mobile);
+            } else {
+              navigate("/register", { state: { mobile } });
             }
-            break;
+          }, 500);
+          break;
+
           case UserLoginResults.NotActive:
             toast.error("Your account is not active.");
             break;
@@ -126,7 +131,7 @@ const PhoneOTP: React.FC<PhoneOTPProps> = ({ onUserNotFound }) => {
         hashValue
       );
 
-      if (response && response.loginResult == UserLoginResults.Successful) {
+      if (response && response.loginResult === UserLoginResults.Successful) {
         setUserAuth(response);
         storeInSession("user", response);
         toast.success("Login successful!");
@@ -145,41 +150,84 @@ const PhoneOTP: React.FC<PhoneOTPProps> = ({ onUserNotFound }) => {
   return (
     <>
       <Toaster />
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex justify-center items-center min-h-screen bg-slate-100 font-inter">
         {!showOtpInput ? (
-          <div className="p-6 w-full max-w-md bg-white rounded-lg shadow-md">
-            <h2 className="mb-6 text-2xl font-bold text-center text-gray-800">
-              Login with OTP
+          <div className="p-10 w-full max-w-md bg-white rounded-2xl shadow-xl flex flex-col items-center">
+            {/* Title */}
+            <h2 className="text-2xl font-bold text-center text-gray-800 mb-2">
+              Login
             </h2>
-            <input
-              type="text"
-              placeholder="Enter your mobile number"
-              value={mobile}
-              maxLength={10}
-              onChange={(e) => setMobile(e.target.value)}
-              className="block px-4 py-2 mb-4 w-full rounded-lg border"
-            />
-            <button
-              onClick={handleSendOtp}
-              disabled={loading}
-              className={`w-full py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
-            >
-              {loading ? "Sending..." : "Send OTP"}
-            </button>
+
+            <p className="text-sm text-center text-gray-500 mb-10">
+              Enter your mobile number to receive a verification code.
+            </p>
+
+            <div className="space-y-6 w-full">
+              {/* Mobile input */}
+              <div>
+                <label htmlFor="mobile" className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Mobile Number
+                </label>
+                <input
+                  id="mobile"
+                  type="text"
+                  placeholder="Enter 10 digit number"
+                  value={mobile}
+                  maxLength={10}
+                  onChange={(e) => setMobile(e.target.value)}
+                  className="block px-4 py-3 w-full rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-inter"
+                />
+              </div>
+
+              {/* Button */}
+              <button
+                onClick={handleSendOtp}
+                disabled={loading}
+                className={`w-full py-3.5 text-white bg-blue-600 rounded-lg font-bold hover:bg-blue-700 transition-all shadow-lg active:scale-[0.98] ${
+                  loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+              >
+                {loading ? "Sending..." : "Send OTP"}
+              </button>
+            </div>
+
+            <p className="mt-8 text-sm text-gray-500">
+              Don't have an account?{" "}
+              <Link to="/register" className="font-bold text-blue-600 hover:underline">
+                Sign Up
+              </Link>
+            </p>
           </div>
         ) : (
-          <div className="p-6 w-full max-w-md bg-white rounded-lg shadow-md">
-            <h2 className="mb-6 text-2xl font-bold text-center text-gray-800">
-              Enter OTP
+          <div className="p-10 w-full max-w-md bg-white rounded-2xl shadow-xl">
+            <h2 className="mb-2 text-2xl font-bold text-center text-gray-800">
+              Verify OTP
             </h2>
-            <p className="mb-4 text-center text-gray-600">OTP sent to <span className="font-semibold">{displayMobile}</span></p>
-            <OtpInput length={6} mobile={mobile} onOtpSubmit={handleVerifyOtp} />
+            <p className="mb-8 text-center text-gray-600">
+              OTP sent to <span className="font-semibold text-blue-600">{displayMobile}</span>
+            </p>
+            
+            <div className="flex justify-center mb-8">
+              <OtpInput length={6} mobile={mobile} onOtpSubmit={handleVerifyOtp} />
+            </div>
+
             <button
               onClick={handleResendOtp}
               disabled={resendTimer > 0 || loading}
-              className={`w-full py-2 mt-4 text-white rounded-lg transition-colors duration-200 ${resendTimer > 0 || loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}`}
+              className={`w-full py-3.5 text-white rounded-lg font-bold transition-all duration-200 shadow-md ${
+                resendTimer > 0 || loading 
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed" 
+                  : "bg-blue-500 hover:bg-blue-600 active:scale-[0.98]"
+              }`}
             >
               {resendTimer > 0 ? `Resend OTP in ${resendTimer}s` : "Resend OTP"}
+            </button>
+            
+            <button 
+              onClick={() => setShowOtpInput(false)}
+              className="w-full mt-6 text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors"
+            >
+              ← Change phone number
             </button>
           </div>
         )}

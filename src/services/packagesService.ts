@@ -9,11 +9,26 @@ const PACKAGE_URL = 'api/Package';
 
 const GET_PACKAGE_BY_ID = "/GetPackageById"
 const GET_ALL_PACKAGES = "/GetAllPackages"
+const GET_ALL_PACKAGES_LIST = "/GetAllPackagesList"
 const ADD_PACKAGE = "/AddPackage"
 const UPDATE_PACKAGE = "/UpdatePackage"
 const DELTE_PACKAGE = "/DeletePackage"
 const GET_PACKAGE_INFO_BY_PACKAGE_ID = "/GetPackageInfoByPackageId"
 const GET_USER_CURRENT_PACKAGE_INFO_BY_USER_ID = "/GetUserCurrentPackageInfoByUserId"
+
+export const getAllPackagesList = async () => {
+  const result = await apiRequest<null, Array<Packages>>(
+    `/${PACKAGE_URL}${GET_ALL_PACKAGES_LIST}`,
+    "GET",
+    null
+  );
+  if (result.success) {
+    return result.data; // Return the packages data
+  } else {
+    console.log("Error fetching packages:", result.errors);
+    return null;
+  }
+};
 
 export const getAllPackages = async () => {
 
@@ -33,10 +48,10 @@ export const getAllPackages = async () => {
 export const getPackageInfoByPackageId = async (packageId: number) => {
   if (packageId > 0) {
 
-    const result = await apiRequest< typeof packageId, PackagesInfo>(
+    const result = await apiRequest<typeof packageId, PackagesInfo>(
       `/${PACKAGE_URL}${GET_PACKAGE_INFO_BY_PACKAGE_ID}`,
       "POST",
-       packageId  // Pass the packageId as part of the request body
+      packageId  // Pass the packageId as part of the request body
     );
 
     if (result.success) {
@@ -50,7 +65,7 @@ export const getPackageInfoByPackageId = async (packageId: number) => {
 export const getUserCurrentPackageInfoByUserId = async (userId: number) => {
   if (userId > 0) {
 
-    const result = await apiRequest< typeof userId, UserPackagesModel>(
+    const result = await apiRequest<typeof userId, UserPackagesModel>(
       `/${PACKAGE_URL}${GET_USER_CURRENT_PACKAGE_INFO_BY_USER_ID}`,
       "POST",
       userId  // Pass the packageId as part of the request body

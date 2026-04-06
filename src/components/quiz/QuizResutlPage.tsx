@@ -10,7 +10,8 @@ import { sendExamReportSms } from '../../services/smsService';
 import toast from 'react-hot-toast';
 import { UserContext } from "../../provider/UserProvider";
 import { useContext } from "react";
-import { GetExamResultByExamProgressId } from "../../services/resultService";
+import { GetExamResultByExamProgressId, GetExamTemplateMappings } from "../../services/resultService";
+import { ExamTemplateMappingInfo } from '../../types/result';
 
 export interface QuizResultProps {
   examId?: number;
@@ -88,18 +89,18 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
         packages.find(pkg => !pkg.isCompleted) ||
         packages.find(pkg => pkg.isCompleted) ||
         null;
-      
+
       if (!currentPackage) return;
 
       setCurrentPackageId(currentPackage.id);
       // 🔹 capture completed exam's examProgressId (for Exam Summary only)
-const completedExam = currentPackage.exams?.find(
-  e => e.examId === currentExamId
-);
+      const completedExam = currentPackage.exams?.find(
+        e => e.examId === currentExamId
+      );
 
-if (completedExam?.examProgressId) {
-  setExamProgressId(completedExam.examProgressId);
-}
+      if (completedExam?.examProgressId) {
+        setExamProgressId(completedExam.examProgressId);
+      }
 
       const availableExams = currentPackage.exams?.filter(
         exam => !exam.isCompleted && exam.examId !== currentExamId
@@ -201,45 +202,35 @@ if (completedExam?.examProgressId) {
   };
 
 
-const handleViewResult = async () => {
-  setLoading(true);
+  const handleViewResult = async () => {
+    setLoading(true);
 
-  try {
-    if (!examProgressId) {
-      // fallback → profile result
-      navigate("/resultnew", {
-        state: { packageId: currentPackageId }
-      });
-      return;
+    try {
+      // 🔑 CHECK TEMPLATE MAPPING
+      const mappings = await GetExamTemplateMappings();
+      // Exam 9 is legacy => force resultnew
+      const isLegacyExam = currentExamId === 9;
+      const hasTemplate = mappings?.some((m: ExamTemplateMappingInfo) => m.examId === currentExamId);
+
+      if (hasTemplate && !isLegacyExam) {
+        // PRIORITY: If a template is mapped (and not legacy), go to exam-summary
+        navigate("/exam-summary", {
+          state: { examProgressId: examProgressId || location.state?.userExamProgressId }
+        });
+      } else {
+        // FALLBACK / LEGACY
+        navigate("/resultnew", {
+          state: { packageId: currentPackageId || location.state?.packageId }
+        });
+      }
+
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load result");
+    } finally {
+      setLoading(false);
     }
-
-    const result = await GetExamResultByExamProgressId(examProgressId);
-
-    if (!result) {
-      toast.error("Unable to fetch exam result");
-      return;
-    }
-
-    // 🔑 SIMPLE RULE
-    if (result.resultTypeEnum === 1) {
-      // SCORE-BASED → Exam Summary
-      navigate("/exam-summary", {
-        state: { examProgressId }
-      });
-    } else {
-      // PROFILE / APTITUDE → ResultNew
-      navigate("/resultnew", {
-        state: { packageId: currentPackageId }
-      });
-    }
-
-  } catch (error) {
-    console.error(error);
-    toast.error("Failed to load result");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
   return (

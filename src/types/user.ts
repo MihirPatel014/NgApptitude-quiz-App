@@ -12,6 +12,7 @@ export interface User {
   userId: number;
   userGuidId: string;
   contactNo: string;
+  isExistingUser?: boolean;
   // Add any other user-specific fields here
 }
 
@@ -23,6 +24,7 @@ export interface UserLoginResultModel {
   userId?: number;
   userGuidId?: string;
   contactNo?: string;
+  isExistingUser?: boolean;
 }
 export interface userDetails {
   email: string;

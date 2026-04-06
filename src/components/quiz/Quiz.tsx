@@ -648,26 +648,26 @@ const Quiz: React.FC<QuizProps> = ({
       <Toaster />
 
       {/* Instructions Modal */}
-      {showInstructions && (
-        <div className="flex fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50">
-          <div className="p-6 w-11/12 bg-white rounded-lg shadow-lg md:w-2/3 lg:w-1/2">
+      {showInstructions && examDescription && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="w-11/12 p-6 bg-white rounded-lg shadow-lg md:w-2/3 lg:w-1/2">
             <h2 className="mb-4 text-2xl font-bold">Exam Instructions</h2>
             <div className="mb-6 text-gray-700 whitespace-pre-line">{examDescription}</div>
             <button
               onClick={() => setShowInstructions(false)}
-              className="p-3 w-full font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+              className="w-full p-3 font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
             >
               Start Quiz
             </button>
           </div>
         </div>
       )}
-      {!showInstructions && (
+      {(!showInstructions || !examDescription) && (
         <div>
           {/* Confirmation Modal */}
           {showConfirmModal && (
-            <div className="flex fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50">
-              <div className="p-6 w-11/12 bg-white rounded-lg shadow-lg md:w-1/2 lg:w-1/3">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+              <div className="w-11/12 p-6 bg-white rounded-lg shadow-lg md:w-1/2 lg:w-1/3">
                 <h2 className="mb-4 text-xl font-bold">Confirm Submission</h2>
                 {isTimeBound ? (
                   (notAnsweredCount + skippedCount > 0) ? (
@@ -693,7 +693,7 @@ const Quiz: React.FC<QuizProps> = ({
                 <div className="flex justify-end space-x-4">
                   <button
                     onClick={() => setShowConfirmModal(false)}
-                    className="p-2 w-full text-gray-800 bg-gray-200 rounded-md hover:bg-gray-300"
+                    className="w-full p-2 text-gray-800 bg-gray-200 rounded-md hover:bg-gray-300"
                   >
                     Cancel
                   </button>
@@ -714,65 +714,65 @@ const Quiz: React.FC<QuizProps> = ({
 
           {/* Header */}
           {/* Mobile Question Header */}
-        <div className="lg:hidden sticky top-0 z-40 bg-white shadow-sm border-b">
-          <div className="px-4 py-3 space-y-2">
+          <div className="sticky top-0 z-40 bg-white border-b shadow-sm lg:hidden">
+            <div className="px-4 py-3 space-y-2">
 
-            {/* Exam title + menu */}
-            <div className="flex items-center justify-between">
-              <h1 className="text-base font-semibold text-gray-800 truncate">
-                {examName}
-              </h1>
+              {/* Exam title + menu */}
+              <div className="flex items-center justify-between">
+                <h1 className="text-base font-semibold text-gray-800 truncate">
+                  {examName}
+                </h1>
 
-              <button
-                onClick={() => setShowMobileNav(true)}
-                className="p-2 rounded-md bg-gray-100 active:bg-gray-200"
-              >
-                <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Section + Time */}
-            <div className="flex items-center justify-between text-sm">
-              <span className="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 font-medium">
-                 SECTION : {
-                  sections?.find(s =>
-                    s.questions.some(q => q.id === currentQuestion?.id)
-                  )?.sectionName || "Section"
-                }
-              </span>
-
-              <div className="font-mono text-gray-700">
-                ⏱ {formatTime(elapsedTime)} / {timeLimit}m
+                <button
+                  onClick={() => setShowMobileNav(true)}
+                  className="p-2 bg-gray-100 rounded-md active:bg-gray-200"
+                >
+                  <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
               </div>
-            </div>
 
-            {/* Question count */}
-            <div className="flex items-center justify-between text-xs text-gray-600">
-              <span>
-                Q {activeQuestion + 1} of {questions.length}
-              </span>
-              <span>
-                {Math.round(((activeQuestion + 1) / questions.length) * 100)}%
-              </span>
-            </div>
+              {/* Section + Time */}
+              <div className="flex items-center justify-between text-sm">
+                <span className="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 font-medium">
+                  SECTION : {
+                    sections?.find(s =>
+                      s.questions.some(q => q.id === currentQuestion?.id)
+                    )?.sectionName || "Section"
+                  }
+                </span>
 
-            {/* Progress bar */}
-            <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-indigo-600 transition-all duration-300"
-                style={{
-                  width: `${((activeQuestion + 1) / questions.length) * 100}%`
-                }}
-              />
-            </div>
+                <div className="font-mono text-gray-700">
+                  ⏱ {formatTime(elapsedTime)} / {timeLimit}m
+                </div>
+              </div>
 
+              {/* Question count */}
+              <div className="flex items-center justify-between text-xs text-gray-600">
+                <span>
+                  Q {activeQuestion + 1} of {questions.length}
+                </span>
+                <span>
+                  {Math.round(((activeQuestion + 1) / questions.length) * 100)}%
+                </span>
+              </div>
+
+              {/* Progress bar */}
+              <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full transition-all duration-300 bg-indigo-600"
+                  style={{
+                    width: `${((activeQuestion + 1) / questions.length) * 100}%`
+                  }}
+                />
+              </div>
+
+            </div>
           </div>
-        </div>
 
-        {/* Desktop Header */}
-          <div className="hidden lg:flex justify-between items-center px-4 py-3 bg-white border-b shadow-sm">
+          {/* Desktop Header */}
+          <div className="items-center justify-between hidden px-4 py-3 bg-white border-b shadow-sm lg:flex">
             <div className="flex items-center space-x-4">
               <h1 className="text-2xl font-semibold text-gray-800">{examName}</h1>
               {currentQuestion && (
@@ -790,7 +790,7 @@ const Quiz: React.FC<QuizProps> = ({
               {/* Developer Options toggle button */}
               {/* <button
                 onClick={handleDeveloperOptions}
-                className="px-3 py-1 text-sm text-blue-600 rounded-full border border-blue-600 hover:bg-blue-100"
+                className="px-3 py-1 text-sm text-blue-600 border border-blue-600 rounded-full hover:bg-blue-100"
               >
 
                 Developer Options {showDeveloperOptions ? "On" : "Off"}
@@ -799,7 +799,7 @@ const Quiz: React.FC<QuizProps> = ({
               {showDeveloperOptions && (
                 <button
                   onClick={handleAutoSelectAll}
-                  className="px-3 py-1 text-sm text-green-600 rounded-full border border-green-600 hover:bg-green-100"
+                  className="px-3 py-1 text-sm text-green-600 border border-green-600 rounded-full hover:bg-green-100"
                 >
                   {/* Button to auto-select answers for all questions */}
                   Auto Select All
@@ -836,17 +836,17 @@ const Quiz: React.FC<QuizProps> = ({
           <div className="flex h-[calc(100vh-80px)]">
             {/* Main Quiz Container */}
             <div className="flex flex-col flex-1">
-              <div className="flex-1 p-6 lg:p-8">
-                <div className="mx-auto max-w-2xl">
+              <div className="p-2 lg:p-8">
+                <div className="max-w-2xl mx-auto">
                   {/* Question Header */}
-                  <div className="hidden lg:block mb-8">
-                    <div className="flex justify-between items-center mb-4">
+                  <div className="hidden mb-8 lg:block">
+                    <div className="flex items-center justify-between mb-4">
                       <span className="text-lg font-semibold text-gray-700">
                         Q No: {activeQuestion + 1}/{questions.length}
                       </span>
-                      <div className="ml-4 w-full max-w-xs h-2 bg-gray-200 rounded-full">
+                      <div className="w-full h-2 max-w-xs ml-4 bg-gray-200 rounded-full">
                         <div
-                          className="h-2 bg-indigo-600 rounded-full transition-all duration-300"
+                          className="h-2 transition-all duration-300 bg-indigo-600 rounded-full"
                           style={{ width: `${((activeQuestion + 1) / questions.length) * 100}%` }}
                         ></div>
                       </div>
@@ -855,18 +855,33 @@ const Quiz: React.FC<QuizProps> = ({
 
                   {/* Question */}
 
-                  <div className="p-8 mb-8 bg-white rounded-xl shadow-lg">
-                    <h2 className="mb-8 text-xl font-medium leading-relaxed text-gray-800">
+                  <div className="p-4 mb-4 bg-white shadow-lg lg:p-8 lg:mb-8 rounded-xl">
+                    {/* <h2 className="mb-4 text-base font-medium leading-relaxed text-gray-800 lg:mb-8 lg:text-xl">
                       {questionText}
-                    </h2>
-                    {currentQuestion && (
+                    </h2> */}
+<div
+  className="mb-4 text-base font-medium leading-relaxed text-gray-800 lg:text-xl"
+  dangerouslySetInnerHTML={{
+    __html: (questionText || "").replace(
+      /([\u0A80-\u0AFF])/,
+      "<br>$1"
+    )
+  }}
+/>
+
+
+
+
+
+
+                    {currentQuestion && currentQuestion.image && (
                       <div className="flex justify-center mb-4 relative min-h-[150px]">
-                        {currentQuestion.image && imageUrls[currentQuestion.image] ? (
+                        {imageUrls[currentQuestion.image] ? (
                           <>
                             <img
                               src={imageUrls[currentQuestion.image]}
                               alt="Question Illustration"
-                              className="max-h-60 object-contain transition-opacity duration-300"
+                              className="object-contain transition-opacity duration-300 max-h-60"
                               onLoad={(e) => {
                                 const target = e.currentTarget;
                                 target.style.opacity = '1';
@@ -881,7 +896,7 @@ const Quiz: React.FC<QuizProps> = ({
                               loading="lazy"
                             />
                             {/* Simple loader shown while opacity is 0 */}
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-300"
+                            <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none"
                               ref={(ref) => {
                                 if (ref && currentQuestion.image) {
                                   // This is a bit hacky but works for a quick "lazy load" feel
@@ -894,8 +909,8 @@ const Quiz: React.FC<QuizProps> = ({
                                 }
                               }}
                             >
-                              <div className="animate-pulse flex space-x-4">
-                                <div className="rounded-md bg-slate-200 h-40 w-60"></div>
+                              <div className="flex space-x-4 animate-pulse">
+                                <div className="h-40 rounded-md bg-slate-200 w-60"></div>
                               </div>
                             </div>
                           </>
@@ -905,12 +920,11 @@ const Quiz: React.FC<QuizProps> = ({
 
 
                     {/* Answer Options */}
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-2 lg:gap-4">
                       {questions && questions.length > 0 && currentQuestion ? (
                         [optionA, optionB, optionC, optionD]
                           .slice(0, questionType === 1 ? 2 : 4)
                           .map((option, index) => {
-
                             const optionLetter = String.fromCharCode(65 + index);
                             const isSelected = selectedAnswerIndex === index ||
                               getSelectedAnswerForQuestion(currentQuestion.id) === optionLetter;
@@ -919,15 +933,15 @@ const Quiz: React.FC<QuizProps> = ({
                               <button
                                 key={index}
                                 onClick={() => onAnswerSelected(optionLetter, index)}
-                                className={`w-full p-4 rounded-lg border-2 text-left font-medium transition-all duration-200 ${isSelected
+                                className={`w-full p-2 lg:p-4 rounded-lg border-2 text-left font-medium transition-all duration-200 ${isSelected
                                   ? 'text-indigo-700 bg-indigo-50 border-indigo-500'
                                   : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                                   }`}
                               >
-                                <span className="inline-block mr-3 w-8 h-8 text-sm font-bold leading-8 text-center text-indigo-600 bg-indigo-100 rounded-full">
+                                <span className="inline-block w-6 h-6 mr-2 text-xs font-bold leading-6 text-center text-indigo-600 bg-indigo-100 rounded-full lg:mr-3 lg:w-8 lg:h-8 lg:text-sm lg:leading-8">
                                   {optionLetter}
                                 </span>
-                                {option}
+                                <span className="text-sm lg:text-base">{option}</span>
                               </button>
                             );
                           })
@@ -940,12 +954,12 @@ const Quiz: React.FC<QuizProps> = ({
               </div>
 
               {/* Navigation Controls */}
-              <div className="p-6 bg-white border-t">
-                <div className="flex justify-between mx-auto max-w-2xl">
+              <div className="p-3 bg-white border-t lg:p-6">
+                <div className="flex justify-between max-w-2xl mx-auto">
                   <button
                     onClick={onClickPrevious}
                     disabled={activeQuestion === 0}
-                    className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${activeQuestion === 0 ? 'bg-gray-100 text-gray-400' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                    className={`flex items-center space-x-2 px-4 py-2 lg:px-6 lg:py-3 rounded-lg font-medium text-sm lg:text-base transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${activeQuestion === 0 ? 'bg-gray-100 text-gray-400' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                       }`}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -955,7 +969,7 @@ const Quiz: React.FC<QuizProps> = ({
                   </button>
                   <button
                     onClick={onClickNext}
-                    className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${questionStatuses[activeQuestion] === QuestionStatus.Attended
+                    className={`flex items-center space-x-2 px-4 py-2 lg:px-6 lg:py-3 rounded-lg font-medium text-sm lg:text-base transition-all duration-200 ${questionStatuses[activeQuestion] === QuestionStatus.Attended
                       ? 'bg-green-500 hover:bg-green-600 text-white'
                       : 'bg-indigo-600 hover:bg-indigo-700 text-white'
                       }`}
@@ -970,12 +984,12 @@ const Quiz: React.FC<QuizProps> = ({
             </div>
 
             {/* Question Navigator - Desktop */}
-            <div className="hidden w-80 h-full bg-white border-l shadow-sm lg:block">
-              <div className="flex flex-col p-6 h-full">
+            <div className="hidden h-full bg-white border-l shadow-sm w-80 lg:block">
+              <div className="flex flex-col h-full p-6">
                 <h3 className="mb-4 text-lg font-semibold text-gray-800">Question Navigator</h3>
 
                 {/* Question Grid */}
-                <div className="grid overflow-y-auto flex-1 grid-cols-5 gap-2 mb-6 min-h-0">
+                <div className="grid flex-1 min-h-0 grid-cols-5 gap-2 mb-6 overflow-y-auto">
                   {questions.map((_, index) => {
                     let bgColorClass = 'bg-gray-200 text-gray-700 hover:bg-gray-300';
                     if (questionStatuses[index] === QuestionStatus.Skipped) {
@@ -1030,9 +1044,9 @@ const Quiz: React.FC<QuizProps> = ({
           {/* Mobile Navigation Modal */}
           {showMobileNav && (
             <div className="fixed inset-0 z-50 bg-black bg-opacity-50 lg:hidden">
-              <div className="absolute top-0 right-0 w-80 h-full bg-white shadow-xl">
+              <div className="absolute top-0 right-0 h-full bg-white shadow-xl w-80">
                 <div className="p-6">
-                  <div className="flex justify-between items-center mb-6">
+                  <div className="flex items-center justify-between mb-6">
                     <h3 className="text-lg font-semibold text-gray-800">Question Navigator</h3>
                     <button
                       onClick={() => setShowMobileNav(false)}

@@ -67,123 +67,160 @@ const ExamSummary: React.FC = () => {
       ? ((totalCorrect / (totalCorrect + totalWrong)) * 100).toFixed(2)
       : "0.00";
 
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const decodeHtml = (html: string) => {
+    try {
+      const parser = new DOMParser();
+      let decoded = html;
+
+      // Decode up to 5 times for multi-encoded strings
+      let limit = 5;
+      while (limit > 0 && (decoded.includes("&lt;") || decoded.includes("&gt;") || decoded.includes("&amp;"))) {
+        const doc = parser.parseFromString(decoded, "text/html");
+        decoded = doc.documentElement.textContent || "";
+        limit--;
+      }
+      return decoded;
+    } catch (e) {
+      console.log("Error decoding HTML:", e);
+      return html;
+    }
+  };
+
+  if (result.resultHtml) {
+    return (
+      <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl bg-white p-8 shadow-sm rounded-xl print:shadow-none print:p-0">
+
+          <div
+            className="custom-exam-result"
+            dangerouslySetInnerHTML={{ __html: decodeHtml(result.resultHtml) }}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-     
+
       {/* PDF CONTENT */}
       {/* PDF CONTENT */}
-<div ref={resultRef}>
+      <div ref={resultRef}>
 
-  {/* STUDENT DETAILS */}
-  <div className="pdf-section">
-    <div className="bg-white rounded-xl shadow p-6 mb-8">
+        {/* STUDENT DETAILS */}
+        <div className="pdf-section">
+          <div className="bg-white rounded-xl shadow p-6 mb-8">
 
-      {/* Header with PDF button on right */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <User className="text-indigo-600" />
-          <h2 className="text-xl font-bold text-gray-800">
-            Student Details
-          </h2>
+            {/* Header with PDF button on right */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <User className="text-indigo-600" />
+                <h2 className="text-xl font-bold text-gray-800">
+                  Student Details
+                </h2>
+              </div>
+
+              {/* PDF DOWNLOAD BUTTON */}
+              <PdfDownloader reportRef={resultRef} />
+            </div>
+
+            <Grid cols={3}>
+              <Info label="Name" value={result.userName} />
+              <Info label="Email" value={result.email} />
+              <Info label="Exam Name" value={result.examName} />
+              <Info label="Time Taken (min)" value={result.timeTaken ?? "-"} />
+            </Grid>
+          </div>
+
+          {/* OVERALL SUMMARY */}
+          <Section title="Overall Performance" icon={Award}>
+            <Grid cols={4}>
+              <Stat label="Final Score" value={stats?.finalScore} />
+              <Stat label="Total Score" value={stats?.totalScore} />
+              <Stat label="Wrong Answers" value={stats?.wrongAnswers} />
+              <Stat label="Negative Marks" value={stats?.negativeMarks} />
+            </Grid>
+          </Section>
+
+          {/* SECTION WISE PERFORMANCE */}
+          <Section title="Section Wise Performance" icon={BookOpen}>
+            <div className="overflow-x-auto">
+              <table className="w-full border rounded-lg overflow-hidden">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="p-3 text-left">Section</th>
+                    <th className="p-3 text-center">Score</th>
+                    <th className="p-3 text-center">Correct</th>
+                    <th className="p-3 text-center">Wrong</th>
+                    <th className="p-3 text-center">Accuracy (%)</th>
+                    <th className="p-3 text-center">Total</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {sections.map((s: any) => {
+                    const wrong = s.totalQuestions - s.correctAnswers;
+                    const accuracy =
+                      s.correctAnswers + wrong > 0
+                        ? ((s.correctAnswers / (s.correctAnswers + wrong)) * 100).toFixed(2)
+                        : "0.00";
+
+                    const accuracyColor =
+                      Number(accuracy) >= 75
+                        ? "text-green-700"
+                        : Number(accuracy) >= 40
+                          ? "text-yellow-600"
+                          : "text-red-600";
+
+                    return (
+                      <tr key={s.sectionName} className="border-t">
+                        <td className="p-3 font-semibold">{s.sectionName}</td>
+
+                        <td className="p-3 text-center font-semibold text-indigo-600">
+                          {s.score}
+                        </td>
+
+                        <td className="p-3 text-center font-semibold text-green-600">
+                          {s.correctAnswers}
+                        </td>
+
+                        <td className="p-3 text-center font-semibold text-red-600">
+                          {wrong}
+                        </td>
+
+                        <td className={`p-3 text-center font-bold ${accuracyColor}`}>
+                          {accuracy}%
+                        </td>
+
+                        <td className="p-3 text-center">
+                          {s.totalQuestions}
+                        </td>
+                      </tr>
+                    );
+                  })}
+
+                  {/* TOTAL ROW */}
+                  <tr className="bg-indigo-100 border-t-2 font-bold">
+                    <td className="p-3">TOTAL</td>
+                    <td className="p-3 text-center text-indigo-700">{totalScore}</td>
+                    <td className="p-3 text-center text-green-700">{totalCorrect}</td>
+                    <td className="p-3 text-center text-red-700">{totalWrong}</td>
+                    <td className="p-3 text-center text-indigo-800">
+                      {overallAccuracy}%
+                    </td>
+                    <td className="p-3 text-center">{totalQuestions}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </Section>
         </div>
 
-        {/* PDF DOWNLOAD BUTTON */}
-        <PdfDownloader reportRef={resultRef} />
       </div>
-
-      <Grid cols={3}>
-        <Info label="Name" value={result.userName} />
-        <Info label="Email" value={result.email} />
-        <Info label="Exam Name" value={result.examName} />
-        <Info label="Time Taken (min)" value={result.timeTaken ?? "-"} />
-      </Grid>
-    </div>
-
-  {/* OVERALL SUMMARY */}
-    <Section title="Overall Performance" icon={Award}>
-      <Grid cols={4}>
-        <Stat label="Final Score" value={stats?.finalScore} />
-        <Stat label="Total Score" value={stats?.totalScore} />
-        <Stat label="Wrong Answers" value={stats?.wrongAnswers} />
-        <Stat label="Negative Marks" value={stats?.negativeMarks} />
-      </Grid>
-    </Section>
-
-  {/* SECTION WISE PERFORMANCE */}
-    <Section title="Section Wise Performance" icon={BookOpen}>
-      <div className="overflow-x-auto">
-        <table className="w-full border rounded-lg overflow-hidden">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="p-3 text-left">Section</th>
-              <th className="p-3 text-center">Score</th>
-              <th className="p-3 text-center">Correct</th>
-              <th className="p-3 text-center">Wrong</th>
-              <th className="p-3 text-center">Accuracy (%)</th>
-              <th className="p-3 text-center">Total</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {sections.map((s: any) => {
-              const wrong = s.totalQuestions - s.correctAnswers;
-              const accuracy =
-                s.correctAnswers + wrong > 0
-                  ? ((s.correctAnswers / (s.correctAnswers + wrong)) * 100).toFixed(2)
-                  : "0.00";
-
-              const accuracyColor =
-                Number(accuracy) >= 75
-                  ? "text-green-700"
-                  : Number(accuracy) >= 40
-                  ? "text-yellow-600"
-                  : "text-red-600";
-
-              return (
-                <tr key={s.sectionName} className="border-t">
-                  <td className="p-3 font-semibold">{s.sectionName}</td>
-
-                  <td className="p-3 text-center font-semibold text-indigo-600">
-                    {s.score}
-                  </td>
-
-                  <td className="p-3 text-center font-semibold text-green-600">
-                    {s.correctAnswers}
-                  </td>
-
-                  <td className="p-3 text-center font-semibold text-red-600">
-                    {wrong}
-                  </td>
-
-                  <td className={`p-3 text-center font-bold ${accuracyColor}`}>
-                    {accuracy}%
-                  </td>
-
-                  <td className="p-3 text-center">
-                    {s.totalQuestions}
-                  </td>
-                </tr>
-              );
-            })}
-
-            {/* TOTAL ROW */}
-            <tr className="bg-indigo-100 border-t-2 font-bold">
-              <td className="p-3">TOTAL</td>
-              <td className="p-3 text-center text-indigo-700">{totalScore}</td>
-              <td className="p-3 text-center text-green-700">{totalCorrect}</td>
-              <td className="p-3 text-center text-red-700">{totalWrong}</td>
-              <td className="p-3 text-center text-indigo-800">
-                {overallAccuracy}%
-              </td>
-              <td className="p-3 text-center">{totalQuestions}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </Section>
-  </div>
-
-</div>
 
     </div>
   );
@@ -206,8 +243,8 @@ const Section = ({ title, icon: Icon, children }: any) => (
 const Grid = ({ children, cols = 3 }: any) => {
   const colClass =
     cols === 4 ? "md:grid-cols-4" :
-    cols === 3 ? "md:grid-cols-3" :
-    "md:grid-cols-2";
+      cols === 3 ? "md:grid-cols-3" :
+        "md:grid-cols-2";
 
   return <div className={`grid grid-cols-1 ${colClass} gap-4`}>{children}</div>;
 };

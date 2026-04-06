@@ -5,10 +5,15 @@ import PhoneOTP from './PhoneOTP';
 
 const AnimatedForm = () => {
   const [isRightPanelActive, setIsRightPanelActive] = useState(false);
+const [unregisteredMobile, setUnregisteredMobile] = useState<string>("");
 
-  const handleSignUpClick = () => {
-    setIsRightPanelActive(true);
-  };
+  const handleSignUpClick = (mobile?: string) => {
+  if (mobile) {
+    setUnregisteredMobile(mobile);
+  }
+  setIsRightPanelActive(true);
+};
+
 
   const handleSignInClick = () => {
     setIsRightPanelActive(false);
@@ -37,7 +42,7 @@ const AnimatedForm = () => {
               : 'opacity-0 z-[1] pointer-events-none translate-y-full md:translate-y-0 md:translate-x-full'}
           top-0 h-[calc(100%-5rem)] md:h-full overflow-y-auto pb-20 md:pb-3`}
         >
-          <Registration setIsRightPanelActive={setIsRightPanelActive} />
+          <Registration setIsRightPanelActive={setIsRightPanelActive} mobile={unregisteredMobile} />
         </div>
 
         {/* Sign In / Login Container */}
@@ -83,7 +88,7 @@ const AnimatedForm = () => {
               </p>
               <button
                 className="py-3 text-xs font-bold tracking-wider text-white uppercase transition-transform bg-transparent border-2 border-white rounded-full px-11 hover:bg-white hover:text-gray-800"
-                onClick={handleSignUpClick}
+                onClick={() => handleSignUpClick()}
               >
                 Sign Up
               </button>
@@ -95,7 +100,11 @@ const AnimatedForm = () => {
         <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-r from-gray-700 to-gray-800 md:hidden z-[200] flex items-center justify-center">
           <button
             className="px-8 py-2 text-xs font-bold tracking-wider text-white uppercase transition-transform bg-transparent border-2 border-white rounded-full hover:bg-white hover:text-gray-800"
-            onClick={isRightPanelActive ? handleSignInClick : handleSignUpClick}
+           onClick={() =>
+            isRightPanelActive
+              ? handleSignInClick()
+              : handleSignUpClick()
+          }
           >
             {isRightPanelActive ? 'Sign In' : 'Sign Up'}
           </button>

@@ -6,7 +6,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 
 console.log("process.env in index.tsx:", process.env.REACT_APP_API_URL);
-
+console.log("FileApi in index.tsx:", process.env.REACT_APP_DOCU_API_URL);
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );

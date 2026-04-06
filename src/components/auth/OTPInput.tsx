@@ -50,7 +50,7 @@ const OtpInput: React.FC<OtpInputProps> = ({
       <p className="mb-4 text-sm text-gray-600">
         Enter the 6-digit code sent to your mobile number
       </p>
-      <div className="flex justify-center gap-3 mb-4">
+      <div className="flex justify-center gap-1 md:gap-3 mb-4">
         {otp.map((value, index) => (
           <input
             key={index}
@@ -62,7 +62,7 @@ const OtpInput: React.FC<OtpInputProps> = ({
             onChange={(e) => handleChange(index, e)}
             onKeyDown={(e) => handleKeyDown(index, e)}
             ref={(el) => { inputRefs.current[index] = el!; }}
-            className="w-12 h-12 text-center text-xl border rounded focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            className="w-10 h-10 md:w-12 md:h-12 text-center text-lg md:text-xl border rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 !p-0"
           />
         ))}
       </div>

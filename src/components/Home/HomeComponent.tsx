@@ -1,4 +1,5 @@
 import { useState, useContext, useEffect } from "react";
+import { ExamTemplateMappingInfo } from "../../types/result";
 import { useQuery } from "@tanstack/react-query";
 import { UserContext } from "../../provider/UserProvider";
 import { GetUserPackageInfoByUserId } from "../../services/authService";
@@ -10,7 +11,7 @@ import { ExamSections, ExamWithSectionViewModel } from "../../types/exam";
 import { getExamInfoByExamId } from "../../services/examService";
 import AvailablePackagesSection from "../packages/AvailablePackagesSection";
 import { Award, CheckCircle, Clock, Play, Users, Zap } from "lucide-react";
-import { GetExamResultByExamProgressId } from "../../services/resultService";
+import { GetExamResultByExamProgressId, GetExamTemplateMappings } from "../../services/resultService";
 
 const HomeComponent = () => {
   const { userAuth } = useContext(UserContext);
@@ -22,6 +23,7 @@ const HomeComponent = () => {
 
   const [currentPackage, setCurrentPackage] = useState<UserPackageInfoModel | null>(null);
   const [completedPackages, setCompletedPackages] = useState<UserPackageInfoModel[]>([]);
+  const [showAllCompleted, setShowAllCompleted] = useState<boolean>(false);
 
 
   let UserId = userAuth?.userId || 0;
@@ -64,64 +66,59 @@ const HomeComponent = () => {
     }
   }, [UserPackageInfoModel, isSuccess]);
   const handleResult = async (packageId: number) => {
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    // Find the package (current or completed)
-    const pkg =
-      currentPackage?.id === packageId
-        ? currentPackage
-        : completedPackages.find(p => p.id === packageId);
+    try {
+      // Find the package (current or completed)
+      const pkg =
+        currentPackage?.id === packageId
+          ? currentPackage
+          : completedPackages.find(p => p.id === packageId);
 
-    if (!pkg || !pkg.exams || pkg.exams.length === 0) {
-     
-      return;
+      if (!pkg || !pkg.exams || pkg.exams.length === 0) {
+
+        return;
+      }
+
+      // Pick any completed exam (first is enough)
+      const completedExam = pkg.exams.find(e => e.isCompleted && e.examProgressId);
+
+      if (!completedExam) {
+
+        return;
+      }
+
+      // 🔑 CHECK TEMPLATE MAPPING
+      const mappings = await GetExamTemplateMappings();
+      // Exam 9 is legacy => force resultnew
+      const isLegacyExam = completedExam.examId === 9;
+      const hasTemplate = mappings?.some((m: ExamTemplateMappingInfo) => m.examId === completedExam.examId);
+
+      if (hasTemplate && !isLegacyExam) {
+        // PRIORITY: If a template is mapped (and not legacy), go to exam-summary
+        navigate("/exam-summary", {
+          state: { examProgressId: completedExam.examProgressId }
+        });
+      } else {
+        // FALLBACK / LEGACY
+        navigate("/resultnew", {
+          state: { packageId }
+        });
+      }
+
+    } catch (error) {
+      console.log(error);
+
+    } finally {
+      setLoading(false);
     }
-
-    // Pick any completed exam (first is enough)
-    const completedExam = pkg.exams.find(e => e.isCompleted && e.examProgressId);
-
-    if (!completedExam) {
-     
-      return;
-    }
-
-    // 🔑 Ask backend what type this exam is
-    const result = await GetExamResultByExamProgressId(completedExam.examProgressId);
-
-    if (!result) {
-      
-      return;
-    }
-
-    // 🔑 SAME RULE AS QuizResult
-    if (result.resultTypeEnum === 1) {
-      // SCORE-BASED
-      navigate("/exam-summary", {
-        state: { examProgressId: completedExam.examProgressId }
-      });
-    } else {
-      // PROFILE / APTITUDE
-      navigate("/resultnew", {
-        state: { packageId }
-      });
-    }
-
-  } catch (error) {
-    console.error(error);
-    
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleQuizClick = async (examId: number) => {
     try {
-      setLoading(true);
       // Use the current package instead of looping through all packages
       if (!currentPackage) {
         console.log("No active package found.");
-        setLoading(false);
         return;
       }
 
@@ -140,7 +137,6 @@ const HomeComponent = () => {
 
       if (!selectedExam) {
         console.log("Exam not found in current package.");
-        setLoading(false);
         return;
       }
 
@@ -153,7 +149,7 @@ const HomeComponent = () => {
 
       // Extract all questions from sections
       const examQuestions = sections.flatMap(section => section.questions) || [];
-      debugger;
+
       // Navigate to the quiz page
       navigate('/quiz', {
         state: {
@@ -168,10 +164,8 @@ const HomeComponent = () => {
           sections: sections,
         },
       });
-      setLoading(false);
     } catch (error) {
       console.log("Error fetching exam details:", error);
-      setLoading(false);
     }
   };
 
@@ -193,8 +187,8 @@ const HomeComponent = () => {
 
   }) => (
     <div className="overflow-hidden relative bg-white rounded-lg border border-gray-200 transition-all duration-300 group hover:border-blue-300 hover:shadow-md">
-      <div className="p-5">
-        <div className="flex justify-between items-start">
+      <div className="p-4 md:p-5">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-4 md:gap-0">
           <div className="flex-1">
             <div className="flex items-center mb-2 space-x-2">
               <h4 className="font-semibold text-gray-900">{exam.name}</h4>
@@ -212,7 +206,7 @@ const HomeComponent = () => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center justify-end md:justify-start space-x-2 w-full md:w-auto mt-4 md:mt-0">
             {exam.isCompleted ? (
               <span className="px-4 py-2 text-sm text-gray-600">Completed</span>
             ) : (
@@ -238,12 +232,12 @@ const HomeComponent = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
-      <div className="p-6 mx-auto max-w-7xl">
+      <div className="p-4 md:p-6 mx-auto max-w-7xl">
         {/* Header with Stats */}
         <div className="mb-10">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h1 className="mb-2 text-4xl font-bold text-gray-900">Self Discovery Suite</h1>
+              <h1 className="mb-2 text-2xl md:text-4xl font-bold text-gray-900">Self Discovery Suite</h1>
               <p className="text-lg text-gray-600">Test Beyond Boundaries Reveal the Real you..</p>
             </div>
 
@@ -260,25 +254,25 @@ const HomeComponent = () => {
             </h2>
 
             <div className="overflow-hidden bg-white rounded-2xl border border-gray-200 shadow-lg">
-              <div className="relative p-8 text-white bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500">
+              <div className="relative p-4 md:p-8 text-white bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500">
                 <div className="absolute inset-0 opacity-10">
                   <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br to-transparent from-white/20"></div>
                 </div>
 
                 <div className="relative z-10">
-                  <div className="flex justify-between items-start mb-6">
+                  <div className="flex flex-col md:flex-row justify-between items-start mb-6">
                     <div>
-                      <h3 className="mb-3 text-3xl font-bold">{currentPackage?.packageName}</h3>
+                      <h3 className="mb-3 text-xl md:text-3xl font-bold">{currentPackage?.packageName}</h3>
                     </div>
-                    <div className="text-right">
-                      <div className="mb-1 text-4xl font-bold">₹{currentPackage?.packagePrice}/-</div>
+                    <div className="text-left md:text-right mt-2 md:mt-0">
+                      <div className="mb-1 text-3xl md:text-4xl font-bold">₹{currentPackage?.packagePrice}/-</div>
                       <div className="text-blue-200">Active since {formatDate(currentPackage?.startedDate || "")}</div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="p-8">
+              <div className="p-4 md:p-8">
                 <div className="grid grid-cols-1 gap-8">
                   {/* Exams Section */}
                   <div>
@@ -333,9 +327,9 @@ const HomeComponent = () => {
               Completed Packages
             </h2>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {completedPackages.map((pkg) => (
+              {(showAllCompleted ? completedPackages : completedPackages.slice(0, 3)).map((pkg) => (
                 <div key={pkg.id} className="overflow-hidden bg-white rounded-2xl border border-gray-200 shadow-lg">
-                  <div className="relative p-6 text-white bg-gradient-to-r from-green-600 via-green-700 to-emerald-700">
+                  <div className="relative p-4 md:p-6 text-white bg-gradient-to-r from-green-600 via-green-700 to-emerald-700">
                     <div className="absolute inset-0 opacity-10">
                       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br to-transparent from-white/20"></div>
                     </div>
@@ -344,7 +338,7 @@ const HomeComponent = () => {
                       <div className="text-green-200">Completed on {formatDate(pkg.startedDate || "")}</div>
                     </div>
                   </div>
-                  <div className="p-6">
+                  <div className="p-4 md:p-6">
                     <h4 className="flex items-center mb-4 text-lg font-semibold text-gray-900">
                       <Award className="mr-2 w-5 h-5" />
                       Assessments
@@ -381,6 +375,25 @@ const HomeComponent = () => {
                 </div>
               ))}
             </div>
+
+            {completedPackages.length > 3 && (
+              <div className="flex justify-center mt-8">
+                <button
+                  onClick={() => setShowAllCompleted(!showAllCompleted)}
+                  className="px-6 py-2.5 text-sm font-medium text-green-700 bg-green-50 rounded-full border border-green-200 hover:bg-green-100 transition-colors duration-200 flex items-center"
+                >
+                  {showAllCompleted ? (
+                    <>
+                      Show Less <span className="ml-2">↑</span>
+                    </>
+                  ) : (
+                    <>
+                      View All History ({completedPackages.length}) <span className="ml-2">↓</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -391,6 +404,11 @@ const HomeComponent = () => {
             <p className="mx-auto max-w-2xl text-lg text-gray-600">
               Explore our comprehensive assessment packages designed to unlock your potential
             </p>
+          </div>
+          <div className="mt-4 mb-6 text-center">
+            <h3 className="text-2xl font-bold text-gray-900">
+              Select Test Package/s From Below:
+            </h3>
           </div>
           <AvailablePackagesSection />
         </div>

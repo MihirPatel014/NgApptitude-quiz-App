@@ -1,13 +1,9 @@
 import axios from "axios";
-import { UserRegistrationResults } from "../common/constant";
 import { ApiResponse, handleApiResponse } from "../common/http-common";
 import http from "../common/http-common"
 import { apiRequest } from "../common/requestwithdata";
-import { AddUserToPackageApiModel, User, userDetails, UserInfoModel, UserLogin, UserLoginResultModel, UserPackage, UserPackageInfoModel, UserProfileUpdate, UserRegistration } from "../types/user"
+import { AddUserToPackageApiModel, User, UserInfoModel, UserLoginResultModel, UserPackage, UserPackageInfoModel, UserProfileUpdate, UserRegistration } from "../types/user"
 import { Grade } from "../types/grade";
-
-//Backend api Url
-const SECRET_KEY = 'your-secret-key';
 
 // api/User/Register
 const USERS_URL = 'api/User';
@@ -24,33 +20,10 @@ const ADD_USER_TO_PACKAGE = "/AddUserToPackage"
 const GET_USER_FULL_INFO_BY_USERID = "/GetUserFullInfoByUserId"
 const GET_USER_PACKAGE_INFO_BY_USERID = "/GetUserPackageInfoByUserId"
 
- const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = process.env.REACT_APP_API_URL;
 const GRADE_URL = "api/Grade/GetAllGrades";
-const getAll = () => {
-  return http.get<Array<userDetails>>(`/${USERS_URL}`);
-};
 
-const get = (id: any) => {
-  return http.get<userDetails>(`/${USERS_URL}/${id}`);
-};
-
-const create = (data: userDetails) => {
-  return http.post<userDetails>(`/${USERS_URL}`, data);
-};
-
-const update = (id: any, data: userDetails) => {
-  return http.put<any>(`/${USERS_URL}/${id}`, data);
-};
-
-export const remove = (id: any) => {
-  return http.delete<any>(`/${USERS_URL}/${id}`);
-};
-
-export const removeAll = () => {
-  return http.delete<any>(`/${USERS_URL}`);
-};
-
-export const loginUser = async (data: UserLogin) => {
+export const loginUser = async (data: any) => {
   const response = await http.post<ApiResponse<User>>(`${USERS_URL}${LOGIN_URL}`, data);
   const result = handleApiResponse(response.data);
 
@@ -65,7 +38,7 @@ export const loginUser = async (data: UserLogin) => {
 
 export const registerUser = async (data: UserRegistration) => {
 
-  const response = await http.post<ApiResponse<UserRegistrationResults>>(
+  const response = await http.post<ApiResponse<UserLoginResultModel>>(
     `${USERS_URL}${REGISTER_URL}`,
     data
   );
