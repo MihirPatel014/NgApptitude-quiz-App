@@ -1,55 +1,54 @@
+import React, { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Missing from "./pages/Missing";
-// import Login from "./components/auth/Login";
 import './index.css';
 import { NavbarAndSidebar } from "./components/NavbarAndSidebar";
 import { UserProvider } from "./provider/UserProvider";
 import ProtectedRoute from "./utils/ProtectedRoute";
-import PackagesPage from "./components/packages/packagesPage";
-import EditProfile from "./components/user/editProfile";
-import { QuizWrapper } from "./components/quiz/QuizWrapper";
-import Home from "./pages/home/index";
-import Result1 from "./pages/result/Result"
 import { LoaderProvider } from "./provider/LoaderProvider";
 import Loader from "./common/Loader";
-import ResultNew from "./pages/result/Resultnew";
-import ExamSummary from "./pages/result/ExamSummary";
-import QuizResultWrapper from "./components/quiz/QuizResultProp";
-import PhoneOTP from "./components/auth/PhoneOTP";
-import Registration from "./components/auth/Registration";
+import Home from "./pages/home/index";
 
+// Lazy Loaded Components
+const PackagesPage = lazy(() => import("./components/packages/packagesPage"));
+const EditProfile = lazy(() => import("./components/user/editProfile"));
+const QuizWrapper = lazy(() => import("./components/quiz/QuizWrapper").then(m => ({ default: m.QuizWrapper })));
+const Result1 = lazy(() => import("./pages/result/Result"));
+const ResultNew = lazy(() => import("./pages/result/Resultnew"));
+const ExamSummary = lazy(() => import("./pages/result/ExamSummary"));
+const QuizResultWrapper = lazy(() => import("./components/quiz/QuizResultProp"));
+const PhoneOTP = lazy(() => import("./components/auth/PhoneOTP"));
+const Registration = lazy(() => import("./components/auth/Registration"));
 
 function App() {
   return (
     <UserProvider>
       <LoaderProvider>
         <Router>
-          <Routes>
-            {/* Public Path */}
-            {/* <Route path="/registeration" element={<Registeration />} /> */}
-            {/* <Route path="/loginwithotp" element={<PhoneOTP />} />  */}
-            <Route path="/login" element={<PhoneOTP />} />
-            <Route path="/register" element={<Registration />} />
-            <Route element={<ProtectedRoute />}>
-              <Route element={<NavbarAndSidebar />}>
-                {/* <Route path="/" element={<Home />} /> */}
-                <Route path="/" element={<Home />} />
-
-                <Route path="/packages" element={<PackagesPage />} />
-                <Route path="/edit-profile" element={<EditProfile />} />
-                <Route path='/result' element={<Result1 />} />
-                <Route path='/resultnew' element={<ResultNew />} />
-                <Route path='/loader' element={<Loader />} />
-                <Route path="/exam-summary" element={<ExamSummary />} />
+          <Suspense fallback={<Loader />}>
+            <Routes>
+              {/* Public Paths */}
+              <Route path="/login" element={<PhoneOTP />} />
+              <Route path="/register" element={<Registration />} />
+              
+              <Route element={<ProtectedRoute />}>
+                <Route element={<NavbarAndSidebar />}>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/packages" element={<PackagesPage />} />
+                  <Route path="/edit-profile" element={<EditProfile />} />
+                  <Route path='/result' element={<Result1 />} />
+                  <Route path='/resultnew' element={<ResultNew />} />
+                  <Route path='/loader' element={<Loader />} />
+                  <Route path="/exam-summary" element={<ExamSummary />} />
+                </Route>
+                <Route path='/quizresult' element={<QuizResultWrapper />} />
+                <Route path='/quiz' element={<QuizWrapper />} />
               </Route>
-              <Route path='/quizresult' element={<QuizResultWrapper />} />
-              <Route path='/quiz' element={<QuizWrapper />} />
-            </Route>
-            {/* <Route path='/quiz' element={<Quiz value={QuizProps} />} /> */}
-            {/* <Route path="/quiz/:userId/:examId/:sectionId/:timeLimit/:userExamProgressId/:userPackageId/:packageId/:examSubmitId" element={<Quiz />} /> */}
-            {/* Catch-all route for unknown paths */}
-            <Route path="*" element={<Missing />} />
-          </Routes>
+              
+              {/* Catch-all route */}
+              <Route path="*" element={<Missing />} />
+            </Routes>
+          </Suspense>
         </Router>
       </LoaderProvider>
     </UserProvider>
@@ -57,3 +56,4 @@ function App() {
 }
 
 export default App;
+

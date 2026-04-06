@@ -1,5 +1,3 @@
-import { userLoginResults, UserRegistrationResults } from "../common/constant";
-import { ApiResponse, handleApiResponse } from "../common/http-common";
 import http from "../common/http-common"
 import { apiRequest } from "../common/requestwithdata";
 import { Exams, ExamSections, ExamsListViewModel, ExamWithSectionViewModel, SubmitExam, UserExamResponse } from "../types/exam"
@@ -11,9 +9,6 @@ const USER_EXAMS_RESPONSE_URL = 'api/UserExamResponse';
 
 const GET_EXAM_BY_ID = "/GetExamById"
 const GET_ALL_Exams = "/GetAllExams"
-const ADD_EXAMS = "/AddExam"
-const UPDATE_EXAMS = "/UpdateExam"
-const DELTE_EXAMS = "/DeleteExam"
 const SUBMIT_EXAM = "/SubmitExam"
 const GET_EXAMS_INFO_BY_EXAMS_ID = "/GetExamInfoByExamId"
 const GET_EXAMS_SECTION_BY_EXAMS_ID = "/GetExamSectionByExamId"
@@ -122,7 +117,6 @@ export const SubmitUserExam = async (data: SubmitExam) => {
   );
   if (result.success) {
     return result.data; // Return the package data
-    console.log(result);
   } else {
     console.log("Error fetching examByID:", result.errors);
     return null;

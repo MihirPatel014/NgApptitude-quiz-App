@@ -170,7 +170,7 @@ const PackagesPage = () => {
                             TransactionId: result.id,
                             PackageId: paymentModel.packageId,
                         }
-                        const adduserToPackage = await AddUserToPackage(userPackageApiModel);
+                        await AddUserToPackage(userPackageApiModel);
                     }
                     // Invalidate user packages query to refresh dashboard
                     queryClient.invalidateQueries({ queryKey: ["userPackages"] });
@@ -270,7 +270,7 @@ const PackagesPage = () => {
                                         TransactionId: result.id,
                                         PackageId: paymentModel.packageId,
                                     }
-                                    const adduserToPackage = await AddUserToPackage(userPackageApiModel);
+                                    await AddUserToPackage(userPackageApiModel);
                                 }
                                 // Invalidate user packages query to refresh dashboard
                                 queryClient.invalidateQueries({ queryKey: ["userPackages"] });

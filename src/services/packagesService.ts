@@ -1,18 +1,12 @@
-import { userLoginResults, UserRegistrationResults } from "../common/constant";
-import { ApiResponse, handleApiResponse } from "../common/http-common";
 import http from "../common/http-common"
 import { Packages, PackagesInfo, UserPackagesModel } from "../types/package"
 import { apiRequest } from "../common/requestwithdata"
-import { PackageId } from "typescript";
 // api/User/Register
 const PACKAGE_URL = 'api/Package';
 
 const GET_PACKAGE_BY_ID = "/GetPackageById"
 const GET_ALL_PACKAGES = "/GetAllPackages"
 const GET_ALL_PACKAGES_LIST = "/GetAllPackagesList"
-const ADD_PACKAGE = "/AddPackage"
-const UPDATE_PACKAGE = "/UpdatePackage"
-const DELTE_PACKAGE = "/DeletePackage"
 const GET_PACKAGE_INFO_BY_PACKAGE_ID = "/GetPackageInfoByPackageId"
 const GET_USER_CURRENT_PACKAGE_INFO_BY_USER_ID = "/GetUserCurrentPackageInfoByUserId"
 

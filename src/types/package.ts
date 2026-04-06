@@ -1,4 +1,4 @@
-import { ExamInfoModel, Exams, ExamSections, ExamsPackageModel } from "./exam";
+import { ExamInfoModel, ExamSections, ExamsPackageModel } from "./exam";
 
 export interface Packages {
   id: number;

@@ -1,6 +1,5 @@
 import axios from "axios";
-import { apiRequest } from "../common/requestwithdata";
-import { PaymentModel, MerchantOrderDetails, TranscationDetail, RequestGiftCodeModel } from "../types/payment";
+import { PaymentModel, TranscationDetail, RequestGiftCodeModel } from "../types/payment";
 import { handleApiResponse } from "../common/http-common";
 import { GiftCodeResponseModel } from "../types/package";
 
