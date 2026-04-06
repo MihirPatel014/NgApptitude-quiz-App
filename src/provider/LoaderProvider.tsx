@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
+import "../common/loader.css";
 
 // Define the shape of the loader context
 interface LoaderContextType {
@@ -15,24 +16,43 @@ interface LoaderProviderProps {
 }
 
 export const LoaderProvider: React.FC<LoaderProviderProps> = ({ children }) => {
-  const [loading, setLoadingState] = useState<boolean>(false);
-  const [loadingSource, setLoadingSource] = useState<string>("unknown");
+  const [activeSources, setActiveSources] = useState<Set<string>>(new Set());
 
-  const setLoading = (newLoading: boolean, source: string = "unknown") => {
-    const timestamp = new Date().toLocaleTimeString();
+  const setLoading = useCallback((isLoading: boolean, source: string = "unknown") => {
+    setActiveSources(prev => {
+      if (isLoading && prev.has(source)) return prev;
+      if (!isLoading && !prev.has(source)) return prev;
 
-    setLoadingState(newLoading);
-    setLoadingSource(source);
-  };
+      const next = new Set(prev);
+      if (isLoading) {
+        next.add(source);
+      } else {
+        next.delete(source);
+      }
+      return next;
+    });
+  }, []);
 
-  useEffect(() => {
-
-  }, [loading, loadingSource]);
+  const loading = activeSources.size > 0;
 
   return (
     <LoaderContext.Provider value={{ loading, setLoading }}>
       {loading && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(2px)'
+          }}
+        >
           <div className="loader"></div>
         </div>
       )}

@@ -5,7 +5,7 @@ import { personalityDataList } from "./personality";
 import { aptitudeDataList } from "./aptitude";
 import ngLogo1 from '../../../src/assests/images/ng_logo1.jpg';
 import ngLogo2 from '../../../src/assests/images/ng_logo2.png';
-import personalityChart from '../../../src/assests/images/personality_chart.png';
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -60,7 +60,7 @@ const Result: React.FC = () => {
       }
     };
     fetchUserDetails();
-  }, []);
+  }, [setLoading]);
 
   useEffect(() => {
     const fetchExamResults = async () => {

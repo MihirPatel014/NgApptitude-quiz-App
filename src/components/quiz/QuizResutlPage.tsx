@@ -5,13 +5,9 @@ import { getExamInfoByExamId } from '../../services/examService';
 import { useLoader } from '../../provider/LoaderProvider';
 import { useQuery } from '@tanstack/react-query';
 import { UserPackageInfoModel } from '../../types/user';
-import { ExamWithSectionViewModel } from '../../types/exam';
-import { sendExamReportSms } from '../../services/smsService';
-import toast from 'react-hot-toast';
-import { UserContext } from "../../provider/UserProvider";
-import { useContext } from "react";
-import { GetExamResultByExamProgressId, GetExamTemplateMappings } from "../../services/resultService";
+import { GetExamTemplateMappings } from "../../services/resultService";
 import { ExamTemplateMappingInfo } from '../../types/result';
+import toast from 'react-hot-toast';
 
 export interface QuizResultProps {
   examId?: number;
@@ -32,7 +28,6 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
     examId,
     userId,
     examName,
-    examDescription,
     totalQuestions,
     answered,
     skipped,
@@ -46,11 +41,9 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
 
   const currentExamId = examId ?? location.state?.examId;
   const currentUserId = userId ?? location.state?.userId;
-  const { userAuth } = useContext(UserContext);
 
   const [nextExam, setNextExam] = useState<any>(null);
   const [currentPackageId, setCurrentPackageId] = useState<number | null>(null);
-  const [reportSmsSent, setReportSmsSent] = useState(false);
   const [examProgressId, setExamProgressId] = useState<number | null>(null);
 
   // Fetch user packages
@@ -81,9 +74,6 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
     async (packages: UserPackageInfoModel[]) => {
       if (!currentUserId || !currentExamId) return;
       if (!packages?.length) return;
-
-      const currentUserPackageId = props.userPackageId ?? location.state?.userPackageId;
-      const currentPackageIdFromState = props.userPackageId ?? location.state?.packageId;
 
       const currentPackage =
         packages.find(pkg => !pkg.isCompleted) ||
@@ -150,7 +140,7 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
     }, 200);
 
     return () => clearTimeout(timeoutId);
-  }, [userPackages, isLoadingUserPackages, isErrorUserPackages, findNextExam]);
+  }, [userPackages, isLoadingUserPackages, isErrorUserPackages, findNextExam, setLoading]);
 
   // useEffect(() => {
   //   if (

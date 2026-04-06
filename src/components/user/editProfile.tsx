@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { getUserDetails, UpdateUserDetails } from '../../services/authService'
 import { UserProfileUpdate } from '../../types/user';
 import { useLoader } from '../../provider/LoaderProvider';
@@ -10,10 +10,7 @@ const EditProfile = () => {
 
   const { setLoading } = useLoader();
 
-  useEffect(() => {
-    fetchUserDetails();
-  }, []);
-  const fetchUserDetails = async () => {
+  const fetchUserDetails = useCallback(async () => {
     setLoading(true);
     try {
       const fetchedUserDetails = await getUserDetails();
@@ -30,7 +27,11 @@ const EditProfile = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setLoading]);
+
+  useEffect(() => {
+    fetchUserDetails();
+  }, [fetchUserDetails]);
   // Handle form field changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

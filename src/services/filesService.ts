@@ -29,7 +29,7 @@ export const getImageUrlByName = async (fileName: string): Promise<FetchUploadPa
             if (apiResponse?.isSuccess && apiResponse?.data?.imageUrl) {
                 const fullUrl = apiResponse.data.imageUrl;
                 try {
-                    const urlObj = new URL(fullUrl);
+                    new URL(fullUrl);
 
                     // const pathSegments = urlObj.pathname.split('/');
 

@@ -52,7 +52,7 @@ const ResultNew: React.FC = () => {
       }
     };
     fetchUserDetails();
-  }, []);
+  }, [setLoading]);
 
   useEffect(() => {
     const load = async () => {
@@ -75,7 +75,7 @@ const ResultNew: React.FC = () => {
       }
     };
     load();
-  }, [examId]);
+  }, [examId, setLoading]);
 
   if (error)
     return (

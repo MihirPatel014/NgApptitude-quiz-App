@@ -5,13 +5,11 @@ import { CompletePaymentOrder, ProcessPayment, ValidateGiftCode } from "../../se
 import { PaymentModel } from "../../types/payment";
 import { UserContext } from "../../provider/UserProvider";
 import { useNavigate } from "react-router-dom";
-import { AddUserToPackage, GetUserPackageInfoByUserId } from "../../services/authService";
+import { AddUserToPackage } from "../../services/authService";
 import { AddUserToPackageApiModel } from "../../types/user";
 import { useLoader } from "../../provider/LoaderProvider";
 import toast, { Toaster } from "react-hot-toast";
-import { CheckCircle, ShoppingCart, Star, AlertTriangle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { sendAptitudeTestSms } from "../../services/smsService";
 
 
 const AvailablePackagesSection = () => {
@@ -63,7 +61,7 @@ const AvailablePackagesSection = () => {
         };
 
         fetchPackages();
-    }, []);
+    }, [setLoading]);
 
     const validateCoupon = async (code: string, packageId: number): Promise<{ isValid: boolean; discountedAmount: number, giftCodeId: number }> => {
         setLoading(true);
@@ -117,7 +115,7 @@ const AvailablePackagesSection = () => {
             return;
         }
 
-        const { isValid, discountedAmount, giftCodeId } = await validateCoupon(couponCode, selectedPackageId);
+        const { isValid, discountedAmount } = await validateCoupon(couponCode, selectedPackageId);
         if (isValid) {
             setDiscountedPrices((prev) => ({ ...prev, [selectedPackageId]: discountedAmount }));
             setAppliedCoupons((prev) => ({ ...prev, [selectedPackageId]: couponCode }));
@@ -400,23 +398,7 @@ const AvailablePackagesSection = () => {
                         />
                         <div className="flex justify-between mt-4">
                             <button
-                                onClick={async () => {
-                                    if (!selectedPackageId) {
-                                        toast.custom("Please select a package first.");
-                                        return;
-                                    }
-
-                                    const { isValid, discountedAmount } = await validateCoupon(couponCode, selectedPackageId);
-                                    if (isValid) {
-                                        setDiscountedPrices((prev) => ({ ...prev, [selectedPackageId]: discountedAmount }));
-                                        setAppliedCoupons((prev) => ({ ...prev, [selectedPackageId]: couponCode }));
-                                        toast.success(`Gift Code applied! New amount: ₹${discountedAmount.toFixed(2)}`);
-                                    } else {
-                                        toast.error("Invalid Gift Code.");
-                                    }
-                                    setLoading(false);
-                                    setIsCouponDialogOpen(false);
-                                }}
+                                onClick={applyCoupon}
                                 className="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600"
                             >
                                 Apply

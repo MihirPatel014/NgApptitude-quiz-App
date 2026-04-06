@@ -7,11 +7,11 @@ import { UserPackageInfoModel, UserExamInfoModel } from "../../types/user";
 import { useNavigate } from "react-router-dom";
 import { formatDate } from "../../utils/dateUtils";
 import { useLoader } from "../../provider/LoaderProvider";
-import { ExamSections, ExamWithSectionViewModel } from "../../types/exam";
+import { ExamSections } from "../../types/exam";
 import { getExamInfoByExamId } from "../../services/examService";
 import AvailablePackagesSection from "../packages/AvailablePackagesSection";
 import { Award, CheckCircle, Clock, Play, Users, Zap } from "lucide-react";
-import { GetExamResultByExamProgressId, GetExamTemplateMappings } from "../../services/resultService";
+import { GetExamTemplateMappings } from "../../services/resultService";
 
 const HomeComponent = () => {
   const { userAuth } = useContext(UserContext);
@@ -19,7 +19,7 @@ const HomeComponent = () => {
   const navigate = useNavigate();
   const { setLoading } = useLoader();
 
-  const [examSections, setExamSections] = useState<Map<number, ExamSections[]>>(new Map()); // Store sections per exam
+  const [examSections] = useState<Map<number, ExamSections[]>>(new Map()); // Store sections per exam
 
   const [currentPackage, setCurrentPackage] = useState<UserPackageInfoModel | null>(null);
   const [completedPackages, setCompletedPackages] = useState<UserPackageInfoModel[]>([]);
@@ -42,8 +42,7 @@ const HomeComponent = () => {
   // Show loader while fetching packages
   useEffect(() => {
     const loading = isLoadingPackages || isFetching;
-    setLoading(loading);
-
+    setLoading(loading, "dashboard-packages");
   }, [isLoadingPackages, isFetching, setLoading]);
 
   useEffect(() => {
@@ -115,16 +114,22 @@ const HomeComponent = () => {
   };
 
   const handleQuizClick = async (examId: number) => {
+    console.log("Start Exam clicked for examId:", examId);
+    console.time("QuizStartTimer");
+    setLoading(true, "quiz-transition");
+    console.log("Loader turned ON (quiz-transition)");
+    // Tiny delay to ensure the loader paints before the heavy API call
+    await new Promise(resolve => setTimeout(resolve, 100));
     try {
       // Use the current package instead of looping through all packages
       if (!currentPackage) {
         console.log("No active package found.");
+        setLoading(false);
         return;
       }
 
       // Find the exam from the current package
       let selectedExam: UserExamInfoModel | null = null;
-      let fetchedExam: ExamWithSectionViewModel | null = null;
       let userPackageId: number = currentPackage.userPackageId;
       let packageId: number = currentPackage.packageId;
       let examProgressId: number = 0;
@@ -137,6 +142,7 @@ const HomeComponent = () => {
 
       if (!selectedExam) {
         console.log("Exam not found in current package.");
+        setLoading(false);
         return;
       }
 
@@ -150,7 +156,8 @@ const HomeComponent = () => {
       // Extract all questions from sections
       const examQuestions = sections.flatMap(section => section.questions) || [];
 
-      // Navigate to the quiz page
+      console.timeEnd("QuizStartTimer");
+      console.log("Navigating to /quiz with questions:", examQuestions.length);
       navigate('/quiz', {
         state: {
           userId: UserId,
@@ -166,6 +173,7 @@ const HomeComponent = () => {
       });
     } catch (error) {
       console.log("Error fetching exam details:", error);
+      setLoading(false, "quiz-transition");
     }
   };
 

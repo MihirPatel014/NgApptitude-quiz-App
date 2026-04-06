@@ -15,4 +15,6 @@ export const logOutUser = () => {
     sessionStorage.clear();
 }
 
-export default { storeInSession, lookInSession, removeFromSession, logOutUser }
+const session = { storeInSession, lookInSession, removeFromSession, logOutUser };
+
+export default session;

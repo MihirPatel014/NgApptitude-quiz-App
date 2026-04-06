@@ -29,7 +29,7 @@ const ExamSummary: React.FC = () => {
       }
     };
     loadUser();
-  }, []);
+  }, [setLoading]);
 
   useEffect(() => {
     const loadResult = async () => {
@@ -43,7 +43,7 @@ const ExamSummary: React.FC = () => {
       }
     };
     loadResult();
-  }, [examProgressId]);
+  }, [examProgressId, setLoading]);
 
   if (!user || !result) {
     return (
@@ -67,9 +67,7 @@ const ExamSummary: React.FC = () => {
       ? ((totalCorrect / (totalCorrect + totalWrong)) * 100).toFixed(2)
       : "0.00";
 
-  const handlePrint = () => {
-    window.print();
-  };
+
 
   const decodeHtml = (html: string) => {
     try {

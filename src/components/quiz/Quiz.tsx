@@ -4,7 +4,7 @@ import {
   GetAllquestionsCategory,
   getQuestionbyExamAndSectionId,
 } from '../../services/questionService';
-import { Question, QuestionCategory } from '../../types/question';
+import { Question } from '../../types/question';
 import { FaCircle } from "react-icons/fa";
 
 import { ExamSections, QuizAnswerModel, SubmitExam, UserExamResponse } from '../../types/exam';
@@ -60,7 +60,7 @@ const Quiz: React.FC<QuizProps> = ({
   const [isTimeBound, setIsTimeBound] = useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number | null>(null);
 
-  const [allCategories, setAllCategories] = useState<QuestionCategory[]>([]);
+
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
   const [questionStatuses, setQuestionStatuses] = useState<QuestionStatusType[]>([]);
   const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
@@ -86,10 +86,7 @@ const Quiz: React.FC<QuizProps> = ({
     responseData: ''
   });
 
-  const handleDeveloperOptions = () => {
-    setShowDeveloperOptions(prev => !prev);
-    console.log("Developer options toggled to", !showDeveloperOptions);
-  };
+
 
   const handleAutoSelectAll = useCallback(() => {
     console.log("Auto Select All button clicked");
@@ -151,15 +148,12 @@ const Quiz: React.FC<QuizProps> = ({
       setSelectedAnswerIndex(null);
     }
     console.log("developer option is wokring");
-  }, [questions, userExamResponse.responseData, questionStatuses]);
+  }, [questions, userExamResponse.responseData, questionStatuses, activeQuestion]);
 
   // Memoized calculations
   const currentQuestion = useMemo(() => questions[activeQuestion], [questions, activeQuestion]);
 
-  const answeredCount = useMemo(() =>
-    questionStatuses.filter(status => status === QuestionStatus.Attended).length,
-    [questionStatuses]
-  );
+
 
   const skippedCount = useMemo(() =>
     questionStatuses.filter(status => status === QuestionStatus.Skipped).length,
@@ -199,6 +193,25 @@ const Quiz: React.FC<QuizProps> = ({
     }
   }, []);
 
+  const showQuizResult = useCallback(() => {
+
+    navigate('/quizresult', {
+      state: {
+        examId: examId,
+        userId: userId,
+        userExamProgressId: userExamProgressId,
+        userPackageId: userPackageId,
+        examName: examName,
+        answered: questionStatuses.filter(status => status === QuestionStatus.Attended).length,
+        notAnswered: questionStatuses.filter(status => status === QuestionStatus.NotAttended).length,
+        skipped: questionStatuses.filter(status => status === QuestionStatus.Skipped).length,
+        totalQuestions: questions.length,
+        timeTaken: elapsedTime,
+      },
+    });
+
+  }, [navigate, examId, userId, userExamProgressId, userPackageId, examName, questionStatuses, questions.length, elapsedTime]);
+
   const handleQuizSubmit = useCallback(async () => {
     if (!isQuizActiveRef.current) return;
 
@@ -233,26 +246,7 @@ const Quiz: React.FC<QuizProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [calculateScore, userExamProgressId, userId, packageId, userPackageId, examId, startTime, userExamResponse.responseData, stopTimers, setLoading]);
-
-  const showQuizResult = useCallback(() => {
-
-    navigate('/quizresult', {
-      state: {
-        examId: examId,
-        userId: userId,
-        userExamProgressId: userExamProgressId,
-        userPackageId: userPackageId,
-        examName: examName,
-        answered: questionStatuses.filter(status => status === QuestionStatus.Attended).length,
-        notAnswered: questionStatuses.filter(status => status === QuestionStatus.NotAttended).length,
-        skipped: questionStatuses.filter(status => status === QuestionStatus.Skipped).length,
-        totalQuestions: questions.length,
-        timeTaken: elapsedTime,
-      },
-    });
-
-  }, [navigate, examId, userId, userExamProgressId, userPackageId, examName, questionStatuses, questions.length, elapsedTime]);
+  }, [calculateScore, userExamProgressId, userId, packageId, userPackageId, examId, startTime, userExamResponse.responseData, stopTimers, setLoading, showQuizResult]);
 
   // Initialize timers once
   useEffect(() => {
@@ -305,11 +299,16 @@ const Quiz: React.FC<QuizProps> = ({
   // Initialize quiz data once
   useEffect(() => {
     const fetchExamQuestions = async () => {
+      console.time("QuizInitialization");
+      setLoading(true, "quiz-transition");
+      console.log("Loader inherited/started in Quiz component");
+      
       try {
         let loadedQuestions: Question[] = [];
         if (examQuestions && examQuestions.length > 0) {
           loadedQuestions = examQuestions;
         } else {
+          console.log("No questions in state, fetching from API...");
           const fetchedQuestions = await getQuestionbyExamAndSectionId(examId, 0);
           if (fetchedQuestions) {
             loadedQuestions = fetchedQuestions;
@@ -328,17 +327,14 @@ const Quiz: React.FC<QuizProps> = ({
 
         const fetchAllCategories = await GetAllquestionsCategory();
         if (fetchAllCategories) {
-          setAllCategories(fetchAllCategories);
+          // Categories fetched
         }
 
-        // Fetch image URLs for all questions that have an image in batches
+        // --- BATCH IMAGE FETCHING ---
         const questionsWithImages = loadedQuestions.filter(q => q.image);
-
         if (questionsWithImages.length > 0) {
-          const BATCH_SIZE = 2;
-          const firstBatch = questionsWithImages.slice(0, BATCH_SIZE);
-          const remainingBatch = questionsWithImages.slice(BATCH_SIZE);
-
+          console.log(`Processing ${questionsWithImages.length} images in batches...`);
+          
           const fetchBatch = async (batch: Question[]) => {
             const fetchPromises = batch.map(async (q) => {
               const result = await getImageUrlByName(q.image);
@@ -356,24 +352,43 @@ const Quiz: React.FC<QuizProps> = ({
             setImageUrls(prev => ({ ...prev, ...urlMap }));
           };
 
-          // Fetch first batch immediately
+          // Group 1: First 5 images (Critical)
+          const firstBatch = questionsWithImages.slice(0, 5);
+          const remainingBatch = questionsWithImages.slice(5);
+
+          console.log("Fetching first batch (5 images)...");
           await fetchBatch(firstBatch);
 
-          // Fetch remaining images after a short delay
+          // Group 2: Next 10 images (Background but immediate)
           if (remainingBatch.length > 0) {
-            setTimeout(() => {
-              fetchBatch(remainingBatch);
-            }, 2000); // 2 second delay for background loading
+            const secondBatch = remainingBatch.slice(0, 10);
+            const theRest = remainingBatch.slice(10);
+
+            console.log("Fetching second batch (10 images) in background...");
+            // Non-blocking background fetch for the second batch
+            fetchBatch(secondBatch).then(() => {
+              // Group 3: The rest
+              if (theRest.length > 0) {
+                setTimeout(() => {
+                  console.log(`Fetching final ${theRest.length} images...`);
+                  fetchBatch(theRest);
+                }, 3000);
+              }
+            });
           }
         }
       } catch (err) {
         console.log("Failed to load questions:", err);
         toast.error("Failed to load questions. Please try again.");
+      } finally {
+        console.timeEnd("QuizInitialization");
+        console.log("Loader turned OFF in Quiz component");
+        setLoading(false, "quiz-transition");
       }
     };
 
     fetchExamQuestions();
-  }, [examId, examQuestions, timeLimit]); // Only re-run when these props change
+  }, [examId, examQuestions, timeLimit, setLoading]);
 
   // Pre-fetch images
   useEffect(() => {
@@ -620,7 +635,7 @@ const Quiz: React.FC<QuizProps> = ({
     setActiveQuestion(index);
 
     setSelectedAnswerIndex(null);
-  }, [activeQuestion, questions]);
+  }, [activeQuestion]);
 
   const onClickPrevious = useCallback(() => {
     if (activeQuestion > 0) {
@@ -629,7 +644,7 @@ const Quiz: React.FC<QuizProps> = ({
 
       setSelectedAnswerIndex(null);
     }
-  }, [activeQuestion, questions]);
+  }, [activeQuestion]);
 
   const addLeadingZero = useCallback((number: number): string =>
     number > 9 ? number.toString() : `0${number}`, []);

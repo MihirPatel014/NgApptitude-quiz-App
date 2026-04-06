@@ -4,7 +4,6 @@ import { apiRequest } from "../common/requestwithdata"
 // api/User/Register
 const PACKAGE_URL = 'api/Package';
 
-const GET_PACKAGE_BY_ID = "/GetPackageById"
 const GET_ALL_PACKAGES = "/GetAllPackages"
 const GET_ALL_PACKAGES_LIST = "/GetAllPackagesList"
 const GET_PACKAGE_INFO_BY_PACKAGE_ID = "/GetPackageInfoByPackageId"

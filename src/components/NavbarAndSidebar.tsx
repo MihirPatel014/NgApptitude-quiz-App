@@ -1,18 +1,15 @@
 import React, { useState, useEffect } from 'react'
-import { Navigate, Outlet, useNavigate } from 'react-router-dom'
+import { Outlet, useNavigate } from 'react-router-dom'
 import { useContext } from 'react'
 import { UserContext } from '../provider/UserProvider'
 import { removeFromSession, logOutUser } from "../common/session"
-import { PiStudent } from "react-icons/pi";
-import { MdQuiz } from "react-icons/md";
 import { FaUser } from "react-icons/fa";
 import { FaRegCalendar } from "react-icons/fa";
-import { IoMdSettings } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
 
 export const NavbarAndSidebar = () => {
 
-    let { userAuth, setUserAuth } = useContext(UserContext);
+    let { userAuth } = useContext(UserContext);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
@@ -88,7 +85,7 @@ export const NavbarAndSidebar = () => {
                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                             >
                                 <span className="sr-only">Open user menu</span>
-                                <img className="w-8 h-8 rounded-full" src="https://flowbite.com/docs/images/people/profile-picture-5.jpg" alt="user photo" />
+                                <img className="w-8 h-8 rounded-full" src="https://flowbite.com/docs/images/people/profile-picture-5.jpg" alt="User profile" />
                             </button>
 
                             {/* Dropdown Menu - Positioned correctly on mobile */}
@@ -103,9 +100,12 @@ export const NavbarAndSidebar = () => {
                                     </div>
 
                                     <div className="py-2">
-                                        <a href="#" onClick={handleLogOut} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
+                                        <button 
+                                            onClick={handleLogOut} 
+                                            className="block px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                        >
                                             Sign out
-                                        </a>
+                                        </button>
                                     </div>
                                 </div>
                             )}
