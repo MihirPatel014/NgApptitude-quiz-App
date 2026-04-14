@@ -191,12 +191,12 @@ const PhoneOTP: React.FC<PhoneOTPProps> = ({ onUserNotFound }) => {
               </button>
             </div>
 
-            <p className="mt-8 text-sm text-gray-500">
+            {/* <p className="mt-8 text-sm text-gray-500">
               Don't have an account?{" "}
               <Link to="/register" className="font-bold text-blue-600 hover:underline">
                 Sign Up
               </Link>
-            </p>
+            </p> */}
           </div>
         ) : (
           <div className="p-10 w-full max-w-md bg-white rounded-2xl shadow-xl">
