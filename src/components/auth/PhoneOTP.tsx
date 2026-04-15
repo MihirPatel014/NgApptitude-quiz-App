@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { UserVerifyOTPModel, User, UserLoginResults } from "../../types/user";
 import { UserContext } from "../../provider/UserProvider";
 import { Link } from "react-router-dom";
+import { ROUTES } from "../../common/routes";
 
 interface PhoneOTPProps {
   onUserNotFound?: (mobile: string) => void;
@@ -50,7 +51,7 @@ const PhoneOTP: React.FC<PhoneOTPProps> = ({ onUserNotFound }) => {
             if(onUserNotFound) {
               onUserNotFound?.(mobile);
             } else {
-              navigate("/register", { state: { mobile } });
+              navigate(ROUTES.REGISTER, { state: { mobile } });
             }
           }, 500);
           break;
@@ -135,7 +136,7 @@ const PhoneOTP: React.FC<PhoneOTPProps> = ({ onUserNotFound }) => {
         setUserAuth(response);
         storeInSession("user", response);
         toast.success("Login successful!");
-        navigate("/");
+        navigate(ROUTES.HOME);
       } else {
         toast.error("Invalid OTP or login failed.");
       }

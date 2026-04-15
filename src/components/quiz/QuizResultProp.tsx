@@ -1,6 +1,7 @@
 import React from "react";
 import { useLocation, Navigate } from "react-router-dom";
 import QuizResultPage, { QuizResultProps } from "./QuizResutlPage";
+import { ROUTES } from "../../common/routes";
 
 export const QuizResultProp: React.FC = () => {
   const location = useLocation();
@@ -17,7 +18,7 @@ export const QuizResultProp: React.FC = () => {
 
   if (!isValidProps) {
     console.warn("Invalid quiz result access attempt — redirecting to home.");
-    return <Navigate to="/" replace />;
+    return <Navigate to={ROUTES.HOME} replace />;
   }
 
   // Pass all props to QuizResultPage

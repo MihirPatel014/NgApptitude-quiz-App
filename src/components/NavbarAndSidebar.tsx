@@ -6,6 +6,7 @@ import { removeFromSession, logOutUser } from "../common/session"
 import { FaUser } from "react-icons/fa";
 import { FaRegCalendar } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
+import { ROUTES } from "../common/routes";
 
 export const NavbarAndSidebar = () => {
 
@@ -47,7 +48,7 @@ export const NavbarAndSidebar = () => {
     const handleLogOut = () => {
         removeFromSession(userAuth);
         logOutUser();
-        navigate("/login")
+        navigate(ROUTES.LOGIN)
     }
 
     const toggleSidebar = () => {

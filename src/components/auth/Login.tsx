@@ -8,6 +8,7 @@ import { emailRegex, passwordRegex, userLoginResults } from "../../common/consta
 import toast, { Toaster } from "react-hot-toast";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useLoader } from "../../provider/LoaderProvider";
+import { ROUTES } from "../../common/routes";
 
 
 const Login = () => {
@@ -86,7 +87,7 @@ const Login = () => {
         // Delay for 2 seconds before navigation
         const timer = setTimeout(() => {
           setLoading(false);
-          navigate("/");
+          navigate(ROUTES.HOME);
         }, 2000);
 
         return () => clearTimeout(timer);

@@ -8,6 +8,7 @@ import { UserPackageInfoModel } from '../../types/user';
 import { GetExamTemplateMappings } from "../../services/resultService";
 import { ExamTemplateMappingInfo } from '../../types/result';
 import toast from 'react-hot-toast';
+import { ROUTES } from '../../common/routes';
 
 export interface QuizResultProps {
   examId?: number;
@@ -182,7 +183,7 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
       setLoading(true);
       // Use setTimeout to ensure navigation happens after loader is shown
       setTimeout(() => {
-        navigate('/quiz', { state: { ...nextExam } });
+        navigate(ROUTES.QUIZ, { state: { ...nextExam } });
         // Turn off loader after navigation is initiated
         setTimeout(() => {
           setLoading(false);
@@ -204,12 +205,12 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
 
       if (hasTemplate && !isLegacyExam) {
         // PRIORITY: If a template is mapped (and not legacy), go to exam-summary
-        navigate("/exam-summary", {
+        navigate(ROUTES.EXAM_SUMMARY, {
           state: { examProgressId: examProgressId || location.state?.userExamProgressId }
         });
       } else {
         // FALLBACK / LEGACY
-        navigate("/resultnew", {
+        navigate(ROUTES.RESULT_NEW, {
           state: { packageId: currentPackageId || location.state?.packageId }
         });
       }
@@ -250,7 +251,7 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
           </div>
 
           <div className="grid grid-cols-2 gap-3 mt-6">
-            <Link to="/">
+            <Link to={ROUTES.HOME}>
               <button className="px-4 py-2 w-full text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600">
                 Home
               </button>

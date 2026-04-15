@@ -12,6 +12,7 @@ import { getExamInfoByExamId } from "../../services/examService";
 import AvailablePackagesSection from "../packages/AvailablePackagesSection";
 import { Award, CheckCircle, Clock, Play, Users, Zap } from "lucide-react";
 import { GetExamTemplateMappings } from "../../services/resultService";
+import { ROUTES } from "../../common/routes";
 
 const HomeComponent = () => {
   const { userAuth } = useContext(UserContext);
@@ -95,12 +96,12 @@ const HomeComponent = () => {
 
       if (hasTemplate && !isLegacyExam) {
         // PRIORITY: If a template is mapped (and not legacy), go to exam-summary
-        navigate("/exam-summary", {
+        navigate(ROUTES.EXAM_SUMMARY, {
           state: { examProgressId: completedExam.examProgressId }
         });
       } else {
         // FALLBACK / LEGACY
-        navigate("/resultnew", {
+        navigate(ROUTES.RESULT_NEW, {
           state: { packageId }
         });
       }
@@ -158,7 +159,7 @@ const HomeComponent = () => {
 
       console.timeEnd("QuizStartTimer");
       console.log("Navigating to /quiz with questions:", examQuestions.length);
-      navigate('/quiz', {
+      navigate(ROUTES.QUIZ, {
         state: {
           userId: UserId,
           examId: selectedExam.examId,

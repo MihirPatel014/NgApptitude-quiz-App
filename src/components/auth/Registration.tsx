@@ -13,6 +13,7 @@ import { useContext } from 'react';
 import { UserContext } from '../../provider/UserProvider';
 import { storeInSession } from '../../common/session';
 import { UserLoginResults } from '../../types/user';
+import { ROUTES } from '../../common/routes';
 
 interface RegistrationProps {
   setIsRightPanelActive?: React.Dispatch<React.SetStateAction<boolean>>;
@@ -167,7 +168,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive, mobi
           }
           
           setTimeout(() => {
-            navigate("/");
+            navigate(ROUTES.HOME);
           }, 1500);
         } else if (result.loginResult === UserLoginResults.AccountLockout) {
           toast.error("Your account is locked. Please try again later.");
@@ -486,7 +487,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive, mobi
       <div className="mt-10 pt-6 border-t border-gray-100 text-center">
         <p className="text-gray-500 text-sm">
           Already have an account?{" "}
-          <Link to="/login" className="font-bold text-blue-600 hover:underline">
+          <Link to={ROUTES.LOGIN} className="font-bold text-blue-600 hover:underline">
             Log In
           </Link>
         </p>

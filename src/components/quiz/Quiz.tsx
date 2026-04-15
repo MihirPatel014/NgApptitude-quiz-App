@@ -13,6 +13,7 @@ import { QuestionSumitStatus } from '../../common/constant';
 import toast, { Toaster } from 'react-hot-toast';
 import { useLoader } from '../../provider/LoaderProvider';
 import { getImageUrlByName } from '../../services/filesService';
+import { ROUTES } from '../../common/routes';
 
 
 
@@ -195,7 +196,7 @@ const Quiz: React.FC<QuizProps> = ({
 
   const showQuizResult = useCallback(() => {
 
-    navigate('/quizresult', {
+    navigate(ROUTES.QUIZ_RESULT, {
       state: {
         examId: examId,
         userId: userId,
@@ -420,7 +421,7 @@ const Quiz: React.FC<QuizProps> = ({
         if (!confirmExit) {
           window.history.pushState(null, '', window.location.pathname);
         } else {
-          navigate('/');
+          navigate(ROUTES.HOME);
         }
       }
     };

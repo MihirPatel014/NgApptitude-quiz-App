@@ -10,6 +10,7 @@ import { UserPackageInfoModel, UserExamInfoModel } from "../../types/user";
 import { ExamWithSectionViewModel, ExamSections } from "../../types/exam";
 import { formatDate } from "../../utils/dateUtils";
 import { useLoader } from "../../provider/LoaderProvider";
+import { ROUTES } from "../../common/routes";
 
 const QuizPage = () => {
   const [userPackages, setUserPackages] = useState<UserPackageInfoModel[]>([]);
@@ -121,7 +122,7 @@ const QuizPage = () => {
       // Extract all questions from sections
       const examQuestions = sections.flatMap(section => section.questions) || [];
       // Navigate to the quiz page
-      navigate('/quiz', {
+      navigate(ROUTES.QUIZ, {
         state: {
           userId: UserId,
           examId: selectedExam.examId,

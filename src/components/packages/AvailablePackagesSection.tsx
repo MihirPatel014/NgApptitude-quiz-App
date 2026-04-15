@@ -10,6 +10,7 @@ import { AddUserToPackageApiModel } from "../../types/user";
 import { useLoader } from "../../provider/LoaderProvider";
 import toast, { Toaster } from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { ROUTES } from "../../common/routes";
 
 
 const AvailablePackagesSection = () => {
@@ -178,7 +179,7 @@ const AvailablePackagesSection = () => {
                     // Keep loader visible during navigation
                     setTimeout(() => {
                         console.log("🔵 [FREE PACKAGE] Executing navigation now");
-                        navigate("/");
+                        navigate(ROUTES.HOME);
                         window.scrollTo({ top: 0, behavior: "smooth" });
                     }, 500);
                 } else {
@@ -314,7 +315,7 @@ const AvailablePackagesSection = () => {
                             // Keep loader visible during navigation
                             setTimeout(() => {
                                 console.log("💳 [PAID PACKAGE] Executing navigation now");
-                                navigate("/");
+                                navigate(ROUTES.HOME);
                                 window.scrollTo({ top: 0, behavior: "smooth" });
                             }, 500);
                         } else {

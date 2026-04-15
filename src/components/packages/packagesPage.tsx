@@ -11,6 +11,7 @@ import './package.css';
 import { useLoader } from "../../provider/LoaderProvider";
 import toast, { Toaster } from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { ROUTES } from "../../common/routes";
 
 
 const PackagesPage = () => {
@@ -175,7 +176,7 @@ const PackagesPage = () => {
                     // Invalidate user packages query to refresh dashboard
                     queryClient.invalidateQueries({ queryKey: ["userPackages"] });
                     toast.success('Package activated successfully!');
-                    navigate("/quizpage");
+                    navigate(ROUTES.HOME);
                 } else {
                     setLoading(false);
                     toast.error('Failed to activate package. Please contact support.');
@@ -274,7 +275,7 @@ const PackagesPage = () => {
                                 }
                                 // Invalidate user packages query to refresh dashboard
                                 queryClient.invalidateQueries({ queryKey: ["userPackages"] });
-                                navigate("/quizpage");
+                                navigate(ROUTES.HOME);
                             } else {
                                 toast.success('Payment verification failed. Please contact support.');
                             }

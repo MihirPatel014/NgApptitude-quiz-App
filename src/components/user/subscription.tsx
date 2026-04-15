@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { FaCircle } from "react-icons/fa";
 import { formatDate } from "../../utils/dateUtils";
 import { useLoader } from "../../provider/LoaderProvider";
+import { ROUTES } from "../../common/routes";
 
 export const Subscription = () => {
     const { userAuth } = useContext(UserContext);
@@ -37,7 +38,7 @@ export const Subscription = () => {
     }, [userAuth?.userId]);
 
     const handleResult = (examId: number) => {
-        navigate("/resultnew", { state: { examId } });
+        navigate(ROUTES.RESULT_NEW, { state: { examId } });
         // navigate("/result", { state: { examId } });
     };
 
@@ -48,7 +49,7 @@ export const Subscription = () => {
                     <p className="mb-4 text-lg font-semibold text-gray-600">You have no active subscriptions.</p>
                     <button
                         className="px-6 py-3 text-white bg-green-500 rounded-lg hover:bg-green-600"
-                        onClick={() => navigate("/packages")}
+                        onClick={() => navigate(ROUTES.PACKAGES)}
                     >
                         Buy New Package
                     </button>
@@ -62,7 +63,7 @@ export const Subscription = () => {
                         </div>
                         <button
                             className="px-5 py-2 text-white bg-green-500 rounded hover:bg-green-600"
-                            onClick={() => navigate("/packages")}
+                            onClick={() => navigate(ROUTES.PACKAGES)}
                         >
                             Buy New Package
                         </button>
