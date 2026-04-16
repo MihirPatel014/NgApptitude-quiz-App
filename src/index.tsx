@@ -4,17 +4,44 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import GlobalErrorBoundary from './common/GlobalErrorBoundary';
+import logger from './services/logger';
 
 console.log("process.env in index.tsx:", process.env.REACT_APP_API_URL);
 console.log("FileApi in index.tsx:", process.env.REACT_APP_DOCU_API_URL);
+
+// ---------------------------------------------------------------------------
+// Global unhandled promise rejection → log to Seq
+// ---------------------------------------------------------------------------
+window.addEventListener("unhandledrejection", (event: PromiseRejectionEvent) => {
+  logger.error("Unhandled promise rejection: {Reason}", event.reason, {
+    Type: "UnhandledRejection",
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Global JS error (e.g. script errors outside React tree) → log to Seq
+// ---------------------------------------------------------------------------
+window.addEventListener("error", (event: ErrorEvent) => {
+  logger.error("Uncaught JS error: {ErrorMessage}", event.error, {
+    Type    : "UncaughtError",
+    Filename: event.filename,
+    Line    : event.lineno,
+    Column  : event.colno,
+  });
+});
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
+
 root.render(
   <React.StrictMode>
-    <QueryClientProvider client={new QueryClient()}>
-      <App />
-    </QueryClientProvider>
+    <GlobalErrorBoundary>
+      <QueryClientProvider client={new QueryClient()}>
+        <App />
+      </QueryClientProvider>
+    </GlobalErrorBoundary>
   </React.StrictMode>
 );
 

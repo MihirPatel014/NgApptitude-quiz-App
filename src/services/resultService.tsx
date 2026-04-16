@@ -1,6 +1,8 @@
 import { apiRequest } from "../common/requestwithdata";
 import { ExamResultApiModel, FinalResultViewModel, ExamTemplateMappingInfo } from "../types/result";
 
+// api/User/Register
+
 const RESULT_ROUTE = "api/ExamResult";
 const STUDENT_RESULT_BY_EXAM_PROGRESS_ID = '/GetExamResultByExamProgressId';
 const STUDENT_RESULTBYEXAM_PROGRESSID = '/GetExamResult_ByExmProgessId';

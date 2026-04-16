@@ -132,23 +132,6 @@ const PackagesPage = () => {
         }
     };
 
-    const applyCoupon = async () => {
-        if (!selectedPackageId) {
-            toast.success("Please select a package first.");
-            return;
-        }
-
-        const { isValid, discountedAmount } = await validateCoupon(couponCode, selectedPackageId);
-        if (isValid) {
-            setDiscountedPrices((prev) => ({ ...prev, [selectedPackageId]: discountedAmount }));
-            setAppliedCoupons((prev) => ({ ...prev, [selectedPackageId]: couponCode }));
-            toast.success(`Gift Code applied! New amount: ₹${discountedAmount.toFixed(2)}`);
-        } else {
-            toast.error("Invalid Or Gift Code Is expired.");
-        }
-
-        setIsCouponDialogOpen(false);
-    };
     const completeOrderInternally = async (paymentModel: PaymentModel, finalAmount: number, giftCodeId: number) => {
         setLoading(true);
         try {
@@ -357,7 +340,23 @@ const PackagesPage = () => {
                         />
                         <div className="flex justify-between mt-4">
                             <button
-                                onClick={applyCoupon}
+                                onClick={async () => {
+                                    if (!selectedPackageId) {
+                                        toast.custom("Please select a package first.");
+                                        return;
+                                    }
+
+                                    const { isValid, discountedAmount } = await validateCoupon(couponCode, selectedPackageId);
+                                    if (isValid) {
+                                        setDiscountedPrices((prev) => ({ ...prev, [selectedPackageId]: discountedAmount }));
+                                        setAppliedCoupons((prev) => ({ ...prev, [selectedPackageId]: couponCode }));
+                                        toast.success(`Gift Code applied! New amount: ₹${discountedAmount.toFixed(2)}`);
+                                    } else {
+                                        toast.error("Invalid Gift Code.");
+                                    }
+                                    setLoading(false);
+                                    setIsCouponDialogOpen(false);
+                                }}
                                 className="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600"
                             >
                                 Apply

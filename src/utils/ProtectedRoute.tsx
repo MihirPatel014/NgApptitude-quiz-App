@@ -1,4 +1,3 @@
-
 import { lookInSession } from "../common/session"
 import { Outlet, Navigate } from 'react-router-dom';
 import { ROUTES } from "../common/routes";

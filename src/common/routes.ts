@@ -7,11 +7,11 @@ export const ROUTES = {
     EDIT_PROFILE: "/editprofile",
     RESULT: "/result",
     RESULT_NEW: "/resultnew",
-    EXAM_SUMMARY: "/exam-summary",
+    EXAM_SUMMARY: "/examsummary",
     QUIZ: "/quiz",
     QUIZ_RESULT: "/quizresult",
     LOADER: "/loader",
-
+    
     // Legal Pages
     PRIVACY_POLICY: "/privacypolicy",
     TERMS_CONDITIONS: "/termsconditions",

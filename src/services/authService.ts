@@ -19,9 +19,23 @@ const Update_USER_DETAILS = "/UpdateUserDetails"
 const ADD_USER_TO_PACKAGE = "/AddUserToPackage"
 const GET_USER_FULL_INFO_BY_USERID = "/GetUserFullInfoByUserId"
 const GET_USER_PACKAGE_INFO_BY_USERID = "/GetUserPackageInfoByUserId"
+const CHECK_EMAIL = "/check_email"
 
 const API_URL = process.env.REACT_APP_API_URL;
 const GRADE_URL = "api/Grade/GetAllGrades";
+
+export const checkEmail = async (email: string) => {
+  try {
+    const response = await http.get<ApiResponse<boolean>>(
+      `${USERS_URL}${CHECK_EMAIL}`,
+      { params: { email } }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error checking email:", error);
+    throw error;
+  }
+};
 
 export const loginUser = async (data: any) => {
   const response = await http.post<ApiResponse<User>>(`${USERS_URL}${LOGIN_URL}`, data);

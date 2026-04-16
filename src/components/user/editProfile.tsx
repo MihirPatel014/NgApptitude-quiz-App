@@ -16,14 +16,11 @@ const EditProfile = () => {
       const fetchedUserDetails = await getUserDetails();
       console.log(fetchedUserDetails); // Log the fetched data
       if (fetchedUserDetails) {
-
         setUserDetails(fetchedUserDetails); // Save the fetched data
         setFormData(fetchedUserDetails); // Prepopulate the form
-        setLoading(false);
       }
     } catch (error) {
       console.log("Error fetching user details", error);
-      setLoading(false);
     } finally {
       setLoading(false);
     }

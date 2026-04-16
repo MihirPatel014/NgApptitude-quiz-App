@@ -13,7 +13,8 @@ export interface Question {
     typeOfQuestion:number
     questionType: number,
     questionTypeName: string, 
-    questionCategoryName: string
+    questionCategoryName: string,
+    imagePreviewUrl?: string;
 }
 
 export interface SortCriteria {

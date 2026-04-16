@@ -76,6 +76,7 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
       if (!currentUserId || !currentExamId) return;
       if (!packages?.length) return;
 
+
       const currentPackage =
         packages.find(pkg => !pkg.isCompleted) ||
         packages.find(pkg => pkg.isCompleted) ||

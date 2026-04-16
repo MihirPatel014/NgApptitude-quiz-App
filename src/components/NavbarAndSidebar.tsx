@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { Outlet, useNavigate } from 'react-router-dom'
+import { Outlet, useNavigate, Link } from 'react-router-dom'
 import { useContext } from 'react'
+import { ROUTES } from '../common/routes'
 import { UserContext } from '../provider/UserProvider'
 import { removeFromSession, logOutUser } from "../common/session"
 import { FaUser } from "react-icons/fa";
 import { FaRegCalendar } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
-import { ROUTES } from "../common/routes";
 
 export const NavbarAndSidebar = () => {
 
@@ -72,10 +72,10 @@ export const NavbarAndSidebar = () => {
                                     <path clipRule="evenodd" fillRule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path>
                                 </svg>
                             </button>
-                            <a href="/" className="flex ms-2 md:me-24">
+                            <Link to={ROUTES.HOME} className="flex ms-2 md:me-24">
                                 <img width="50" height="50" src="https://img.icons8.com/bubbles/100/checklist.png" alt="NGAptitudeLogo" className="w-auto h-8" />
                                 <span className="self-center ml-2 text-xl font-semibold whitespace-nowrap sm:text-2xl dark:text-white">NG-Santvana Aptitude</span>
-                            </a>
+                            </Link>
                         </div>
 
                         <div className="flex items-center ms-3">
@@ -86,7 +86,7 @@ export const NavbarAndSidebar = () => {
                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                             >
                                 <span className="sr-only">Open user menu</span>
-                                <img className="w-8 h-8 rounded-full" src="https://flowbite.com/docs/images/people/profile-picture-5.jpg" alt="User profile" />
+                                <img className="w-8 h-8 rounded-full" src="https://flowbite.com/docs/images/people/profile-picture-5.jpg" alt="user" />
                             </button>
 
                             {/* Dropdown Menu - Positioned correctly on mobile */}
@@ -103,7 +103,7 @@ export const NavbarAndSidebar = () => {
                                     <div className="py-2">
                                         <button 
                                             onClick={handleLogOut} 
-                                            className="block px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
                                         >
                                             Sign out
                                         </button>
@@ -149,19 +149,28 @@ export const NavbarAndSidebar = () => {
                             </a>
                         </li> */}
                         <li>
-                            <a href="/" onClick={() => setSidebarOpen(false)} className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                            <Link to={ROUTES.HOME} onClick={() => setSidebarOpen(false)} className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                                 <FaRegCalendar size={20} className='w-5 h-5 text-gray-500 transition duration-75 shrink-0 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white' />
                                 <span className="flex-1 whitespace-nowrap ms-3">Dashboard</span>
-                            </a>
+                            </Link>
                         </li>
                      
                         <li>
-                            <a href="/edit-profile" onClick={() => setSidebarOpen(false)} className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                            <Link to={ROUTES.EDIT_PROFILE} onClick={() => setSidebarOpen(false)} className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                                 <FaUser size={20} className='w-5 h-5 text-gray-500 transition duration-75 shrink-0 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white' />
                                 <span className="flex-1 whitespace-nowrap ms-3">Edit Profile</span>
-                            </a>
+                            </Link>
                         </li>
                     </ul>
+
+                    <div className="absolute bottom-4 left-0 w-full px-6 py-4 border-t border-gray-100 bg-white dark:bg-gray-800 dark:border-gray-700">
+                        <div className="flex flex-col space-y-2">
+                            <Link to={ROUTES.PRIVACY_POLICY} onClick={() => setSidebarOpen(false)} className="text-xs text-gray-500 hover:text-blue-600 transition-colors">Privacy Policy</Link>
+                            <Link to={ROUTES.TERMS_CONDITIONS} onClick={() => setSidebarOpen(false)} className="text-xs text-gray-500 hover:text-blue-600 transition-colors">Terms & Conditions</Link>
+                            <Link to={ROUTES.REFUND_POLICY} onClick={() => setSidebarOpen(false)} className="text-xs text-gray-500 hover:text-blue-600 transition-colors">Refund Policy</Link>
+                            <Link to={ROUTES.CONTACT_US} onClick={() => setSidebarOpen(false)} className="text-xs text-gray-500 hover:text-blue-600 transition-colors font-medium">Contact Us</Link>
+                        </div>
+                    </div>
                 </div>
             </aside>
 

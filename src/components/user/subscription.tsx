@@ -24,12 +24,11 @@ export const Subscription = () => {
                     const sortedPackages = response.sort((a: UserPackageInfoModel, b: UserPackageInfoModel) =>
                         new Date(b.startedDate || 0).getTime() - new Date(a.startedDate || 0).getTime()
                     );
-
                     setUserPackages(sortedPackages);
-                    setLoading(false);
                 }
             } catch (error) {
                 console.error("Error fetching user details:", error);
+            } finally {
                 setLoading(false);
             }
         };

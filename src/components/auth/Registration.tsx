@@ -1,43 +1,44 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { getAllGrades, pincodeApi, registerUser } from "../../services/authService"
+import { checkEmail, getAllGrades, registerUser } from "../../services/authService"
 import { UserRegistration } from "../../types/user";
 import { emailRegex, phoneRegex } from "../../common/constant";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useLoader } from '../../provider/LoaderProvider';
 import toast, { Toaster } from "react-hot-toast";
-import CommonDatePicker from '../datepicker';
+import { WheelDatePicker } from '../WheelDatePicker';
 import { Grade } from '../../types/grade';
 import { useContext } from 'react';
 import { UserContext } from '../../provider/UserProvider';
-import { storeInSession } from '../../common/session';
 import { UserLoginResults } from '../../types/user';
 import { ROUTES } from '../../common/routes';
+import { storeInSession } from '../../common/session';
+import AuthLegalFooter from './AuthLegalFooter';
 
 interface RegistrationProps {
   setIsRightPanelActive?: React.Dispatch<React.SetStateAction<boolean>>;
   mobile?: string;
 }
 
-const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive, mobile: propMobile }) => {
+const Registration: React.FC<RegistrationProps> = ({ mobile: propMobile }) => {
   const { setUserAuth } = useContext(UserContext);
   const location = useLocation();
   const navigate = useNavigate();
   const stateMobile = location.state?.mobile;
   const mobile = propMobile || stateMobile;
+  // Inside your component
+  const [emailError, setEmailError] = useState("");
 
   const formRef = useRef<HTMLDivElement>(null);
   const [grades, setGrades] = useState<Grade[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [pincode, setPincode] = useState(0);
-  const { setLoading } = useLoader();
+  const { loading, setLoading } = useLoader();
   const [formValues, setFormValues] = useState<UserRegistration>({
     email: "",
     password: "",
     confirmPassword: "",
     name: "",
-    dateOfBirth: new Date(),
+    dateOfBirth: new Date(new Date().getFullYear() - 15, 0, 1), // Default to 15 years ago
     class: '',
     medium: '',
     institute: '',
@@ -49,31 +50,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive, mobi
     dreamCareerOptions: '',
   });
 
-  const [formErrors, setFormErrors] = useState<UserRegistration>({
-    email: "",
-    password: "",
-    confirmPassword: "",
-    name: "",
-    dateOfBirth: new Date(),
-    class: '',
-    medium: '',
-    institute: '',
-    contactNo: '',
-    city: '',
-    state: '',
-    hobbies: '',
-    expectationFromThisTest: '',
-    dreamCareerOptions: '',
-  });
-
-  const handlePincodeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    setPincode(Number(value));
-
-    if (value.length === 6) {
-      fetchCityAndState(Number(value));
-    }
-  };
+  const [formErrors, setFormErrors] = useState<any>({});
 
   useEffect(() => {
     const fetchGrades = async () => {
@@ -81,7 +58,7 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive, mobi
       if (data) setGrades(data);
     };
     fetchGrades();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (mobile) {
@@ -90,57 +67,70 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive, mobi
         contactNo: mobile,
       }));
     }
-  }, [mobile]);
+  }, [mobile]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fetchCityAndState = async (pincode: number) => {
-    try {
-      const response = await pincodeApi(pincode)
-      if (response[0]?.Status === "Success" && response[0]?.PostOffice?.length > 0) {
-
-        const postOffices = response[0]?.PostOffice || [];
-
-        if (postOffices.length > 0) {
-          const { District, State } = postOffices[0];
-          setFormValues((prevValues) => ({
-            ...prevValues,
-            city: District,
-            state: State,
-          }));
-        } else {
-          setFormErrors((prevErrors) => ({
-            ...prevErrors,
-            city: 'City not found for this pincode',
-            state: 'State not found for this pincode',
-          }));
-        }
-      }
-    } catch (error) {
-      console.log('Error fetching pincode data:', error);
-      setFormErrors((prevErrors) => ({
-        ...prevErrors,
-        city: 'Error fetching city data',
-        state: 'Error fetching state data',
-      }));
+  useEffect(() => {
+    if (!formValues.email || !emailRegex.test(formValues.email)) {
+      setEmailError("");
+      return;
     }
-  };
+
+    const delayDebounceFn = setTimeout(async () => {
+      try {
+        const response = await checkEmail(formValues.email);
+        if (response.data === true) {
+          setEmailError("This email is already linked with another account.");
+          toast.error("Email already in use!");
+        } else {
+          setEmailError("");
+        }
+      } catch (error) {
+        console.error("Email check failed", error);
+      }
+    }, 600);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [formValues.email]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormValues({
       ...formValues,
-      [name]: name === 'dateOfBirth' ? new Date(value) : value,
+      [name]: value,
     });
-    setFormErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: ''
-    }));
+    // Clear error on change
+    if (formErrors[name]) {
+      setFormErrors((prevErrors: any) => ({
+        ...prevErrors,
+        [name]: ''
+      }));
+    }
+  };
+
+  const handleDateChange = (date: Date) => {
+    setFormValues({
+      ...formValues,
+      dateOfBirth: date,
+    });
+    if (formErrors.dateOfBirth) {
+      setFormErrors((prev: any) => ({ ...prev, dateOfBirth: "" }));
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name } = e.target;
+    const errors = validate({ ...formValues });
+    if (errors[name]) {
+      setFormErrors((prev: any) => ({ ...prev, [name]: errors[name] }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     setLoading(true);
     e.preventDefault();
     const errors = validate(formValues);
-    if (Object.keys(errors).length > 0) {
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0 || emailError) {
       setLoading(false);
       return;
     }
@@ -157,16 +147,16 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive, mobi
             userGuidId: result.userGuidId,
             contactNo: result.contactNo,
           };
-          
+
           setUserAuth(authData as any);
           storeInSession("user", authData);
-          
+
           if (result.isExistingUser) {
-            toast.success("User already present! Logging you in...");
+            toast.success("Account already exists! Logging you in...");
           } else {
-            toast.success("Registration successful! Logging you in...");
+            toast.success("Successfully Registered! Logging you in...");
           }
-          
+
           setTimeout(() => {
             navigate(ROUTES.HOME);
           }, 1500);
@@ -191,51 +181,60 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive, mobi
     }
   };
 
-  const validate = (values: any) => {
+  const validate = (values: UserRegistration) => {
     const errors: any = {};
-    if (!values.email) {
-      errors.email = 'Email is required';
+    if (!values.name?.trim()) {
+      errors.name = 'Full Name is required';
+    } else if (values.name.length < 3) {
+      errors.name = 'Name must be at least 3 characters';
+    }
+
+    if (!values.email?.trim()) {
+      errors.email = 'Email address is required';
     } else if (!emailRegex.test(values.email)) {
-      errors.email = 'Email is invalid';
+      errors.email = 'Please enter a valid email address';
     }
-    if (!values.name) {
-      errors.name = ' name is required';
-    }
-    if (!values.dateOfBirth || values.dateOfBirth === "" || values.dateOfBirth === Date.now) {
-      errors.dateOfBirth = 'Date of birth is required';
-    }
-    if (!values.class) {
-      errors.class = 'Grade/Class is required';
-    }
-    if (!values.medium) {
-      errors.medium = 'Language is required';
-    }
-    if (!values.institute) {
+
+    if (!values.institute?.trim()) {
       errors.institute = 'School/College name is required';
     }
-    if (!values.contactNo) {
+
+    if (!values.class) {
+      errors.class = 'Please select your standard/grade';
+    }
+
+    if (!values.city?.trim()) {
+      errors.city = 'City name is required';
+    }
+
+    if (!values.contactNo?.trim()) {
       errors.contactNo = 'Mobile number is required';
     } else if (!phoneRegex.test(values.contactNo)) {
-      errors.contactNo = 'Mobile number should be 10 digits';
+      errors.contactNo = 'Enter a valid 10-digit mobile number';
     }
-    if (!values.city) {
-      errors.city = 'City is required';
+
+    if (!values.dateOfBirth) {
+      errors.dateOfBirth = 'Date of birth is required';
+    } else {
+      const today = new Date();
+      const birthDate = new Date(values.dateOfBirth);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      if (age < 5) {
+        errors.dateOfBirth = 'Minimum age required is 5 years';
+      } else if (age > 100) {
+        errors.dateOfBirth = 'Please select a valid birth year';
+      }
     }
-    if (!values.state) {
-      errors.state = 'State is required';
-    }
-    if (!values.hobbies) {
-      errors.hobbies = 'hobbies is required';
-    }
-    if (!values.expectationFromThisTest) {
-      errors.expectationFromThisTest = 'expectation From This Test is required';
-    }
-    setFormErrors(errors)
+
     return errors;
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-slate-100 py-12 px-4 shadow-inner font-inter">
+    <div className="flex flex-col justify-center items-center min-h-screen bg-slate-100 py-12 px-4 shadow-inner font-inter">
       <div className="bg-white p-8 md:p-12 rounded-2xl shadow-2xl w-full max-w-4xl animate-scale-up">
         <Toaster />
         <div ref={formRef}>
@@ -247,253 +246,141 @@ const Registration: React.FC<RegistrationProps> = ({ setIsRightPanelActive, mobi
           )}
           <h1 className="mb-8 text-3xl font-extrabold text-gray-800 text-center tracking-tight">Student Registration</h1>
         </div>
-        <form id='formElement' className="space-y-8" onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <form id='formElement' className="space-y-6" onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 
-          <div className="space-y-2">
-            <label htmlFor="contactNo" className="text-sm font-medium text-gray-700">Mobile Number</label>
-            <input
-              id="contactNo"
-              name="contactNo"
-              type="number"
-              // placeholder="1234567890"
-              required
-              onChange={(e) => handleChange(e)}
-              value={formValues.contactNo}
-              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {formErrors.contactNo && <span className="text-xs text-red-500">{formErrors.contactNo}</span>}
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium text-gray-700">Full Name</label>
-            <input
-              id="name"
-              name="name"
-              // placeholder="John Doe"
-              required
-              onChange={(e) => handleChange(e)}
-              defaultValue={formValues.name}
-              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {formErrors.name && <span className="text-xs text-red-500">{formErrors.name}</span>}
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="dateOfBirth" className="text-sm font-medium text-gray-700">Date of Birth</label>
-            <CommonDatePicker
-              id="dateOfBirth"
-              name="dateOfBirth"
-              value={formValues.dateOfBirth}
-              onChange={(date: Date) =>
-                handleChange({
-                  target: {
-                    name: "dateOfBirth",
-                    value: isNaN(date.getTime()) ? "" : date.toISOString().split("T")[0],
-                  },
-                } as React.ChangeEvent<HTMLInputElement>)
-              }
-              min="1995-01-01"
-              max={new Date().toISOString().split("T")[0]}
-            />
-            {formErrors.dateOfBirth && (
-              <span className="text-xs text-red-500">
-                {typeof formErrors.dateOfBirth === "string"
-                  ? formErrors.dateOfBirth
-                  : ""}
-              </span>
-            )}
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium text-gray-700">Email</label>
-            <input
-              id="email"
-              name="email"
-              placeholder="Enter Email"
-              required
-              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              size={20}
-              defaultValue={formValues.email}
-              onChange={(e) => handleChange(e)}
-            />
-            {formErrors.email && <span className="text-xs text-red-500">{formErrors.email}</span>}
-          </div>
-          {/*
-          <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium text-gray-700">Password</label>
-            <div className='relative'>
+            <div className="space-y-2">
+              <label htmlFor="contactNo" className="text-sm font-semibold text-gray-700">Mobile Number</label>
               <input
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                // placeholder="Enter Password"
-                required
-                onChange={(e) => handleChange(e)}
-                className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                defaultValue={formValues.password}
+                id="contactNo"
+                name="contactNo"
+                type="text"
+                readOnly={!!mobile}
+                value={formValues.contactNo}
+                onBlur={handleBlur}
+                className={`px-4 py-2.5 w-full rounded-xl border transition-all duration-200 ${formErrors.contactNo ? 'border-red-500 ring-2 ring-red-50' : 'border-gray-300 focus:ring-2 focus:ring-blue-500'
+                  } ${mobile ? "bg-gray-100 cursor-not-allowed text-gray-500" : ""}`}
               />
-              <button
-                type="button"
-                className="absolute text-gray-600  end-2.5 bottom-2.5 font-medium rounded-lg text-sm px-4 py-1 hover:text-gray-600 focus:outline-none bg-transparent hover:bg-gray-100"
-                onClick={togglePasswordVisibility}
-                aria-label="Toggle password visibility"
-              >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
-              </button>
+              {formErrors.contactNo && <span className="text-xs text-red-500 font-medium ml-1">{formErrors.contactNo}</span>}
             </div>
-            {formErrors.password && <span className="text-xs text-red-500">{formErrors.password}</span>}
-          </div>
-*/}
 
-          <div className="space-y-2">
-            <label htmlFor="class" className="text-sm font-medium text-gray-700">Grade/Class</label>
-            <select
-              id="class"
-              name="class"
-              defaultValue={formValues.class}
-              onChange={(e) => handleChange(e)}
-              required
-              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-semibold text-gray-700">Email Address</label>
+              <input
+                id="email"
+                name="email"
+                type="text"
+                placeholder="email@example.com"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={formValues.email}
+                className={`px-4 py-2.5 w-full rounded-xl border transition-all duration-200 ${(formErrors.email || emailError) ? 'border-red-500 ring-2 ring-red-50' : 'border-gray-300 focus:ring-2 focus:ring-blue-500'
+                  }`}
+              />
+              {(formErrors.email || emailError) && <span className="text-xs text-red-500 font-medium ml-1">{formErrors.email || emailError}</span>}
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="name" className="text-sm font-semibold text-gray-700">Full Name</label>
+              <input
+                id="name"
+                name="name"
+                placeholder="Enter your full name"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={formValues.name}
+                className={`px-4 py-2.5 w-full rounded-xl border transition-all duration-200 ${formErrors.name ? 'border-red-500 ring-2 ring-red-50' : 'border-gray-300 focus:ring-2 focus:ring-blue-500'
+                  }`}
+              />
+              {formErrors.name && <span className="text-xs text-red-500 font-medium ml-1">{formErrors.name}</span>}
+            </div>
+
+            <WheelDatePicker
+              label="Date of Birth"
+              value={formValues.dateOfBirth}
+              onChange={handleDateChange}
+              error={formErrors.dateOfBirth}
+            />
+
+            <div className="space-y-2">
+              <label htmlFor="institute" className="text-sm font-semibold text-gray-700">School / College Name</label>
+              <input
+                id="institute"
+                name="institute"
+                placeholder="Enter your school name"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={formValues.institute}
+                className={`px-4 py-2.5 w-full rounded-xl border transition-all duration-200 ${formErrors.institute ? 'border-red-500 ring-2 ring-red-50' : 'border-gray-300 focus:ring-2 focus:ring-blue-500'
+                  }`}
+              />
+              {formErrors.institute && <span className="text-xs text-red-500 font-medium ml-1">{formErrors.institute}</span>}
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="class" className="text-sm font-semibold text-gray-700">Standard / Grade</label>
+              <select
+                id="class"
+                name="class"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={formValues.class}
+                className={`px-4 py-2.5 w-full rounded-xl border bg-white transition-all duration-200 ${formErrors.class ? 'border-red-500 ring-2 ring-red-50' : 'border-gray-300 focus:ring-2 focus:ring-blue-500'
+                  }`}
+              >
+                <option value="">Select your standard</option>
+                {grades.map((grade) => (
+                  <option key={grade.id} value={grade.name}>{grade.name}</option>
+                ))}
+              </select>
+              {formErrors.class && <span className="text-xs text-red-500 font-medium ml-1">{formErrors.class}</span>}
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="city" className="text-sm font-semibold text-gray-700">City</label>
+              <input
+                id="city"
+                name="city"
+                placeholder="Enter your city"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={formValues.city}
+                className={`px-4 py-2.5 w-full rounded-xl border transition-all duration-200 ${formErrors.city ? 'border-red-500 ring-2 ring-red-50' : 'border-gray-300 focus:ring-2 focus:ring-blue-500'
+                  }`}
+              />
+              {formErrors.city && <span className="text-xs text-red-500 font-medium ml-1">{formErrors.city}</span>}
+            </div>
+
+          </div>
+
+          <div className="pt-6">
+            <button
+              type="submit"
+              disabled={loading || !!emailError}
+              className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {/* <option value="" disabled>Choose Grade</option>
-              <option value="Grade 1">Grade 1</option>
-              <option value="Grade 2">Grade 2</option>
-              <option value="Grade 3">Grade 3</option> */}
-              <option value="" disabled>Choose Grade</option>
-              {grades.map((grade) => (
-                <option key={grade.id} value={grade.name}>
-                  {grade.name}
-                </option>
-              ))}
-            </select>
-            {formErrors.class && <span className="text-xs text-red-500">{formErrors.class}</span>}
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                  Processing...
+                </span>
+              ) : "Register & Start Test"}
+            </button>
           </div>
-          <div className="space-y-2">
-            <label htmlFor="medium" className="text-sm font-medium text-gray-700">Language</label>
-            <select
-              id="medium"
-              name="medium"
-              value={formValues.medium}
-              onChange={(e) => handleChange(e)}
-              required
-              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="" disabled>Choose Language</option>
-              <option value="Hindi">Hindi</option>
-              <option value="English">English</option>
-              <option value="Gujarati">Gujarati</option>
-            </select>
-            {formErrors.medium && <span className="text-xs text-red-500">{formErrors.medium}</span>}
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="institute" className="text-sm font-medium text-gray-700">School/College Name</label>
-            <input
-              id="institute"
-              name="institute"
-              // placeholder="ABC School"
-              required
-              onChange={(e) => handleChange(e)}
-              defaultValue={formValues.institute}
-              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {formErrors.institute && <span className="text-xs text-red-500">{formErrors.institute}</span>}
-          </div>
+        </form>
 
-          <div className="space-y-2">
-            <label htmlFor="pincode" className="text-sm font-medium text-gray-700"> Pincode</label>
-            <input
-              id="pincode"
-              name="pincode"
-              type="number"
-              onChange={(e) => handlePincodeChange(e)}
-              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="city" className="text-sm font-medium text-gray-700">City</label>
-            <input
-              id="city"
-              name="city"
-              // placeholder="Your City"
-              required
-              onChange={(e) => handleChange(e)}
-              defaultValue={formValues.city}
-              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {formErrors.city && <span className="text-xs text-red-500">{formErrors.city}</span>}
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="state" className="text-sm font-medium text-gray-700">State</label>
-            <input
-              id="state"
-              name="state"
-              // placeholder="Your State"
-              required
-              onChange={(e) => handleChange(e)}
-              defaultValue={formValues.state}
-              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {formErrors.state && <span className="text-xs text-red-500">{formErrors.state}</span>}
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="hobbies" className="text-sm font-medium text-gray-700">Hobbies</label>
-            <input
-              id="hobbies"
-              name="hobbies"
-              // placeholder="Your State"
-              required
-              onChange={(e) => handleChange(e)}
-              defaultValue={formValues.hobbies}
-              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {formErrors.hobbies && <span className="text-xs text-red-500">{formErrors.hobbies}</span>}
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="expectationFromThisTest" className="text-sm font-medium text-gray-700">Expectation From This Test</label>
-            <input
-              id="expectationFromThisTest"
-              name="expectationFromThisTest"
-              // placeholder="Your State"
-              required
-              onChange={(e) => handleChange(e)}
-              defaultValue={formValues.expectationFromThisTest}
-              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {formErrors.expectationFromThisTest && <span className="text-xs text-red-500">{formErrors.expectationFromThisTest}</span>}
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="dreamCareerOptions" className="text-sm font-medium text-gray-700">Dream Career Options</label>
-            <input
-              id="dreamCareerOptions"
-              name="dreamCareerOptions"
-              // placeholder="Your State"
-              required
-              onChange={(e) => handleChange(e)}
-              defaultValue={formValues.dreamCareerOptions}
-              className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-
-          </div>
+        <div className="mt-10 pt-6 border-t border-gray-100 text-center">
+          <p className="text-gray-500 text-sm">
+            Already have an account?{" "}
+            <Link to={ROUTES.LOGIN} className="font-bold text-blue-600 hover:underline">
+              Log In
+            </Link>
+          </p>
         </div>
-        <div className="pt-6">
-          <button
-            type="submit"
-            className="w-full py-4 text-white bg-blue-600 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-200"
-          >
-            Register Now
-          </button>
-        </div>
-      </form>
-      
-      <div className="mt-10 pt-6 border-t border-gray-100 text-center">
-        <p className="text-gray-500 text-sm">
-          Already have an account?{" "}
-          <Link to={ROUTES.LOGIN} className="font-bold text-blue-600 hover:underline">
-            Log In
-          </Link>
-        </p>
       </div>
+
+      <AuthLegalFooter className="mt-12 pb-8" />
     </div>
-  </div>
   )
 }
 

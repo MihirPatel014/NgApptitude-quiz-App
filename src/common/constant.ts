@@ -26,8 +26,8 @@ export enum QuestionSumitStatus {
 }
 
 export const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-// Phone regex
-export const phoneRegex = /^[0-9]{10}$/;
+// Advanced Phone regex: handles +91, spaces, hyphens, leading 0, and 91 prefix
+export const phoneRegex = /^(\+91[- \s]?)?[0]?(91)?[6789]\d{9}$/;
 
 // export const passwordRegex =/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
 export const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,32}$/;

@@ -7,6 +7,11 @@ export interface FetchUploadPath {
 const DOCU_API_URL = process.env.REACT_APP_DOCU_API_URL;
 const DOCU_API_KEY = process.env.REACT_APP_DOCU_API_KEY;
 
+/**
+ * Fetches the base folder path for a given image name from the document API.
+ * @param fileName The name of the file to get the path for.
+ * @returns A promise that resolves to FetchUploadPath containing the folder URL, or null if it fails.
+ */
 export const getImageUrlByName = async (fileName: string): Promise<FetchUploadPath | null> => {
     if (!DOCU_API_URL) {
         console.error("Missing REACT_APP_DOCU_API_URL. Please add it to your environment variables.");
@@ -28,7 +33,7 @@ export const getImageUrlByName = async (fileName: string): Promise<FetchUploadPa
             if (apiResponse?.isSuccess && apiResponse?.data?.imageUrl) {
                 const fullUrl = apiResponse.data.imageUrl;
                 try {
-                    new URL(fullUrl);
+                    // const urlObj = new URL(fullUrl);
 
                     // const pathSegments = urlObj.pathname.split('/');
 

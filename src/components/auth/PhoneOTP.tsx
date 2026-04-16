@@ -6,8 +6,9 @@ import { storeInSession } from "../../common/session";
 import { useNavigate } from "react-router-dom";
 import { UserVerifyOTPModel, User, UserLoginResults } from "../../types/user";
 import { UserContext } from "../../provider/UserProvider";
-import { Link } from "react-router-dom";
+import { phoneRegex } from "../../common/constant";
 import { ROUTES } from "../../common/routes";
+import AuthLegalFooter from "./AuthLegalFooter";
 
 interface PhoneOTPProps {
   onUserNotFound?: (mobile: string) => void;
@@ -20,6 +21,7 @@ const PhoneOTP: React.FC<PhoneOTPProps> = ({ onUserNotFound }) => {
   const [hashValue, setHashValue] = useState<string>("");
   const [resendTimer, setResendTimer] = useState<number>(0);
   const [displayMobile, setDisplayMobile] = useState<string>("");
+  const [otpKey, setOtpKey] = useState<number>(0);
   const navigate = useNavigate();
   const { setUserAuth } = useContext(UserContext);
 
@@ -34,48 +36,26 @@ const PhoneOTP: React.FC<PhoneOTPProps> = ({ onUserNotFound }) => {
   }, [resendTimer]);
 
   const handleSendOtp = async () => {
-    if (!/^\d{10}$/.test(mobile)) {
-      toast.error("Enter a valid 10-digit mobile number");
+    if (!phoneRegex.test(mobile)) {
+      toast.error("Enter a valid 10-digit mobile number starting with 6-9");
       return;
     }
 
     setLoading(true);
     try {
-      // 1?? Generate OTP (backend now also sends SMS)
+      // Step 1: Generate OTP (now for any valid 10-digit number)
       const response: UserVerifyOTPModel | null = await generateOTPSms(mobile);
-      if (!response || response.loginResult !== UserLoginResults.Successful) {
-        switch (response?.loginResult) {
-          case UserLoginResults.UserNotExist:
-          toast.error("User does not exist. Redirecting to register...");
-          setTimeout(() => {
-            if(onUserNotFound) {
-              onUserNotFound?.(mobile);
-            } else {
-              navigate(ROUTES.REGISTER, { state: { mobile } });
-            }
-          }, 500);
-          break;
 
-          case UserLoginResults.NotActive:
-            toast.error("Your account is not active.");
-            break;
-          case UserLoginResults.AccountLockout:
-            toast.error("Account locked. Please try again after some time.");
-            break;
-          default:
-            toast.error("Failed to generate OTP. Please try again later.");
-            break;
-        }
-        return;
+      if (response && response.loginResult === UserLoginResults.Successful) {
+        const { hashvalue, mobile: formattedMobile } = response;
+        setHashValue(hashvalue);
+        setDisplayMobile(formattedMobile);
+        toast.success(`OTP sent to ${formattedMobile}`);
+        setShowOtpInput(true);
+        setResendTimer(30);
+      } else {
+        toast.error("Failed to send OTP. Please try again later.");
       }
-
-      const { hashvalue, mobile: formattedMobile } = response;
-      setHashValue(hashvalue);
-      setDisplayMobile(formattedMobile);
-      toast.success(`OTP sent to ${formattedMobile}`);
-      setShowOtpInput(true);
-      setResendTimer(30);
-
     } catch (error: any) {
       console.log("Error generating OTP:", error);
       toast.error(error.message || "Failed to send OTP");
@@ -88,28 +68,16 @@ const PhoneOTP: React.FC<PhoneOTPProps> = ({ onUserNotFound }) => {
     setLoading(true);
     try {
       const response: UserVerifyOTPModel | null = await generateOTPSms(mobile);
-      if (!response || response.loginResult !== UserLoginResults.Successful) {
-        switch (response?.loginResult) {
-          case UserLoginResults.UserNotExist:
-            toast.error("User does not exist. Please register.");
-            break;
-          case UserLoginResults.NotActive:
-            toast.error("Your account is not active.");
-            break;
-          case UserLoginResults.AccountLockout:
-            toast.error("Account locked. Please try again after some time.");
-            break;
-          default:
-            toast.error("Failed to resend OTP. Please try again later.");
-            break;
-        }
-        return;
+      if (response && response.loginResult === UserLoginResults.Successful) {
+        const { hashvalue, mobile: formattedMobile } = response;
+        setHashValue(hashvalue);
+        setDisplayMobile(formattedMobile);
+        setOtpKey((prev) => prev + 1);
+        toast.success(`OTP resent to ${formattedMobile}`);
+        setResendTimer(30);
+      } else {
+        toast.error("Failed to resend OTP. Please try again later.");
       }
-      const { hashvalue, mobile: formattedMobile } = response;
-      setHashValue(hashvalue);
-      setDisplayMobile(formattedMobile);
-      toast.success(`OTP resent to ${formattedMobile}`);
-      setResendTimer(30);
     } catch (error: any) {
       console.log("Error resending OTP:", error);
       toast.error(error.message || "Failed to resend OTP");
@@ -132,13 +100,24 @@ const PhoneOTP: React.FC<PhoneOTPProps> = ({ onUserNotFound }) => {
         hashValue
       );
 
-      if (response && response.loginResult === UserLoginResults.Successful) {
-        setUserAuth(response);
-        storeInSession("user", response);
-        toast.success("Login successful!");
-        navigate(ROUTES.HOME);
+      if (response) {
+        if (response.loginResult === UserLoginResults.Successful) {
+          setUserAuth(response);
+          storeInSession("user", response);
+          toast.success("Login successful! Redirecting...");
+          setTimeout(() => {
+            navigate(ROUTES.HOME);
+          }, 1500);
+        } else if (response.loginResult === UserLoginResults.UserNotExist) {
+          toast.success("Mobile number verified! Redirecting to setup...");
+          setTimeout(() => {
+            navigate(ROUTES.REGISTER, { state: { mobile } });
+          }, 1500);
+        } else {
+          toast.error("Invalid OTP. Please try again.");
+        }
       } else {
-        toast.error("Invalid OTP or login failed.");
+        toast.error("An error occurred during verification.");
       }
     } catch (error: any) {
       console.log("OTP verification failed:", error);
@@ -172,9 +151,9 @@ const PhoneOTP: React.FC<PhoneOTPProps> = ({ onUserNotFound }) => {
                 <input
                   id="mobile"
                   type="text"
-                  placeholder="Enter 10 digit number"
+                  placeholder="e.g. 98765-43210"
                   value={mobile}
-                  maxLength={10}
+                  maxLength={16}
                   onChange={(e) => setMobile(e.target.value)}
                   className="block px-4 py-3 w-full rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-inter"
                 />
@@ -184,9 +163,8 @@ const PhoneOTP: React.FC<PhoneOTPProps> = ({ onUserNotFound }) => {
               <button
                 onClick={handleSendOtp}
                 disabled={loading}
-                className={`w-full py-3.5 text-white bg-blue-600 rounded-lg font-bold hover:bg-blue-700 transition-all shadow-lg active:scale-[0.98] ${
-                  loading ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+                className={`w-full py-3.5 text-white bg-blue-600 rounded-lg font-bold hover:bg-blue-700 transition-all shadow-lg active:scale-[0.98] ${loading ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
               >
                 {loading ? "Sending..." : "Send OTP"}
               </button>
@@ -194,7 +172,7 @@ const PhoneOTP: React.FC<PhoneOTPProps> = ({ onUserNotFound }) => {
 
             {/* <p className="mt-8 text-sm text-gray-500">
               Don't have an account?{" "}
-              <Link to="/register" className="font-bold text-blue-600 hover:underline">
+              <Link to={ROUTES.REGISTER} className="font-bold text-blue-600 hover:underline">
                 Sign Up
               </Link>
             </p> */}
@@ -207,24 +185,23 @@ const PhoneOTP: React.FC<PhoneOTPProps> = ({ onUserNotFound }) => {
             <p className="mb-8 text-center text-gray-600">
               OTP sent to <span className="font-semibold text-blue-600">{displayMobile}</span>
             </p>
-            
+
             <div className="flex justify-center mb-8">
-              <OtpInput length={6} mobile={mobile} onOtpSubmit={handleVerifyOtp} />
+              <OtpInput key={otpKey} length={6} mobile={mobile} onOtpSubmit={handleVerifyOtp} />
             </div>
 
             <button
               onClick={handleResendOtp}
               disabled={resendTimer > 0 || loading}
-              className={`w-full py-3.5 text-white rounded-lg font-bold transition-all duration-200 shadow-md ${
-                resendTimer > 0 || loading 
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed" 
-                  : "bg-blue-500 hover:bg-blue-600 active:scale-[0.98]"
-              }`}
+              className={`w-full py-2.5 text-white rounded-lg font-bold transition-all duration-200 shadow-md ${resendTimer > 0 || loading
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-600 active:scale-[0.98]"
+                }`}
             >
               {resendTimer > 0 ? `Resend OTP in ${resendTimer}s` : "Resend OTP"}
             </button>
-            
-            <button 
+
+            <button
               onClick={() => setShowOtpInput(false)}
               className="w-full mt-6 text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors"
             >
@@ -232,6 +209,8 @@ const PhoneOTP: React.FC<PhoneOTPProps> = ({ onUserNotFound }) => {
             </button>
           </div>
         )}
+
+        <AuthLegalFooter className="absolute bottom-8 w-full" />
       </div>
     </>
   );

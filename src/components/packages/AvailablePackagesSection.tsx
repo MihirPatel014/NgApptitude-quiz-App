@@ -110,23 +110,6 @@ const AvailablePackagesSection = () => {
         }
     };
 
-    const applyCoupon = async () => {
-        if (!selectedPackageId) {
-            toast.success("Please select a package first.");
-            return;
-        }
-
-        const { isValid, discountedAmount } = await validateCoupon(couponCode, selectedPackageId);
-        if (isValid) {
-            setDiscountedPrices((prev) => ({ ...prev, [selectedPackageId]: discountedAmount }));
-            setAppliedCoupons((prev) => ({ ...prev, [selectedPackageId]: couponCode }));
-            toast.success(`Gift Code applied! New amount: ₹${discountedAmount.toFixed(2)}`);
-        } else {
-            toast.error("Invalid Or Gift Code Is expired.");
-        }
-
-        setIsCouponDialogOpen(false);
-    };
 
     const completeOrderInternally = async (paymentModel: PaymentModel, finalAmount: number, giftCodeId: number) => {
         console.log("🔵 [FREE PACKAGE] Starting completeOrderInternally");
@@ -172,6 +155,11 @@ const AvailablePackagesSection = () => {
                     console.log("🔵 [FREE PACKAGE] Invalidating queries...");
                     await queryClient.invalidateQueries({ queryKey: ["userPackages"] });
                     console.log("🔵 [FREE PACKAGE] Queries invalidated successfully");
+
+                    // Clear gift code state so the UI no longer shows the applied coupon
+                    setCouponCode('');
+                    setDiscountedPrices({});
+                    setAppliedCoupons({});
 
                     toast.success('Package activated successfully! Redirecting to dashboard...');
                     console.log("🔵 [FREE PACKAGE] Navigating to dashboard in 500ms...");
@@ -272,7 +260,7 @@ const AvailablePackagesSection = () => {
                 key: merchantOrder?.razorpayPaymentId,
                 amount: merchantOrder?.amount,
                 currency: merchantOrder?.currency,
-                name: paymentModel.name,
+                name: paymentModel.email,
                 description: "",
                 order_id: merchantOrder?.razorpayOrderId,
                 handler: async function (response: any) {
@@ -309,6 +297,11 @@ const AvailablePackagesSection = () => {
                                 await queryClient.invalidateQueries({ queryKey: ["userPackages"] });
                                 console.log("💳 [PAID PACKAGE] Queries invalidated successfully");
                             }
+
+                            // Clear gift code state so the UI no longer shows the applied coupon
+                            setCouponCode('');
+                            setDiscountedPrices({});
+                            setAppliedCoupons({});
                             toast.success('Payment successful! Redirecting to dashboard...');
                             console.log("💳 [PAID PACKAGE] Navigating to dashboard in 500ms...");
 
@@ -399,7 +392,23 @@ const AvailablePackagesSection = () => {
                         />
                         <div className="flex justify-between mt-4">
                             <button
-                                onClick={applyCoupon}
+                                onClick={async () => {
+                                    if (!selectedPackageId) {
+                                        toast.custom("Please select a package first.");
+                                        return;
+                                    }
+
+                                    const { isValid, discountedAmount } = await validateCoupon(couponCode, selectedPackageId);
+                                    if (isValid) {
+                                        setDiscountedPrices((prev) => ({ ...prev, [selectedPackageId]: discountedAmount }));
+                                        setAppliedCoupons((prev) => ({ ...prev, [selectedPackageId]: couponCode }));
+                                        toast.success(`Gift Code applied! New amount: ₹${discountedAmount.toFixed(2)}`);
+                                    } else {
+                                        toast.error("Invalid Gift Code.");
+                                    }
+                                    setLoading(false);
+                                    setIsCouponDialogOpen(false);
+                                }}
                                 className="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600"
                             >
                                 Apply

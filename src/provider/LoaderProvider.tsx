@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, useCallback } from "react";
-import "../common/loader.css";
+import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from "react";
 
 // Define the shape of the loader context
 interface LoaderContextType {
@@ -16,43 +15,17 @@ interface LoaderProviderProps {
 }
 
 export const LoaderProvider: React.FC<LoaderProviderProps> = ({ children }) => {
-  const [activeSources, setActiveSources] = useState<Set<string>>(new Set());
-
-  const setLoading = useCallback((isLoading: boolean, source: string = "unknown") => {
-    setActiveSources(prev => {
-      if (isLoading && prev.has(source)) return prev;
-      if (!isLoading && !prev.has(source)) return prev;
-
-      const next = new Set(prev);
-      if (isLoading) {
-        next.add(source);
-      } else {
-        next.delete(source);
-      }
-      return next;
-    });
+  const [loading, setLoadingState] = useState<boolean>(false);
+  const setLoading = useCallback((newLoading: boolean, _source: string = "unknown") => {
+    setLoadingState(newLoading);
   }, []);
 
-  const loading = activeSources.size > 0;
+  const contextValue = useMemo(() => ({ loading, setLoading }), [loading, setLoading]);
 
   return (
-    <LoaderContext.Provider value={{ loading, setLoading }}>
+    <LoaderContext.Provider value={contextValue}>
       {loading && (
-        <div 
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'rgba(0, 0, 0, 0.6)',
-            backdropFilter: 'blur(2px)'
-          }}
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="loader"></div>
         </div>
       )}

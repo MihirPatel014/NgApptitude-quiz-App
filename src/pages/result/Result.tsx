@@ -5,7 +5,6 @@ import { personalityDataList } from "./personality";
 import { aptitudeDataList } from "./aptitude";
 import ngLogo1 from '../../../src/assests/images/ng_logo1.jpg';
 import ngLogo2 from '../../../src/assests/images/ng_logo2.png';
-
 import {
   Chart as ChartJS,
   CategoryScale,

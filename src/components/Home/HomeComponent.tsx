@@ -7,7 +7,6 @@ import { UserPackageInfoModel, UserExamInfoModel } from "../../types/user";
 import { useNavigate } from "react-router-dom";
 import { formatDate } from "../../utils/dateUtils";
 import { useLoader } from "../../provider/LoaderProvider";
-import { ExamSections } from "../../types/exam";
 import { getExamInfoByExamId } from "../../services/examService";
 import AvailablePackagesSection from "../packages/AvailablePackagesSection";
 import { Award, CheckCircle, Clock, Play, Users, Zap } from "lucide-react";
@@ -20,7 +19,6 @@ const HomeComponent = () => {
   const navigate = useNavigate();
   const { setLoading } = useLoader();
 
-  const [examSections] = useState<Map<number, ExamSections[]>>(new Map()); // Store sections per exam
 
   const [currentPackage, setCurrentPackage] = useState<UserPackageInfoModel | null>(null);
   const [completedPackages, setCompletedPackages] = useState<UserPackageInfoModel[]>([]);
@@ -44,6 +42,7 @@ const HomeComponent = () => {
   useEffect(() => {
     const loading = isLoadingPackages || isFetching;
     setLoading(loading, "dashboard-packages");
+
   }, [isLoadingPackages, isFetching, setLoading]);
 
   useEffect(() => {
@@ -119,13 +118,15 @@ const HomeComponent = () => {
     console.time("QuizStartTimer");
     setLoading(true, "quiz-transition");
     console.log("Loader turned ON (quiz-transition)");
+    
     // Tiny delay to ensure the loader paints before the heavy API call
     await new Promise(resolve => setTimeout(resolve, 100));
+
     try {
       // Use the current package instead of looping through all packages
       if (!currentPackage) {
         console.log("No active package found.");
-        setLoading(false);
+        setLoading(false, "quiz-transition");
         return;
       }
 
@@ -143,22 +144,21 @@ const HomeComponent = () => {
 
       if (!selectedExam) {
         console.log("Exam not found in current package.");
-        setLoading(false);
+        setLoading(false, "quiz-transition");
         return;
       }
 
-      // Fetch exam sections if not already available
-      let sections = examSections.get(examId) || [];
-      if (sections.length === 0) {
-        const fetchedExam = await getExamInfoByExamId(examId);
-        sections = fetchedExam?.sections || [];
-      }
+      // Fetch exam sections
+      const fetchedExam = await getExamInfoByExamId(examId);
+      const sections = fetchedExam?.sections || [];
 
       // Extract all questions from sections
       const examQuestions = sections.flatMap(section => section.questions) || [];
 
       console.timeEnd("QuizStartTimer");
       console.log("Navigating to /quiz with questions:", examQuestions.length);
+
+      // Navigate to the quiz page
       navigate(ROUTES.QUIZ, {
         state: {
           userId: UserId,

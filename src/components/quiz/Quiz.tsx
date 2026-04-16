@@ -1,18 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  GetAllquestionsCategory,
   getQuestionbyExamAndSectionId,
 } from '../../services/questionService';
+import { getImageUrlByName } from '../../services/filesService';
 import { Question } from '../../types/question';
 import { FaCircle } from "react-icons/fa";
-
 import { ExamSections, QuizAnswerModel, SubmitExam, UserExamResponse } from '../../types/exam';
 import { AddUpdateUserExam, SubmitUserExam } from '../../services/examService';
 import { QuestionSumitStatus } from '../../common/constant';
 import toast, { Toaster } from 'react-hot-toast';
 import { useLoader } from '../../provider/LoaderProvider';
-import { getImageUrlByName } from '../../services/filesService';
 import { ROUTES } from '../../common/routes';
 
 
@@ -61,13 +59,11 @@ const Quiz: React.FC<QuizProps> = ({
   const [isTimeBound, setIsTimeBound] = useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number | null>(null);
 
-
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
   const [questionStatuses, setQuestionStatuses] = useState<QuestionStatusType[]>([]);
   const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
   const [showMobileNav, setShowMobileNav] = useState(false);
   const [showDeveloperOptions, setShowDeveloperOptions] = useState<boolean>(false);
-  const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
 
   // Memoized values
   const startTime = useMemo(() => new Date().toISOString(), []);
@@ -86,7 +82,6 @@ const Quiz: React.FC<QuizProps> = ({
     sectionId: 0,
     responseData: ''
   });
-
 
 
   const handleAutoSelectAll = useCallback(() => {
@@ -153,8 +148,6 @@ const Quiz: React.FC<QuizProps> = ({
 
   // Memoized calculations
   const currentQuestion = useMemo(() => questions[activeQuestion], [questions, activeQuestion]);
-
-
 
   const skippedCount = useMemo(() =>
     questionStatuses.filter(status => status === QuestionStatus.Skipped).length,
@@ -297,12 +290,19 @@ const Quiz: React.FC<QuizProps> = ({
     setQuestionStartTime(Date.now());
   }, [activeQuestion]);
 
+  // Ref to track if we've already initialized this exam
+  const initializedRef = useRef<number | null>(null);
+
   // Initialize quiz data once
   useEffect(() => {
     const fetchExamQuestions = async () => {
+      // Prevent multiple initialization runs
+      if (initializedRef.current === examId) return;
+      initializedRef.current = examId;
+
       console.time("QuizInitialization");
       setLoading(true, "quiz-transition");
-      console.log("Loader inherited/started in Quiz component");
+      console.log("Loader started in Quiz component");
       
       try {
         let loadedQuestions: Question[] = [];
@@ -326,80 +326,96 @@ const Quiz: React.FC<QuizProps> = ({
           }
         }
 
-        const fetchAllCategories = await GetAllquestionsCategory();
-        if (fetchAllCategories) {
-          // Categories fetched
-        }
+        // --- ASYNC IMAGE PRE-FETCHING + FALLBACK ---
+        // Questions are already set, hide loader NOW so student can start immediately
+        setLoading(false, "quiz-transition");
+        console.log("Loader turned OFF (Quiz ready, images pre-loading in background)");
+        console.timeEnd("QuizInitialization");
 
-        // --- BATCH IMAGE FETCHING ---
-        const questionsWithImages = loadedQuestions.filter(q => q.image);
-        if (questionsWithImages.length > 0) {
-          console.log(`Processing ${questionsWithImages.length} images in batches...`);
-          
-          const fetchBatch = async (batch: Question[]) => {
-            const fetchPromises = batch.map(async (q) => {
-              const result = await getImageUrlByName(q.image);
-              return { name: q.image, url: result?.imageUrl };
-            });
+        // Split questions into: already have a preview URL vs need a frontend fallback
+        const alreadyResolved  = loadedQuestions.filter(q => q.imagePreviewUrl);
+        const needsFallback    = loadedQuestions.filter(q => !q.imagePreviewUrl && q.image);
+        const noImageAtAll     = loadedQuestions.filter(q => !q.imagePreviewUrl && !q.image);
 
-            const results = await Promise.all(fetchPromises);
-            const urlMap: Record<string, string> = {};
-            results.forEach(res => {
-              if (res.url) {
-                urlMap[res.name] = res.url;
+        console.group(`%c[Image Pre-fetch] Initial breakdown`, 'color: #6366f1; font-weight: bold');
+        console.log(`✅ Already have imagePreviewUrl : ${alreadyResolved.length}`);
+        console.log(`⚠️  Need fallback (has image, no previewUrl): ${needsFallback.length}`);
+        console.log(`➖ No image at all               : ${noImageAtAll.length}`);
+        console.groupEnd();
+
+        // Warm-up browser cache for already-resolved images
+        alreadyResolved.forEach(q => {
+          const img = new Image();
+          img.src = q.imagePreviewUrl!;
+        });
+
+        // Frontend fallback: fetch missing preview URLs question by question
+        if (needsFallback.length > 0) {
+          const fallbackResults = await Promise.allSettled(
+            needsFallback.map(async (q) => {
+              const result = await getImageUrlByName(q.image!);
+              return { q, url: result?.imageUrl ?? null };
+            })
+          );
+
+          const fetchedImages:   string[] = [];
+          const unfetchedImages: string[] = [];
+
+          // Build patched questions array only when at least one URL was resolved
+          const patchMap = new Map<number, string>();
+
+          fallbackResults.forEach(settled => {
+            if (settled.status === 'fulfilled') {
+              const { q, url } = settled.value;
+              if (url) {
+                fetchedImages.push(q.image!);
+                patchMap.set(q.id, url);
+                // Also warm-up browser cache
+                const img = new Image();
+                img.src = url;
+              } else {
+                unfetchedImages.push(q.image!);
               }
-            });
+            } else {
+              // Promise itself rejected (network error etc.)
+              unfetchedImages.push('unknown (promise rejected)');
+            }
+          });
 
-            setImageUrls(prev => ({ ...prev, ...urlMap }));
-          };
-
-          // Group 1: First 5 images (Critical)
-          const firstBatch = questionsWithImages.slice(0, 5);
-          const remainingBatch = questionsWithImages.slice(5);
-
-          console.log("Fetching first batch (5 images)...");
-          await fetchBatch(firstBatch);
-
-          // Group 2: Next 10 images (Background but immediate)
-          if (remainingBatch.length > 0) {
-            const secondBatch = remainingBatch.slice(0, 10);
-            const theRest = remainingBatch.slice(10);
-
-            console.log("Fetching second batch (10 images) in background...");
-            // Non-blocking background fetch for the second batch
-            fetchBatch(secondBatch).then(() => {
-              // Group 3: The rest
-              if (theRest.length > 0) {
-                setTimeout(() => {
-                  console.log(`Fetching final ${theRest.length} images...`);
-                  fetchBatch(theRest);
-                }, 3000);
-              }
-            });
+          // Patch questions state with fallback URLs
+          if (patchMap.size > 0) {
+            setQuestions(prev =>
+              prev.map(q =>
+                patchMap.has(q.id)
+                  ? { ...q, imagePreviewUrl: patchMap.get(q.id)! }
+                  : q
+              )
+            );
           }
+
+          // Diagnostic summary
+          console.group(`%c[Image Pre-fetch] Fallback summary`, 'color: #10b981; font-weight: bold');
+          console.log(`✅ Fetched via fallback  : ${fetchedImages.length}`);
+          console.log(`❌ Failed to fetch        : ${unfetchedImages.length}`);
+          if (unfetchedImages.length > 0) {
+            console.warn('The following image filenames could NOT be resolved — check the docu-API or the filename stored in DB:');
+            unfetchedImages.forEach((name, i) => console.warn(`  [${i + 1}] ${name}`));
+          }
+          if (fetchedImages.length > 0) {
+            console.log('Resolved filenames:', fetchedImages);
+          }
+          console.groupEnd();
         }
       } catch (err) {
         console.log("Failed to load questions:", err);
         toast.error("Failed to load questions. Please try again.");
-      } finally {
-        console.timeEnd("QuizInitialization");
-        console.log("Loader turned OFF in Quiz component");
-        setLoading(false, "quiz-transition");
+        setLoading(false, "quiz-transition"); 
       }
     };
 
     fetchExamQuestions();
   }, [examId, examQuestions, timeLimit, setLoading]);
 
-  // Pre-fetch images
-  useEffect(() => {
-    Object.values(imageUrls).forEach(url => {
-      if (url) {
-        const img = new Image();
-        img.src = url;
-      }
-    });
-  }, [imageUrls]);
 
   // Browser navigation prevention
   useEffect(() => {
@@ -890,12 +906,12 @@ const Quiz: React.FC<QuizProps> = ({
 
 
 
-                    {currentQuestion && currentQuestion.image && (
+                    {currentQuestion && currentQuestion.imagePreviewUrl && (
                       <div className="flex justify-center mb-4 relative min-h-[150px]">
-                        {imageUrls[currentQuestion.image] ? (
+                        {currentQuestion.imagePreviewUrl ? (
                           <>
                             <img
-                              src={imageUrls[currentQuestion.image]}
+                              src={currentQuestion.imagePreviewUrl}
                               alt="Question Illustration"
                               className="object-contain transition-opacity duration-300 max-h-60"
                               onLoad={(e) => {
@@ -906,7 +922,7 @@ const Quiz: React.FC<QuizProps> = ({
                                 // If remote image fails, try fallback to mapper if available
                                 const target = e.currentTarget;
                                 target.style.display = 'none';
-                                console.log(`Failed to load remote image: ${imageUrls[currentQuestion.image]}`);
+                                console.log(`Failed to load remote image: ${currentQuestion.image}`);
                               }}
                               style={{ opacity: 0 }}
                               loading="lazy"

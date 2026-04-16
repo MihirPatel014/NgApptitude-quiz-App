@@ -1,7 +1,9 @@
 import axios from "axios";
 
-import { lookInSession } from "./session";
- const API_URL = process.env.REACT_APP_API_URL;
+import { lookInSession, logOutUser } from "./session";
+import { ROUTES } from "./routes";
+
+const API_URL = process.env.REACT_APP_API_URL;
 
 export const http = axios.create({
   baseURL: API_URL,
@@ -9,9 +11,11 @@ export const http = axios.create({
     "Content-type": "application/json",
   },
 });
+
+// Request interceptor — attach JWT token to every request
 http.interceptors.request.use(
   (config) => {
-    const user  = lookInSession("user");
+    const user = lookInSession("user");
     if (user) {
       // Parse the user object to extract the token
       const parsedUser = JSON.parse(user);
@@ -25,6 +29,38 @@ http.interceptors.request.use(
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor — handle expired/invalid JWT
+http.interceptors.response.use(
+  (response) => {
+    // Check for custom business logic error (200 OK but session invalid)
+    const apiData = response.data as ApiResponse<any>;
+    if (apiData && apiData.isSuccess === false) {
+      const isUnauthorized = apiData.errorDetails?.some(err => err.errorCode === "125");
+      if (isUnauthorized) {
+        // Clear the session so stale auth data is removed
+        logOutUser();
+
+        // Redirect to login — use window.location since interceptors
+        // live outside the React Router context
+        if (window.location.pathname !== ROUTES.LOGIN) {
+          window.location.href = ROUTES.LOGIN;
+        }
+      }
+    }
+    return response;
+  },
+  (error) => {
+    // Handle standard HTTP error codes (real 401)
+    if (error.response?.status === 401) {
+      logOutUser();
+      if (window.location.pathname !== ROUTES.LOGIN) {
+        window.location.href = ROUTES.LOGIN;
+      }
+    }
     return Promise.reject(error);
   }
 );

@@ -68,7 +68,6 @@ const ExamSummary: React.FC = () => {
       : "0.00";
 
 
-
   const decodeHtml = (html: string) => {
     try {
       const parser = new DOMParser();
