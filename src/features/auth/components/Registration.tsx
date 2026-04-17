@@ -1,19 +1,19 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { checkEmail, getAllGrades, registerUser } from "../../services/authService"
-import { UserRegistration } from "../../types/user";
-import { REGEX } from "../../common/constant";
+import { checkEmail, getAllGrades, registerUser } from "../services/authService"
+import { UserRegistration } from "../../../types/user";
+import { REGEX } from "../../../common/constant";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { useLoader } from '../../provider/LoaderProvider';
+import { useLoader } from '../../../provider/LoaderProvider';
 import toast, { Toaster } from "react-hot-toast";
-import { WheelDatePicker } from '../WheelDatePicker';
-import { Grade } from '../../types/grade';
+import { WheelDatePicker } from './WheelDatePicker';
+import { Grade } from '../../../types/grade';
 import { useContext } from 'react';
-import { UserContext } from '../../provider/UserProvider';
-import { UserLoginResults } from '../../types/user';
-import { ROUTES } from '../../common/constant';
-import { storeInSession } from '../../common/session';
+import { UserContext } from '../../../provider/UserProvider';
+import { UserLoginResults } from '../../../types/user';
+import { ROUTES } from '../../../common/constant';
+import { storeInSession } from '../../../common/session';
 import AuthLegalFooter from './AuthLegalFooter';
 
 interface RegistrationProps {

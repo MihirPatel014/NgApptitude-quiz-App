@@ -5,7 +5,7 @@ import { CompletePaymentOrder, ProcessPayment, ValidateGiftCode } from "../../se
 import { PaymentModel } from "../../types/payment";
 import { UserContext } from "../../provider/UserProvider";
 import { useNavigate } from "react-router-dom";
-import { AddUserToPackage } from "../../services/authService";
+import { AddUserToPackage } from "@/features/auth";
 import { AddUserToPackageApiModel } from "../../types/user";
 import { useLoader } from "../../provider/LoaderProvider";
 import toast, { Toaster } from "react-hot-toast";

@@ -1,14 +1,14 @@
 import React, { ChangeEvent, useContext, useEffect, useState, useCallback } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
-import { loginUser } from "../../services/authService";
-import { storeInSession } from "../../common/session";
-import { UserContext } from "../../provider/UserProvider";
-import { UserLogin } from "../../types/user";
-import { emailRegex, passwordRegex, userLoginResults } from "../../common/constant";
+import { loginUser } from "../services/authService";
+import { storeInSession } from "../../../common/session";
+import { UserContext } from "../../../provider/UserProvider";
+import { UserLogin } from "../../../types/user";
+import { REGEX, UserLoginResults } from "../../../common/constant";
 import toast, { Toaster } from "react-hot-toast";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { useLoader } from "../../provider/LoaderProvider";
-import { ROUTES } from "../../common/constant";
+import { useLoader } from "../../../provider/LoaderProvider";
+import { ROUTES } from "../../../common/constant";
 
 
 const Login = () => {
@@ -31,7 +31,7 @@ const Login = () => {
     e.preventDefault();
     setLoading(true); // Show the loader immediately
 
-    if (!emailRegex.test(user.email)) {
+    if (!REGEX.EMAIL.test(user.email)) {
       toast.error("Enter a valid Email Address.");
       setLoading(false);
       return;
@@ -44,38 +44,38 @@ const Login = () => {
 
       if (userResponse) {      
         switch (Number(userResponse.loginResult)) {
-          case userLoginResults.Successful:
+          case UserLoginResults.Successful:
             storeInSession("user", userResponse);
             setUserAuth(userResponse);
             toast.success("Login Successful!");
             break;
         
-          case userLoginResults.UserNotExist:
+          case UserLoginResults.UserNotExist:
             toast.error("User does not exist. Please check your details.");
             break;
         
-          case userLoginResults.WrongPassword:
+          case UserLoginResults.WrongPassword:
             toast.error("Incorrect password. Please try again.");
             break;
         
-          case userLoginResults.NotActive:
+          case UserLoginResults.NotActive:
             toast.error("Your account is not active. Please contact support.");
             break;
         
-          case userLoginResults.Deleted:
+          case UserLoginResults.Deleted:
             toast.error("Your account has been deleted. Please contact support.");
             break;
         
-          case userLoginResults.VerifyContactNoPending:
+          case UserLoginResults.VerifyContactNoPending:
             toast.error("Contact number verification is pending. Please verify.");
             break;
         
-          case userLoginResults.VerifyEmailPending:
+          case UserLoginResults.VerifyEmailPending:
             toast.error("Email verification is pending. Please verify.");
             break;
       
         
-          case userLoginResults.AccountLockout:
+          case UserLoginResults.AccountLockout:
             toast.error("Your account has been locked due to an invalid password. Please try again later.");
             break;
         

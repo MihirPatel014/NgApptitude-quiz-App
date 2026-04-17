@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useContext } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import OtpInput from "./OTPInput";
-import { generateOTPSms, loginWithMobile } from "../../services/authService";
-import { storeInSession } from "../../common/session";
+import { generateOTPSms, loginWithMobile } from "../services/authService";
+import { storeInSession } from "../../../common/session";
 import { useNavigate } from "react-router-dom";
-import { UserVerifyOTPModel, User, UserLoginResults } from "../../types/user";
-import { UserContext } from "../../provider/UserProvider";
-import { REGEX } from "../../common/constant";
-import { ROUTES } from "../../common/constant";
+import { UserVerifyOTPModel, User, UserLoginResults } from "../../../types/user";
+import { UserContext } from "../../../provider/UserProvider";
+import { REGEX } from "../../../common/constant";
+import { ROUTES } from "../../../common/constant";
 import AuthLegalFooter from "./AuthLegalFooter";
 
 interface PhoneOTPProps {

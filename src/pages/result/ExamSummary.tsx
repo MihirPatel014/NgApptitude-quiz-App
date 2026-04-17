@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { User, Award, BookOpen } from "lucide-react";
-import { getUserDetails } from "../../services/authService";
+import { getUserDetails } from "@/features/auth";
 import { GetExamResultByExamProgressId } from "../../services/resultService";
 import { useLoader } from "../../provider/LoaderProvider";
 import { UserProfileUpdate } from "../../types/user";

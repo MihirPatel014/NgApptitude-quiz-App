@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ROUTES } from '../../common/constant';
+import { ROUTES } from '../../../common/constant';
 
 interface AuthLegalFooterProps {
     className?: string;

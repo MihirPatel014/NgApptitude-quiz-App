@@ -22,7 +22,7 @@ import { FinalResultViewModel } from "../../types/result";
 import { GetExamResult_ByExamProgressId } from "../../services/resultService";
 import PdfDownloader from "../../utils/PdfDownloader";
 import { UserProfileUpdate } from "../../types/user";
-import { getUserDetails } from "../../services/authService";
+import { getUserDetails } from "@/features/auth";
 import { useLoader } from "../../provider/LoaderProvider";
 import FinalResult from "./FinalResult";
 

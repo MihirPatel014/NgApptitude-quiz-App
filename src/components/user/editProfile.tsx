@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react'
-import { getUserDetails, UpdateUserDetails } from '../../services/authService'
+import { getUserDetails, UpdateUserDetails } from '@/features/auth'
 import { UserProfileUpdate } from '../../types/user';
 import { useLoader } from '../../provider/LoaderProvider';
 import toast, { Toaster } from "react-hot-toast";

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { GetUserPackageInfoByUserId } from '../../services/authService';
+import { GetUserPackageInfoByUserId } from '@/features/auth';
 import { getExamInfoByExamId } from '../../services/examService';
 import { useLoader } from '../../provider/LoaderProvider';
 import { useQuery } from '@tanstack/react-query';

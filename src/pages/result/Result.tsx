@@ -21,7 +21,7 @@ import PersonalityCard from "./PersonalityCard";
 import AptitudeCard from "./ApptitudeCard";
 import PdfDownloader from "../../utils/PdfDownloader";
 import { UserProfileUpdate } from "../../types/user";
-import { getUserDetails } from "../../services/authService";
+import { getUserDetails } from "@/features/auth";
 import { useLoader } from "../../provider/LoaderProvider";
 import FinalResult from "./FinalResult";
 

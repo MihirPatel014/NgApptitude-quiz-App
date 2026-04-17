@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { GetUserPackageInfoByUserId } from "../../services/authService";
+import { GetUserPackageInfoByUserId } from "@/features/auth";
 import { getExamInfoByExamId } from "../../services/examService";
 import { UserContext } from "../../provider/UserProvider";
 import { Question } from "../../types/question";

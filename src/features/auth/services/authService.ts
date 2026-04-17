@@ -1,9 +1,9 @@
 import axios from "axios";
-import { ApiResponse, handleApiResponse } from "../common/http-common";
-import http from "../common/http-common"
-import { apiRequest } from "../common/requestwithdata";
-import { AddUserToPackageApiModel, User, UserInfoModel, UserLoginResultModel, UserPackage, UserPackageInfoModel, UserProfileUpdate, UserRegistration } from "../types/user"
-import { Grade } from "../types/grade";
+import { ApiResponse, handleApiResponse } from "../../../common/http-common";
+import http from "../../../common/http-common"
+import { apiRequest } from "../../../common/requestwithdata";
+import { AddUserToPackageApiModel, User, UserInfoModel, UserLoginResultModel, UserPackage, UserPackageInfoModel, UserProfileUpdate, UserRegistration } from "../../../types/user"
+import { Grade } from "../../../types/grade";
 
 // api/User/Register
 const USERS_URL = 'api/User';

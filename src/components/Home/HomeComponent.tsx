@@ -2,7 +2,7 @@ import { useState, useContext, useEffect } from "react";
 import { ExamTemplateMappingInfo } from "../../types/result";
 import { useQuery } from "@tanstack/react-query";
 import { UserContext } from "../../provider/UserProvider";
-import { GetUserPackageInfoByUserId } from "../../services/authService";
+import { GetUserPackageInfoByUserId } from "@/features/auth";
 import { UserPackageInfoModel, UserExamInfoModel } from "../../types/user";
 import { useNavigate } from "react-router-dom";
 import { formatDate } from "../../utils/dateUtils";
