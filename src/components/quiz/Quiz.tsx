@@ -11,7 +11,7 @@ import { AddUpdateUserExam, SubmitUserExam } from '../../services/examService';
 import { QuestionSumitStatus } from '../../common/constant';
 import toast, { Toaster } from 'react-hot-toast';
 import { useLoader } from '../../provider/LoaderProvider';
-import { ROUTES } from '../../common/routes';
+import { ROUTES } from '../../common/constant';
 
 
 
@@ -228,7 +228,7 @@ const Quiz: React.FC<QuizProps> = ({
         startedAtUtc: startTime,
         completedAtUtc: new Date().toISOString(),
         responseData: userExamResponse.responseData,
-        status: QuestionSumitStatus.complete
+        status: QuestionSumitStatus.Complete
       };
 
       const result = await SubmitUserExam(submitExamData);

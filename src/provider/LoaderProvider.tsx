@@ -14,6 +14,8 @@ interface LoaderProviderProps {
   children: ReactNode;
 }
 
+import Loader from "../components/ui/Loader/Loader";
+
 export const LoaderProvider: React.FC<LoaderProviderProps> = ({ children }) => {
   const [loading, setLoadingState] = useState<boolean>(false);
   const setLoading = useCallback((newLoading: boolean, _source: string = "unknown") => {
@@ -24,11 +26,7 @@ export const LoaderProvider: React.FC<LoaderProviderProps> = ({ children }) => {
 
   return (
     <LoaderContext.Provider value={contextValue}>
-      {loading && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="loader"></div>
-        </div>
-      )}
+      {loading && <Loader />}
       {children}
     </LoaderContext.Provider>
   );

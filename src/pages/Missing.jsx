@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ROUTES } from '../common/routes';
+import { ROUTES } from '../common/constant';
 
 const Missing = () => {
     return (

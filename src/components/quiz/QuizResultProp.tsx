@@ -1,7 +1,7 @@
 import React from "react";
 import { useLocation, Navigate } from "react-router-dom";
 import QuizResultPage, { QuizResultProps } from "./QuizResutlPage";
-import { ROUTES } from "../../common/routes";
+import { ROUTES } from "../../common/constant";
 
 export const QuizResultProp: React.FC = () => {
   const location = useLocation();

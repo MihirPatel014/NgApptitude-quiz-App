@@ -1,9 +1,9 @@
 import axios from "axios";
 
 import { lookInSession, logOutUser } from "./session";
-import { ROUTES } from "./routes";
+import { ROUTES } from "./constant";
 
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = import.meta.env.VITE_API_URL;
 
 export const http = axios.create({
   baseURL: API_URL,

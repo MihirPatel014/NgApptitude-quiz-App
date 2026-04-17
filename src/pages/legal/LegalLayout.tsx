@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowLeft, ShieldCheck, FileText, RefreshCcw, MessageSquare } from 'lucide-react';
-import { ROUTES } from '../../common/routes';
+import { ROUTES } from '../../common/constant';
 import { Link, useNavigate } from 'react-router-dom';
 
 interface LegalLayoutProps {

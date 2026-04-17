@@ -10,7 +10,7 @@ import { AddUserToPackageApiModel } from "../../types/user";
 import { useLoader } from "../../provider/LoaderProvider";
 import toast, { Toaster } from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { ROUTES } from "../../common/routes";
+import { ROUTES } from "../../common/constant";
 
 
 const AvailablePackagesSection = () => {

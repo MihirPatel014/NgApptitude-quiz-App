@@ -17,8 +17,8 @@
 // ---------------------------------------------------------------------------
 // Configuration — update these to match your Seq server
 // ---------------------------------------------------------------------------
-const SEQ_SERVER_URL = process.env.REACT_APP_SEQ_URL ?? "http://localhost:5341";
-const SEQ_API_KEY    = process.env.REACT_APP_SEQ_API_KEY ?? ""; // leave empty if none
+const SEQ_SERVER_URL = import.meta.env.VITE_SEQ_URL ?? "http://localhost:5341";
+const SEQ_API_KEY    = import.meta.env.VITE_SEQ_API_KEY ?? ""; // leave empty if none
 
 // CLEF endpoint for raw structured events
 const CLEF_ENDPOINT  = `${SEQ_SERVER_URL}/api/events/raw?clef`;
@@ -102,7 +102,7 @@ function sendToSeq(level: LogLevel, template: string, props: Record<string, unkn
 // Also echo to the browser console so devs see logs during development
 // ---------------------------------------------------------------------------
 function consoleEcho(level: LogLevel, template: string, props: Record<string, unknown>, error?: unknown): void {
-  if (process.env.NODE_ENV === "production") return;
+  if (import.meta.env.PROD) return;
 
   const msg = `[${level}] ${template}`;
   const extra = Object.keys(props).length ? props : undefined;

@@ -21,7 +21,7 @@ const GET_USER_FULL_INFO_BY_USERID = "/GetUserFullInfoByUserId"
 const GET_USER_PACKAGE_INFO_BY_USERID = "/GetUserPackageInfoByUserId"
 const CHECK_EMAIL = "/check_email"
 
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = import.meta.env.VITE_API_URL;
 const GRADE_URL = "api/Grade/GetAllGrades";
 
 export const checkEmail = async (email: string) => {

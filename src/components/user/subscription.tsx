@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { FaCircle } from "react-icons/fa";
 import { formatDate } from "../../utils/dateUtils";
 import { useLoader } from "../../provider/LoaderProvider";
-import { ROUTES } from "../../common/routes";
+import { ROUTES } from "../../common/constant";
 
 export const Subscription = () => {
     const { userAuth } = useContext(UserContext);

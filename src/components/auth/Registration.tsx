@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { checkEmail, getAllGrades, registerUser } from "../../services/authService"
 import { UserRegistration } from "../../types/user";
-import { emailRegex, phoneRegex } from "../../common/constant";
+import { REGEX } from "../../common/constant";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useLoader } from '../../provider/LoaderProvider';
 import toast, { Toaster } from "react-hot-toast";
@@ -12,7 +12,7 @@ import { Grade } from '../../types/grade';
 import { useContext } from 'react';
 import { UserContext } from '../../provider/UserProvider';
 import { UserLoginResults } from '../../types/user';
-import { ROUTES } from '../../common/routes';
+import { ROUTES } from '../../common/constant';
 import { storeInSession } from '../../common/session';
 import AuthLegalFooter from './AuthLegalFooter';
 
@@ -70,7 +70,7 @@ const Registration: React.FC<RegistrationProps> = ({ mobile: propMobile }) => {
   }, [mobile]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!formValues.email || !emailRegex.test(formValues.email)) {
+    if (!formValues.email || !REGEX.EMAIL.test(formValues.email)) {
       setEmailError("");
       return;
     }
@@ -191,7 +191,7 @@ const Registration: React.FC<RegistrationProps> = ({ mobile: propMobile }) => {
 
     if (!values.email?.trim()) {
       errors.email = 'Email address is required';
-    } else if (!emailRegex.test(values.email)) {
+    } else if (!REGEX.EMAIL.test(values.email)) {
       errors.email = 'Please enter a valid email address';
     }
 
@@ -209,7 +209,7 @@ const Registration: React.FC<RegistrationProps> = ({ mobile: propMobile }) => {
 
     if (!values.contactNo?.trim()) {
       errors.contactNo = 'Mobile number is required';
-    } else if (!phoneRegex.test(values.contactNo)) {
+    } else if (!REGEX.PHONE.test(values.contactNo)) {
       errors.contactNo = 'Enter a valid 10-digit mobile number';
     }
 
@@ -257,6 +257,7 @@ const Registration: React.FC<RegistrationProps> = ({ mobile: propMobile }) => {
                 type="text"
                 readOnly={!!mobile}
                 value={formValues.contactNo}
+                onChange={handleChange}
                 onBlur={handleBlur}
                 className={`px-4 py-2.5 w-full rounded-xl border transition-all duration-200 ${formErrors.contactNo ? 'border-red-500 ring-2 ring-red-50' : 'border-gray-300 focus:ring-2 focus:ring-blue-500'
                   } ${mobile ? "bg-gray-100 cursor-not-allowed text-gray-500" : ""}`}

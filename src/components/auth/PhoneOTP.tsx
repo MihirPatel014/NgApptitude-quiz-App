@@ -6,8 +6,8 @@ import { storeInSession } from "../../common/session";
 import { useNavigate } from "react-router-dom";
 import { UserVerifyOTPModel, User, UserLoginResults } from "../../types/user";
 import { UserContext } from "../../provider/UserProvider";
-import { phoneRegex } from "../../common/constant";
-import { ROUTES } from "../../common/routes";
+import { REGEX } from "../../common/constant";
+import { ROUTES } from "../../common/constant";
 import AuthLegalFooter from "./AuthLegalFooter";
 
 interface PhoneOTPProps {
@@ -36,11 +36,11 @@ const PhoneOTP: React.FC<PhoneOTPProps> = ({ onUserNotFound }) => {
   }, [resendTimer]);
 
   const handleSendOtp = async () => {
-    if (!phoneRegex.test(mobile)) {
+    if (!REGEX.PHONE.test(mobile)) {
       toast.error("Enter a valid 10-digit mobile number starting with 6-9");
       return;
     }
-
+    
     setLoading(true);
     try {
       // Step 1: Generate OTP (now for any valid 10-digit number)

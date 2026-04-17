@@ -3,15 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@formkit/auto-animate": "^0.9.0",
     "@ncdai/react-wheel-picker": "^1.2.2",
     "@tailwindcss/cli": "^4.0.9",
     "@tanstack/react-query": "^5.85.5",
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
+    "@tanstack/react-router": "^1.168.22",
     "@testing-library/user-event": "^13.5.0",
     "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.119",
-    "@types/react-router-dom": "^5.3.3",
+    "@types/nprogress": "^0.2.3",
     "@types/react-toastify": "^4.1.0",
     "axios": "^1.7.7",
     "chart.js": "^4.4.8",
@@ -19,8 +18,10 @@
     "file-saver": "^2.0.5",
     "framer-motion": "^12.38.0",
     "jspdf": "^3.0.0",
+    "ldrs": "^1.1.9",
     "lucide": "^0.517.0",
     "lucide-react": "^0.517.0",
+    "nprogress": "^0.2.0",
     "razorpay": "^2.9.5",
     "react": "^18.3.1",
     "react-chartjs-2": "^5.3.0",
@@ -28,26 +29,18 @@
     "react-hot-toast": "^2.5.1",
     "react-icons": "^5.4.0",
     "react-router-dom": "^6.28.0",
-    "react-scripts": "5.0.1",
     "serve": "^14.2.3",
     "tailwind-datepicker-react": "^1.4.3",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "start:prod": "npm run build && serve -s build",
-    "start:local": "react-scripts start",
-    "dev-start": "react-scripts start serve -s"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "start": "vite",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "browserslist": {
     "production": [
@@ -63,10 +56,17 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@types/react": "^19.0.10",
-    "@types/react-dom": "^19.0.4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^25.6.0",
+    "@types/react": "^18.3.28",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^6.0.1",
     "autoprefixer": "^10.4.20",
+    "jsdom": "^29.0.2",
     "postcss": "^8.5.1",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "vite": "^8.0.8",
+    "vitest": "^4.1.4"
   }
 }

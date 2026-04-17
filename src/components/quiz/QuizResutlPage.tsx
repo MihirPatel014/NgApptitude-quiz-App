@@ -8,7 +8,7 @@ import { UserPackageInfoModel } from '../../types/user';
 import { GetExamTemplateMappings } from "../../services/resultService";
 import { ExamTemplateMappingInfo } from '../../types/result';
 import toast from 'react-hot-toast';
-import { ROUTES } from '../../common/routes';
+import { ROUTES } from '../../common/constant';
 
 export interface QuizResultProps {
   examId?: number;

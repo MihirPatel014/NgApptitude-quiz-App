@@ -3,8 +3,8 @@ import { useLocation } from "react-router-dom";
 import { Pie, Bar } from "react-chartjs-2";
 import { personalityDataList } from "./personality";
 import { aptitudeDataList } from "./aptitude";
-import ngLogo1 from '../../../src/assests/images/ng_logo1.jpg';
-import ngLogo2 from '../../../src/assests/images/ng_logo2.png';
+import ngLogo1 from '../../../src/assets/images/ng_logo1.jpg';
+import ngLogo2 from '../../../src/assets/images/ng_logo2.png';
 import {
   Chart as ChartJS,
   CategoryScale,

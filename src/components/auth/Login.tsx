@@ -8,7 +8,7 @@ import { emailRegex, passwordRegex, userLoginResults } from "../../common/consta
 import toast, { Toaster } from "react-hot-toast";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useLoader } from "../../provider/LoaderProvider";
-import { ROUTES } from "../../common/routes";
+import { ROUTES } from "../../common/constant";
 
 
 const Login = () => {

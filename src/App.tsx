@@ -2,26 +2,28 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Missing from "./pages/Missing";
 // import Login from "./components/auth/Login";
 import './index.css';
-import { NavbarAndSidebar } from "./components/NavbarAndSidebar";
-import { UserProvider } from "./provider/UserProvider";
-import ProtectedRoute from "./utils/ProtectedRoute";
-import PackagesPage from "./components/packages/packagesPage";
-import EditProfile from "./components/user/editProfile";
-import { QuizWrapper } from "./components/quiz/QuizWrapper";
-import Home from "./pages/home/index";
-import Result1 from "./pages/result/Result"
-import { LoaderProvider } from "./provider/LoaderProvider";
-import Loader from "./common/Loader";
-import ResultNew from "./pages/result/Resultnew";
-import ExamSummary from "./pages/result/ExamSummary";
-import QuizResultWrapper from "./components/quiz/QuizResultProp";
-import PhoneOTP from "./components/auth/PhoneOTP";
-import Registration from "./components/auth/Registration";
-import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
-import TermsAndConditions from "./pages/legal/TermsAndConditions";
-import RefundPolicy from "./pages/legal/RefundPolicy";
-import ContactUs from "./pages/legal/ContactUs";
-import { ROUTES } from "./common/routes";
+import { ROUTES } from "@/common/constant";
+import Loader from "@/components/ui/Loader/Loader";
+import ProtectedRoute from "@/utils/ProtectedRoute";
+import { UserProvider } from "@/provider/UserProvider";
+import { LoaderProvider } from "@/provider/LoaderProvider";
+import { NavbarAndSidebar } from "@/components/NavbarAndSidebar";
+
+// Page Imports
+import Home from "@/pages/home/index";
+import PackagesPage from "@/components/packages/packagesPage";
+import EditProfile from "@/components/user/editProfile";
+import { QuizWrapper } from "@/components/quiz/QuizWrapper";
+import Result1 from "@/pages/result/Result";
+import ResultNew from "@/pages/result/Resultnew";
+import ExamSummary from "@/pages/result/ExamSummary";
+import QuizResultWrapper from "@/components/quiz/QuizResultProp";
+import PhoneOTP from "@/components/auth/PhoneOTP";
+import Registration from "@/components/auth/Registration";
+import PrivacyPolicy from "@/pages/legal/PrivacyPolicy";
+import TermsAndConditions from "@/pages/legal/TermsAndConditions";
+import RefundPolicy from "@/pages/legal/RefundPolicy";
+import ContactUs from "@/pages/legal/ContactUs";
 
 
 function App() {

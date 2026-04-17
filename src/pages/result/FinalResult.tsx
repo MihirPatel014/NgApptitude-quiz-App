@@ -1,8 +1,8 @@
 import React from 'react';
 
 
-import rajveesignature from '../../../src/assests/images/rajvee_signature.png';
-import poonamsignature from '../../../src/assests/images/poonam_signature.png';
+import rajveesignature from '../../../src/assets/images/rajvee_signature.png';
+import poonamsignature from '../../../src/assets/images/poonam_signature.png';
 interface ResultSummary {
   personalityTypes: string;
   aptitudeType: string;

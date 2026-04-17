@@ -9,7 +9,7 @@ const PROCESS_REQUEST_ORDER = 'process-request-order';
 const COMPLETE_REQUEST_ORDER = 'complete-order-process';
 const VALIDATE_GIFT_CODE = 'validate-gift-code';
 
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = import.meta.env.VITE_API_URL;
 
 export const ProcessPayment = async (data: PaymentModel) => {
 

@@ -4,8 +4,8 @@ export interface FetchUploadPath {
     imageUrl: string;
 }
 
-const DOCU_API_URL = process.env.REACT_APP_DOCU_API_URL;
-const DOCU_API_KEY = process.env.REACT_APP_DOCU_API_KEY;
+const DOCU_API_URL = import.meta.env.VITE_DOCU_API_URL;
+const DOCU_API_KEY = import.meta.env.VITE_DOCU_API_KEY;
 
 /**
  * Fetches the base folder path for a given image name from the document API.
@@ -14,7 +14,7 @@ const DOCU_API_KEY = process.env.REACT_APP_DOCU_API_KEY;
  */
 export const getImageUrlByName = async (fileName: string): Promise<FetchUploadPath | null> => {
     if (!DOCU_API_URL) {
-        console.error("Missing REACT_APP_DOCU_API_URL. Please add it to your environment variables.");
+        console.error("Missing VITE_DOCU_API_URL. Please add it to your environment variables.");
         return null;
     }
     try {

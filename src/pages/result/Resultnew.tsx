@@ -4,8 +4,8 @@ import { Pie, Bar } from "react-chartjs-2";
 import { User, BookOpen, Calendar, Phone, Mail, Award, Brain, TrendingUp, CheckCircle } from "lucide-react";
 import { personalityDataList } from "./personality";
 import { aptitudeDataList } from "./aptitude";
-import ngLogo1 from '../../../src/assests/images/ng_logo1.jpg';
-import ngLogo2 from '../../../src/assests/images/ng_logo2.png';
+import ngLogo1 from '../../../src/assets/images/ng_logo1.jpg';
+import ngLogo2 from '../../../src/assets/images/ng_logo2.png';
 
 import {
   Chart as ChartJS,

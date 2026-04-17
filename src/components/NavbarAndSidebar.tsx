@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Outlet, useNavigate, Link } from 'react-router-dom'
 import { useContext } from 'react'
-import { ROUTES } from '../common/routes'
+import { ROUTES } from '../common/constant'
 import { UserContext } from '../provider/UserProvider'
 import { removeFromSession, logOutUser } from "../common/session"
 import { FaUser } from "react-icons/fa";
