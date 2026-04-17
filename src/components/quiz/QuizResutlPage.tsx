@@ -14,6 +14,7 @@ export interface QuizResultProps {
   examId?: number;
   userId?: number;
   userPackageId?: number;
+  packageId?: number;
   examName: string;
   examDescription: string;
   totalQuestions: number;
@@ -28,6 +29,7 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
   const {
     examId,
     userId,
+    packageId,
     examName,
     totalQuestions,
     answered,
@@ -77,7 +79,10 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
       if (!packages?.length) return;
 
 
-      const currentPackage =
+      // Find the package that contains this examId
+      const currentPackage = packages.find(pkg =>
+        pkg.exams?.some(e => e.examId === currentExamId)
+      ) ||
         packages.find(pkg => !pkg.isCompleted) ||
         packages.find(pkg => pkg.isCompleted) ||
         null;
@@ -198,21 +203,31 @@ const QuizResult: React.FC<QuizResultProps> = (props) => {
     setLoading(true);
 
     try {
-      // 🔑 CHECK TEMPLATE MAPPING
+      // 🔑 CHECK TEMPLATE MAPPING (Match HomeComponent Logic)
       const mappings = await GetExamTemplateMappings();
+
+      // Find the package from userPackages to get the first completed exam
+      const pkg = userPackages?.find(p => p.id === (currentPackageId || packageId || location.state?.packageId));
+      const completedExam = pkg?.exams.find(e => e.isCompleted && e.examProgressId);
+
+      // Fallback to current exam if no package found or no completed exam yet in listing
+      const targetExamId = completedExam?.examId || currentExamId;
+      const targetProgressId = completedExam?.examProgressId || (examProgressId || location.state?.userExamProgressId);
+      const targetPackageId = currentPackageId || packageId || location.state?.packageId;
+
       // Exam 9 is legacy => force resultnew
-      const isLegacyExam = currentExamId === 9;
-      const hasTemplate = mappings?.some((m: ExamTemplateMappingInfo) => m.examId === currentExamId);
+      const isLegacyExam = targetExamId === 9;
+      const hasTemplate = mappings?.some((m: ExamTemplateMappingInfo) => m.examId === targetExamId);
 
       if (hasTemplate && !isLegacyExam) {
         // PRIORITY: If a template is mapped (and not legacy), go to exam-summary
         navigate(ROUTES.EXAM_SUMMARY, {
-          state: { examProgressId: examProgressId || location.state?.userExamProgressId }
+          state: { examProgressId: targetProgressId }
         });
       } else {
         // FALLBACK / LEGACY
         navigate(ROUTES.RESULT_NEW, {
-          state: { packageId: currentPackageId || location.state?.packageId }
+          state: { packageId: targetPackageId }
         });
       }
 

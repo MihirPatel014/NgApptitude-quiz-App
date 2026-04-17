@@ -195,6 +195,7 @@ const Quiz: React.FC<QuizProps> = ({
         userId: userId,
         userExamProgressId: userExamProgressId,
         userPackageId: userPackageId,
+        packageId: packageId,
         examName: examName,
         answered: questionStatuses.filter(status => status === QuestionStatus.Attended).length,
         notAnswered: questionStatuses.filter(status => status === QuestionStatus.NotAttended).length,
@@ -204,7 +205,7 @@ const Quiz: React.FC<QuizProps> = ({
       },
     });
 
-  }, [navigate, examId, userId, userExamProgressId, userPackageId, examName, questionStatuses, questions.length, elapsedTime]);
+  }, [navigate, examId, userId, userExamProgressId, userPackageId, packageId, examName, questionStatuses, questions.length, elapsedTime]);
 
   const handleQuizSubmit = useCallback(async () => {
     if (!isQuizActiveRef.current) return;
